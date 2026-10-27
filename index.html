@@ -182,32 +182,13 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="board-frame" id="frame">
       <svg id="board" viewBox="0 0 1100 700" aria-label="Доска для длинных нард">
         <defs>
-          <radialGradient id="gIvory" cx="38%" cy="30%" r="75%">
-            <stop offset="0" stop-color="#fffdf7"/><stop offset=".55" stop-color="#ece0c6"/><stop offset="1" stop-color="#bfa97e"/>
-          </radialGradient>
-          <radialGradient id="gOnyx" cx="38%" cy="30%" r="75%">
-            <stop offset="0" stop-color="#62626b"/><stop offset=".5" stop-color="#24242a"/><stop offset="1" stop-color="#08080a"/>
-          </radialGradient>
-          <radialGradient id="gBeech" cx="38%" cy="30%" r="78%">
-            <stop offset="0" stop-color="#fdeccc"/><stop offset=".6" stop-color="#e8c896"/><stop offset="1" stop-color="#c49a62"/>
-          </radialGradient>
-          <radialGradient id="gWalnut" cx="38%" cy="30%" r="78%">
-            <stop offset="0" stop-color="#a77548"/><stop offset=".55" stop-color="#704424"/><stop offset="1" stop-color="#3c210d"/>
-          </radialGradient>
           <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#f6dc96"/><stop offset=".5" stop-color="#b08638"/><stop offset="1" stop-color="#ecca7a"/>
-          </linearGradient>
-          <linearGradient id="gBrass" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#e8cf8a"/><stop offset=".5" stop-color="#8f6a2a"/><stop offset="1" stop-color="#d4b46a"/>
-          </linearGradient>
-          <linearGradient id="gSilver" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#d8d8dc"/><stop offset=".5" stop-color="#77777f"/><stop offset="1" stop-color="#c2c2c8"/>
           </linearGradient>
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
-        <defs id="skinDefs"></defs>
         <g id="lStatic"></g>
         <g id="lDyn"></g>
         <g id="lHit"></g>
@@ -332,67 +313,6 @@ function star(cx,cy,R,r,light,dark,rot=-90,stroke='',n=8,sw){
   }
   return s;
 }
-// аревахач — армянский знак вечности
-function arevakhach(cx,cy,R,light,dark,n=8){
-  let s=`<circle cx="${cx}" cy="${cy}" r="${f2(R*1.04)}" fill="${dark}"/>`;
-  const P=(rr,deg)=>[cx+rr*Math.cos(deg*Math.PI/180),cy+rr*Math.sin(deg*Math.PI/180)];
-  for(let k=0;k<n;k++){
-    const a=k*360/n;
-    const [sx,sy]=P(R*.1,a), [ex,ey]=P(R*.98,a+95), [qx,qy]=P(R*.1,a+360/n);
-    s+=`<path d="M${f2(sx)} ${f2(sy)}A${f2(R*.56)} ${f2(R*.56)} 0 0 1 ${f2(ex)} ${f2(ey)}A${f2(R*.72)} ${f2(R*.72)} 0 0 0 ${f2(qx)} ${f2(qy)}Z" fill="${light}" stroke="${dark}" stroke-width="${f2(R*.03)}" stroke-linejoin="round"/>`;
-  }
-  s+=`<circle cx="${cx}" cy="${cy}" r="${f2(R*.09)}" fill="${dark}"/>`;
-  return s;
-}
-// резная рамка с волнистым краем
-function wavyRect(x0,y0,x1,y1,amp,nx,ny){
-  let d=`M${x0} ${y0}`;
-  const edge=(ax,ay,bx,by,n,ox,oy)=>{
-    for(let i=0;i<n;i++){
-      const t0=i/n,t1=(i+1)/n;
-      const sx=ax+(bx-ax)*t0, sy=ay+(by-ay)*t0, ex=ax+(bx-ax)*t1, ey=ay+(by-ay)*t1;
-      const s=(i%2?-.6:1)*amp;
-      d+=`C${f2(sx+(ex-sx)*.2+ox*s)} ${f2(sy+(ey-sy)*.2+oy*s)} ${f2(sx+(ex-sx)*.8+ox*s)} ${f2(sy+(ey-sy)*.8+oy*s)} ${f2(ex)} ${f2(ey)}`;
-    }
-  };
-  edge(x0,y0,x1,y0,nx,0,-1); edge(x1,y0,x1,y1,ny,1,0); edge(x1,y1,x0,y1,nx,0,1); edge(x0,y1,x0,y0,ny,-1,0);
-  return d+'Z';
-}
-// древесные волокна (детерминированные)
-function grain(x,y,w,h,color,n,seed,op=.25){
-  let r=seed;const rnd=()=>((r=(r*9301+49297)%233280)/233280);
-  let s='';
-  for(let i=0;i<n;i++){
-    let gx=x+(i+rnd())*w/n, d=`M${f2(gx)} ${y}`;
-    const segs=6;
-    for(let k=1;k<=segs;k++){
-      const ny=y+h*k/segs, wob=(rnd()-.5)*w/n*1.4;
-      d+=`Q${f2(gx+wob)} ${f2(ny-h/segs/2)} ${f2(gx+wob*.4)} ${f2(ny)}`;
-      gx+=wob*.4;
-    }
-    s+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="${f2(.8+rnd()*1.8)}" opacity="${f2(op*(.5+rnd()))}"/>`;
-  }
-  return s;
-}
-// пункт-капля: круглый конец у края, остриё к центру
-function teardrop(x,top,tip,w,inset=0){
-  const r=w/2;
-  if(top){const cy=40+r+6+inset;return `M${x-r} ${cy}A${r} ${r} 0 0 1 ${x+r} ${cy}L${x} ${tip}Z`;}
-  const cy=660-r-6-inset;return `M${x-r} ${cy}A${r} ${r} 0 0 0 ${x+r} ${cy}L${x} ${tip}Z`;
-}
-function fleur(x,y,dir,color){
-  const t=(dx,dy)=>`${f2(x+dx)} ${f2(y+dy*dir)}`;
-  return `<path d="M${t(0,0)}L${t(5,12)}L${t(0,24)}L${t(-5,12)}Z M${t(-3,10)}L${t(-14,4)}L${t(-9,15)}Z M${t(3,10)}L${t(14,4)}L${t(9,15)}Z" fill="${color}"/>`;
-}
-function hinges(fill){
-  let s='';
-  for(const y of [118,522]){
-    s+=`<rect x="482" y="${y}" width="36" height="60" rx="4" fill="${fill}" stroke="rgba(0,0,0,.45)"/>`;
-    for(const yy of [y+12,y+48]) s+=`<circle cx="490" cy="${yy}" r="3" fill="rgba(0,0,0,.45)"/><circle cx="510" cy="${yy}" r="3" fill="rgba(0,0,0,.45)"/>`;
-  }
-  return s;
-}
-
 /* ---------- геометрия доски ---------- */
 // физические пункты 0..23: низ справа налево 0..11, верх слева направо 12..23
 function ptX(i){
@@ -408,173 +328,21 @@ function slotXY(i,k,n){
 function traySlot(pl,k){ return pl===0?[1055,50+k*18+7]:[1055,650-k*18-7]; }
 
 /* ---------- скины досок ---------- */
-const CK_STAR={w:{fill:'url(#gIvory)',stroke:'#b08a3e',ring:'rgba(110,75,25,.35)',star:['#fbf4e4','#1d1915'],slab:'#a07e38',cntBg:'#1a130c',cntFg:'#f3d993'},
-               b:{fill:'url(#gOnyx)',stroke:'#9a9aa3',ring:'rgba(255,255,255,.14)',star:['#ece6dc','#060607'],slab:'#7d7d86',cntBg:'#efe6d4',cntFg:'#1a130c'}};
-const CK_WOOD={w:{fill:'url(#gBeech)',stroke:'#a57a42',ring:'rgba(110,70,25,.3)',wood:true,slab:'#a57a42',cntBg:'#4a2c14',cntFg:'#fbe9c8'},
-               b:{fill:'url(#gWalnut)',stroke:'#2e1808',ring:'rgba(255,220,170,.16)',wood:true,slab:'#2e1808',cntBg:'#fbe9c8',cntFg:'#3c210d'}};
-
-const SKINS={
-  night:{
-    name:'Ночь', ck:CK_STAR,
-    defs:p=>`
-      <linearGradient id="${p}-wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2e1c12"/><stop offset=".5" stop-color="#3e2618"/><stop offset="1" stop-color="#1c110b"/></linearGradient>
-      <radialGradient id="${p}-field" cx="50%" cy="50%" r="70%"><stop offset="0" stop-color="#1d2a23"/><stop offset="1" stop-color="#0b120e"/></radialGradient>
-      <linearGradient id="${p}-redT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a2f31"/><stop offset="1" stop-color="#5a1518"/></linearGradient>
-      <linearGradient id="${p}-redB" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#9a2f31"/><stop offset="1" stop-color="#5a1518"/></linearGradient>
-      <linearGradient id="${p}-boneT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe3c8"/><stop offset="1" stop-color="#b9a47a"/></linearGradient>
-      <linearGradient id="${p}-boneB" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#efe3c8"/><stop offset="1" stop-color="#b9a47a"/></linearGradient>`,
-    art:p=>{
-      let h=`<rect x="0" y="0" width="1000" height="700" rx="24" fill="url(#${p}-wood)"/>`;
-      h+=`<rect x="10" y="10" width="980" height="680" rx="18" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="2"/>`;
-      h+=`<rect x="28" y="28" width="944" height="644" rx="10" fill="none" stroke="url(#gGold)" stroke-width="2"/>`;
-      for(const x0 of [40,540]) h+=`<rect x="${x0}" y="40" width="420" height="620" rx="4" fill="url(#${p}-field)"/>`;
-      for(const cx of [250,750]) h+=`<circle cx="${cx}" cy="350" r="190" fill="none" stroke="rgba(217,181,106,.06)"/>`;
-      for(let i=0;i<24;i++){
-        const x=ptX(i), red=i%2===0, top=isTop(i);
-        const fill=`url(#${p}-${red?'red':'bone'}${top?'T':'B'})`;
-        const d=top?`M${x-33} 40L${x+33} 40L${x} 296Z`:`M${x-33} 660L${x+33} 660L${x} 404Z`;
-        h+=`<path d="${d}" fill="${fill}" stroke="rgba(217,181,106,.55)" stroke-width="1"/>`;
-        const ix=top?`M${x-18} 40L${x+18} 40L${x} 180Z`:`M${x-18} 660L${x+18} 660L${x} 520Z`;
-        h+=`<path d="${ix}" fill="none" stroke="${red?'rgba(240,210,150,.18)':'rgba(90,40,20,.18)'}"/>`;
-      }
-      h+=`<rect x="460" y="28" width="80" height="644" fill="url(#${p}-wood)"/>`;
-      h+=`<line x1="500" y1="40" x2="500" y2="660" stroke="url(#gGold)" stroke-width="1.5" opacity=".7"/>`;
-      h+=`<circle cx="500" cy="350" r="34" fill="#140d08" stroke="url(#gGold)" stroke-width="2"/>`;
-      h+=star(500,350,28,10,'#f1d48a','#1a120b');
-      for(const y of [150,550]) h+=star(500,y,15,5.5,'#d9b56a','#1a120b');
-      h+=`<circle cx="250" cy="350" r="47" fill="none" stroke="rgba(217,181,106,.45)"/>`;
-      h+=star(250,350,42,15,'#e8cb84','#120c08',-90,'rgba(0,0,0,.3)');
-      for(const [x,y] of [[20,20],[980,20],[20,680],[980,680]]) h+=star(x,y,13,4.8,'#d9b56a','#140d08');
-      h+=`<rect x="1010" y="0" width="90" height="700" rx="20" fill="url(#${p}-wood)"/>`;
-      h+=`<rect x="1020" y="40" width="70" height="300" rx="8" fill="#0d0907" stroke="rgba(217,181,106,.4)"/>`;
-      h+=`<rect x="1020" y="360" width="70" height="300" rx="8" fill="#0d0907" stroke="rgba(217,181,106,.4)"/>`;
-      h+=star(1055,350,12,4.4,'#d9b56a','#140d08');
-      h+=star(1055,20,9,3.4,'#efe6d4','#1d1915');
-      h+=star(1055,680,9,3.4,'#5a5a62','#060607');
-      return h;
-    },
-    tgt:'#f3d993'
-  },
-  ararat:{
-    name:'Арарат', ck:CK_WOOD,
-    defs:p=>`
-      <linearGradient id="${p}-frame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7d4b25"/><stop offset=".5" stop-color="#5c3315"/><stop offset="1" stop-color="#734420"/></linearGradient>
-      <radialGradient id="${p}-field" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#875329"/><stop offset="1" stop-color="#5e3517"/></radialGradient>
-      <linearGradient id="${p}-beech" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e6c189"/><stop offset=".5" stop-color="#f7dfb0"/><stop offset="1" stop-color="#e2ba7e"/></linearGradient>
-      <linearGradient id="${p}-groove" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2e1a0a"/><stop offset=".5" stop-color="#4e2d12"/><stop offset="1" stop-color="#2e1a0a"/></linearGradient>`,
-    art:p=>{
-      let h=`<path d="${wavyRect(10,10,1090,690,11,7,3)}" fill="url(#${p}-frame)" stroke="#2e1a0a" stroke-width="2"/>`;
-      h+=grain(10,10,1080,680,'#3a200c',46,7,.22);
-      for(const x0 of [40,540]){
-        h+=`<rect x="${x0-6}" y="34" width="432" height="632" rx="10" fill="#3a200c" opacity=".55"/>`;
-        h+=`<rect x="${x0}" y="40" width="420" height="620" rx="6" fill="url(#${p}-field)"/>`;
-        h+=grain(x0,40,420,620,'#4a2a10',18,x0+3,.3);
-        // резной волнистый бортик у края
-        for(const top of [true,false]){
-          let d='';const y=top?40:660, dir=top?1:-1;
-          for(let k=0;k<6;k++){const cx=x0+35+70*k; d+=`M${cx-33} ${y}Q${cx} ${y+dir*22} ${cx+33} ${y}`;}
-          h+=`<path d="${d}" fill="none" stroke="#3a200c" stroke-width="3" opacity=".55"/>`;
-        }
-        h+=`<rect x="${x0}" y="40" width="420" height="620" rx="6" fill="none" stroke="#2e1a0a" stroke-width="3"/>`;
-      }
-      for(let i=0;i<24;i++){
-        const x=ptX(i), top=isTop(i), tip=top?270:430;
-        h+=`<path d="${teardrop(x,top,tip,48)}" fill="url(#${p}-beech)" stroke="#5a3415" stroke-width="1.2"/>`;
-        h+=fleur(x,top?tip+6:tip-6,top?1:-1,'#f1d6a4');
-      }
-      h+=arevakhach(250,350,64,'#f0d29c','#6a3d1a')+arevakhach(750,350,64,'#f0d29c','#6a3d1a');
-      h+=`<rect x="462" y="34" width="76" height="632" fill="url(#${p}-frame)"/>`;
-      h+=`<line x1="500" y1="34" x2="500" y2="666" stroke="#24140a" stroke-width="5"/>`;
-      h+=hinges('url(#gBrass)');
-      h+=`<rect x="1016" y="40" width="70" height="300" rx="35" fill="url(#${p}-groove)" stroke="#24140a" stroke-width="2"/>`;
-      h+=`<rect x="1016" y="360" width="70" height="300" rx="35" fill="url(#${p}-groove)" stroke="#24140a" stroke-width="2"/>`;
-      return h;
-    },
-    tgt:'#fff1cf'
-  },
-  glass:{
-    name:'Воровская звезда', ck:CK_STAR,
-    defs:p=>`
-      <linearGradient id="${p}-frame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#57525f"/><stop offset=".5" stop-color="#3a3641"/><stop offset="1" stop-color="#4b4653"/></linearGradient>
-      <linearGradient id="${p}-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#25272d"/><stop offset=".5" stop-color="#17181c"/><stop offset="1" stop-color="#2a2c33"/></linearGradient>
-      <linearGradient id="${p}-shine" x1="0" y1="0" x2="1" y2="1"><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".09"/><stop offset=".55" stop-color="#fff" stop-opacity=".03"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></linearGradient>`,
-    art:p=>{
-      let h=`<path d="${wavyRect(10,10,1090,690,12,7,3)}" fill="url(#${p}-frame)" stroke="#1d1b21" stroke-width="2"/>`;
-      h+=grain(10,10,1080,680,'#cfc8da',40,11,.08);
-      for(const x0 of [40,540]){
-        h+=`<rect x="${x0}" y="40" width="420" height="620" fill="url(#${p}-glass)" stroke="#0b0b0d" stroke-width="4"/>`;
-        const cx=x0+210;
-        h+=star(cx,350,165,62,'#f1f1f4','#c5c6cd',-90,'#1c1d22',6,2.5);
-        h+=`<rect x="${x0}" y="40" width="420" height="620" fill="url(#${p}-shine)"/>`;
-        for(const top of [true,false]){
-          const y=top?40:660, dir=top?1:-1;
-          for(let k=0;k<6;k++){const c=x0+35+70*k; h+=`<path d="M${c-27} ${y}Q${c-27} ${y+dir*14} ${c} ${y+dir*14}Q${c+27} ${y+dir*14} ${c+27} ${y}Z" fill="#3f3b46"/>`;}
-        }
-      }
-      for(let i=0;i<24;i++){
-        const x=ptX(i), top=isTop(i);
-        const d=top?`M${x-27} 54L${x+27} 54L${x} 290Z`:`M${x-27} 646L${x+27} 646L${x} 410Z`;
-        h+=`<path d="${d}" fill="rgba(255,255,255,.035)" stroke="rgba(235,235,245,.32)" stroke-width="1.4"/>`;
-      }
-      h+=`<rect x="462" y="34" width="76" height="632" fill="url(#${p}-frame)"/>`;
-      h+=`<line x1="500" y1="34" x2="500" y2="666" stroke="#141317" stroke-width="5"/>`;
-      h+=hinges('url(#gSilver)');
-      h+=`<rect x="1016" y="40" width="70" height="300" rx="10" fill="#141518" stroke="#0b0b0d" stroke-width="3"/>`;
-      h+=`<rect x="1016" y="360" width="70" height="300" rx="10" fill="#141518" stroke="#0b0b0d" stroke-width="3"/>`;
-      return h;
-    },
-    tgt:'#ffffff'
-  },
-  yerevan:{
-    name:'Ереван', ck:CK_WOOD,
-    defs:p=>`
-      <linearGradient id="${p}-frame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b57c35"/><stop offset=".5" stop-color="#8b5a21"/><stop offset="1" stop-color="#a66f2d"/></linearGradient>
-      <radialGradient id="${p}-field" cx="50%" cy="45%" r="80%"><stop offset="0" stop-color="#a56f2e"/><stop offset="1" stop-color="#744a1a"/></radialGradient>
-      <linearGradient id="${p}-engr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e2b874"/><stop offset=".5" stop-color="#f4d9a2"/><stop offset="1" stop-color="#dfb26c"/></linearGradient>
-      <linearGradient id="${p}-groove" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a2c0e"/><stop offset=".5" stop-color="#7a4c1c"/><stop offset="1" stop-color="#4a2c0e"/></linearGradient>`,
-    art:p=>{
-      let h=`<path d="${wavyRect(10,10,1090,690,13,7,3)}" fill="url(#${p}-frame)" stroke="#4a2c0e" stroke-width="2"/>`;
-      h+=grain(10,10,1080,680,'#4f300c',40,23,.3);
-      for(const x0 of [40,540]){
-        h+=`<rect x="${x0}" y="40" width="420" height="620" rx="6" fill="url(#${p}-field)"/>`;
-        h+=grain(x0,40,420,620,'#4a2a08',22,x0+17,.42);
-        for(const top of [true,false]){
-          let d='';const y=top?40:660, dir=top?1:-1;
-          for(let k=0;k<6;k++){const cx=x0+35+70*k; d+=`M${cx-33} ${y}Q${cx} ${y+dir*20} ${cx+33} ${y}`;}
-          h+=`<path d="${d}" fill="none" stroke="#5a3810" stroke-width="3" opacity=".6"/>`;
-        }
-        h+=`<rect x="${x0}" y="40" width="420" height="620" rx="6" fill="none" stroke="#4a2c0e" stroke-width="3"/>`;
-      }
-      for(let i=0;i<24;i++){
-        const x=ptX(i), top=isTop(i), tip=top?262:438, dir=top?1:-1;
-        h+=`<path d="${teardrop(x,top,tip,42)}" fill="url(#${p}-engr)" stroke="#8a5a22" stroke-width="1.2"/>`;
-        h+=`<path d="${teardrop(x,top,top?tip-30:tip+30,26,12)}" fill="none" stroke="#a5722f" stroke-width="1.4"/>`;
-        const sy=top?84:616;
-        h+=`<path d="M${x} ${sy}m-7 0a7 7 0 1 0 14 0a5 5 0 1 0 -10 0a3 3 0 1 0 6 0" fill="none" stroke="#9c6828" stroke-width="1.4"/>`;
-        h+=`<circle cx="${x}" cy="${tip+dir*16}" r="4.5" fill="#f0d29a"/>`;
-        if(i%6!==5) h+=`<circle cx="${x+(top?35:-35)}" cy="${top?54:646}" r="3.5" fill="#f0d29a" opacity=".9"/>`;
-      }
-      // левый медальон — Арарат, правый — аревахач с лентой «ՀԱՅԱՍՏԱՆ»
-      h+=`<circle cx="250" cy="350" r="66" fill="url(#${p}-engr)" stroke="#7a4c1c" stroke-width="3"/>`;
-      h+=`<circle cx="250" cy="350" r="58" fill="none" stroke="#a5722f" stroke-width="1.2"/>`;
-      h+=`<path d="M196 378L222 346L232 354L262 312L282 334L304 378Z" fill="#8b5a22"/>`;
-      h+=`<path d="M262 312L251 327L258 325L264 331L271 323L277 328L282 334Z M222 346L217 352L224 351L228 355Z" fill="#fbebc5"/>`;
-      h+=`<text x="250" y="398" text-anchor="middle" font-family="'Noto Serif Armenian',serif" font-weight="600" font-size="14" fill="#6e4216" letter-spacing="2">ԱՐԱՐԱՏ</text>`;
-      h+=`<circle cx="750" cy="345" r="62" fill="url(#${p}-engr)" stroke="#7a4c1c" stroke-width="3"/>`;
-      h+=arevakhach(750,345,46,'#f4d9a2','#8b5a22');
-      h+=`<path d="M672 392Q750 410 828 392L836 410L824 418Q750 436 676 418L664 410Z" fill="url(#${p}-engr)" stroke="#7a4c1c" stroke-width="1.6"/>`;
-      h+=`<text x="750" y="419" text-anchor="middle" font-family="'Noto Serif Armenian',serif" font-weight="600" font-size="14" fill="#6e4216" letter-spacing="2">ՀԱՅԱՍՏԱՆ</text>`;
-      h+=`<rect x="462" y="34" width="76" height="632" fill="url(#${p}-frame)"/>`;
-      h+=`<line x1="500" y1="34" x2="500" y2="666" stroke="#3a220a" stroke-width="5"/>`;
-      h+=hinges('url(#gBrass)');
-      h+=`<rect x="1016" y="40" width="70" height="300" rx="35" fill="url(#${p}-groove)" stroke="#3a220a" stroke-width="2"/>`;
-      h+=`<rect x="1016" y="360" width="70" height="300" rx="35" fill="url(#${p}-groove)" stroke="#3a220a" stroke-width="2"/>`;
-      h+=`<circle cx="1051" cy="350" r="9" fill="url(#${p}-groove)" stroke="#3a220a" stroke-width="2"/>`;
-      return h;
-    },
-    tgt:'#fff1cf'
-  }
+// Фон каждой доски — готовая картинка (tools/render_boards.py): дерево, резьба, инкрустация, освещение.
+const CK={
+  ivory:{img:'ivory',slab:'#e9dfc8',edge:'#a07e38',cntBg:'#1a130c',cntFg:'#f3d993'},
+  onyx:{img:'onyx',slab:'#2a2a30',edge:'#7d7d86',cntBg:'#efe6d4',cntFg:'#1a130c'},
+  beech:{img:'beech',slab:'#e8c896',edge:'#a57a42',cntBg:'#4a2c14',cntFg:'#fbe9c8'},
+  walnut:{img:'walnut',slab:'#6b4022',edge:'#2e1808',cntBg:'#fbe9c8',cntFg:'#3c210d'}
 };
+const SKINS={
+  night:{name:'Ночь',ck:{w:CK.ivory,b:CK.onyx},tgt:'#f3d993'},
+  ararat:{name:'Арарат',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
+  glass:{name:'Воровская звезда',ck:{w:CK.ivory,b:CK.onyx},tgt:'#ffffff'},
+  yerevan:{name:'Ереван',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'}
+};
+// картинки грузим заранее, чтобы смена доски и первые шашки не мигали
+for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}`;}
 
 /* ---------- правила ---------- */
 const P=(pl,p)=>pl===0?p:(p+12)%24;
@@ -1034,26 +802,17 @@ function gameOver(pl){
 const skin=()=>SKINS[settings.skin];
 function checker(x,y,pl,cnt,ck=skin().ck){
   const c=pl?ck.b:ck.w;
-  let inner;
-  if(c.wood){
-    inner=`<circle r="24" fill="none" stroke="${c.ring}" stroke-width="2"/><circle r="17" fill="none" stroke="${c.ring}" stroke-width="1.4"/><circle r="9" fill="none" stroke="${c.ring}" stroke-width="1.2"/><circle r="2.5" fill="${c.ring}"/>`;
-  }else{
-    inner=`<circle r="23" fill="none" stroke="${c.ring}" stroke-width="1.3"/>${star(0,0,16,5.8,c.star[0],c.star[1])}`;
-  }
   return `<g transform="translate(${x},${y})">
-    <circle cy="3" r="30" fill="rgba(0,0,0,.45)"/>
-    <circle r="30" fill="${c.fill}"/>
-    <circle r="30" fill="none" stroke="${c.stroke}" stroke-width="2"/>
-    ${inner}
+    <circle cx="2" cy="4" r="30" fill="rgba(0,0,0,.42)"/>
+    <image href="boards/ck-${c.img}.png" x="-30" y="-30" width="60" height="60"/>
     ${cnt?`<circle r="11" fill="${c.cntBg}"/><text y="5.5" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="15" fill="${c.cntFg}">${cnt}</text>`:''}
   </g>`;
 }
 function buildStatic(){
   const k=settings.skin, sk=SKINS[k];
-  $('skinDefs').innerHTML=sk.defs(k);
-  $('lStatic').innerHTML=sk.art(k);
-  $('chip0').innerHTML=checker(0,0,0,0).replace('<circle cy="3" r="30" fill="rgba(0,0,0,.45)"/>','');
-  $('chip1').innerHTML=checker(0,0,1,0).replace('<circle cy="3" r="30" fill="rgba(0,0,0,.45)"/>','');
+  $('lStatic').innerHTML=`<image href="boards/${k}.webp" x="0" y="0" width="1100" height="700"/>`;
+  $('chip0').innerHTML=`<image href="boards/ck-${sk.ck.w.img}.png" x="-30" y="-30" width="60" height="60"/>`;
+  $('chip1').innerHTML=`<image href="boards/ck-${sk.ck.b.img}.png" x="-30" y="-30" width="60" height="60"/>`;
   if(!$('lHit').innerHTML){
     let hit='';
     for(let i=0;i<24;i++){
@@ -1087,7 +846,7 @@ function render(){
     const c=s.off[pl]-(flyHide==='off'&&G.turn===pl?1:0), cc=pl?ck.b:ck.w;
     for(let k=0;k<c;k++){
       const [x,y]=traySlot(pl,k);
-      h+=`<rect x="${x-27}" y="${y-7}" width="54" height="14" rx="5" fill="${cc.fill}" stroke="${cc.slab}" stroke-width="1"/>`;
+      h+=`<rect x="${x-27}" y="${y-7}" width="54" height="14" rx="5" fill="${cc.slab}" stroke="${cc.edge}" stroke-width="1.2"/>`;
     }
   }
   if(human&&G.sel!=null){
@@ -1179,7 +938,7 @@ function buildSkinPicker(){
     let pv='';
     for(let n=0;n<5;n++){const [x,y]=slotXY(0,n,5);pv+=checker(x,y,0,0,sk.ck);}
     for(let n=0;n<5;n++){const [x,y]=slotXY(12,n,5);pv+=checker(x,y,1,0,sk.ck);}
-    h+=`<button class="skin" data-skin="${k}"><svg viewBox="0 0 1100 700"><defs>${sk.defs(k)}</defs>${sk.art(k)}${pv}</svg><span>${sk.name}</span></button>`;
+    h+=`<button class="skin" data-skin="${k}"><svg viewBox="0 0 1100 700"><image href="boards/${k}-thumb.webp" x="0" y="0" width="1100" height="700"/>${pv}</svg><span>${sk.name}</span></button>`;
   }
   $('skins').innerHTML=h;
 }

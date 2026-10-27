@@ -719,7 +719,7 @@ function doRoll(after){
 
 function applyStep(st,cb){
   const pl=G.turn, prev=G.s;
-  G.hist.push({s:prev,rem:G.rem.slice(),headUsed:G.headUsed});
+  G.hist.push({s:prev,rem:G.rem.slice(),headUsed:G.headUsed,grp:G.grp,st});
   G.s=st.ns; G.rem=removeOne(G.rem,st.d); if(st.from===0)G.headUsed++;
   G.sel=null;
   const n0=prev.n[st.src];
@@ -736,7 +736,7 @@ function applyStep(st,cb){
   });
 }
 function applyPath(path){
-  G.auto=true; let i=0;
+  G.auto=true; G.grp=(G.grp||0)+1; let i=0;   // шаги одного касания — одна группа для отмены
   const next=()=>{ if(i<path.length) applyStep(path[i++],()=>later(next,60)); else {G.auto=false; render();} };
   next();
 }
@@ -746,25 +746,78 @@ function afterStep(){
   else setStatus(`Осталось: <b>${G.rem.join(', ')}</b>.`);
   render();
 }
-function fly(pl,[x0,y0],[x1,y1],toOff,done){
+function fly(pl,[x0,y0],[x1,y1],toOff,done,fromOff){
   const g=document.createElementNS(NS,'g');
   g.innerHTML=checker(0,0,pl);
   $('lFx').appendChild(g);
   const t0=performance.now(), D=matchMedia('(prefers-reduced-motion: reduce)').matches?1:300;
   busy=true;
+  let finished=false;
+  const finish=()=>{ if(finished) return; finished=true; g.remove(); busy=false; done(); };
   const step=t=>{
+    if(finished) return;
     let k=Math.min(1,(t-t0)/D); const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
     const x=x0+(x1-x0)*e, y=y0+(y1-y0)*e-Math.sin(Math.PI*e)*40;
-    const sc=toOff?1-0.4*e:1;
+    const sc=toOff?1-0.4*e:fromOff?.6+.4*e:1;
     g.setAttribute('transform',`translate(${x},${y}) scale(${sc})`);
-    if(k<1) requestAnimationFrame(step); else {g.remove(); busy=false; done();}
+    if(k<1) requestAnimationFrame(step); else finish();
   };
   requestAnimationFrame(step);
+  setTimeout(finish,D+150);   // если приложение свернули посреди анимации — ход всё равно завершится
 }
 function undo(){
   if(busy||G.auto||!G.hist.length||!isHuman(G.turn)||G.phase!=='move') return;
-  const h=G.hist.pop(); G.s=h.s; G.rem=h.rem; G.headUsed=h.headUsed; G.sel=null;
-  refreshSteps(); setStatus(`Ход отменён. Осталось: <b>${G.rem.join(', ')}</b>.`); render();
+  // отменяем весь ход одного касания (например 2+2) и плавно возвращаем шашку на место
+  const pl=G.turn, last=G.hist[G.hist.length-1];
+  let first=last;
+  while(G.hist.length&&G.hist[G.hist.length-1].grp===last.grp) first=G.hist.pop();
+  const cur=G.s, lst=last.st;
+  let from;
+  if(lst.to==='off') from=traySlot(pl,cur.off[pl]-1);
+  else{const n=cur.n[lst.to]; from=slotXY(lst.to,n-1,n);}
+  G.s=first.s; G.rem=first.rem; G.headUsed=first.headUsed; G.sel=null;
+  const src=first.st.src, n=G.s.n[src], to=slotXY(src,n-1,n);
+  refreshSteps(); flyHide=src; render();
+  fly(pl,from,to,false,()=>{
+    flyHide=null; sClack(n>1);
+    setStatus(`Ход отменён. Осталось: <b>${G.rem.join(', ')}</b>.`); render();
+  },lst.to==='off');
+}
+// Почему выбранная шашка не может пойти на пункт t — понятным языком
+function explainMove(src,t){
+  const ctx=curCtx(), pl=ctx.pl, opp=1-pl, from=P(pl,src);
+  if(t==='off') return homeCount(ctx.s,pl)<15
+    ? 'Выбрасывать шашки можно, только когда все 15 стоят в доме.'
+    : 'Эту шашку сейчас не выбросить: больший кубик можно взять, только если на дальних пунктах дома шашек нет.';
+  const to=P(pl,t), dist=to-from;
+  if(dist<=0) return 'Шашки ходят только вперёд, против часовой стрелки.';
+  const sums=new Set([0]);
+  for(const d of ctx.rem) for(const v of [...sums]) sums.add(v+d);
+  if(!sums.has(dist)) return `На ${dist} не сходить: на кубиках ${ctx.rem.join(', ')}.`;
+  if(own(ctx.s,t,opp)) return 'Пункт занят соперником — туда ходить нельзя.';
+  if(from===0&&ctx.headUsed>=ctx.headLimit) return 'С головы за ход снимается только одна шашка (две — лишь при первом броске 6‑6, 4‑4 или 3‑3).';
+  let why=null;
+  const go=(c,pos,acc)=>{
+    if(acc===dist) return true;
+    for(const d of new Set(c.rem)){
+      if(acc+d>dist) continue;
+      const ns=tryStep(c.s,pl,pos,d,c);
+      if(!ns){
+        const j=P(pl,pos+d);
+        if(own(c.s,j,opp)) why=why||{k:'mid',d:acc+d};
+        else if(pos===0&&c.headUsed>=c.headLimit) why=why||{k:'head'};
+        else why=why||{k:'block'};
+        continue;
+      }
+      if(go(nextCtx(c,{from:pos,d,ns}),pos+d,acc+d)) return true;
+    }
+    return false;
+  };
+  if(go(ctx,from,0)) return 'Так нельзя: после этого хода остальные кубики сыграть не получится, а по правилам нужно сыграть все, что можно (если только один — больший).';
+  if(!why) return `На ${dist} не сходить: на кубиках ${ctx.rem.join(', ')}.`;
+  if(why.k==='mid') return `Промежуточный пункт (через ${why.d}) занят соперником. При ходе одной шашкой на сумму кубиков каждый промежуточный пункт должен быть свободен.`;
+  if(why.k==='head') return 'С головы за ход снимается только одна шашка.';
+  return 'Нельзя ставить заграждение из 6 шашек подряд, если впереди него нет ни одной шашки соперника.';
 }
 function endTurn(){
   G.turn=1-G.turn; G.phase='roll'; G.rem=[]; G.hist=[]; G.sel=null; G.steps=[]; G.targets=null;
@@ -967,6 +1020,8 @@ $('board').addEventListener('click',e=>{
   if(t!=='off'&&G.steps.some(x=>x.src===t)){
     G.sel=G.sel===t?null:t; G.targets=null; render(); return;
   }
+  if(G.sel!=null&&t!==G.sel){ setStatus(explainMove(G.sel,t)); return; }   // выбор не сбрасываем
+  if(t!=='off'&&own(G.s,t,G.turn)){ setStatus('Этой шашкой сейчас не сходить. Подсвечены шашки, которыми можно ходить.'); return; }
   G.sel=null; G.targets=null; render();
 });
 $('bMain').addEventListener('click',()=>{

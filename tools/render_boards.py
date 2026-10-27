@@ -181,20 +181,48 @@ def star_poly(cx, cy, R, r, n=8, rot=-90):
     return pts
 
 
-def arevakhach_petals(cx, cy, R, n=8):
-    """Лопасти знака вечности: дуги, закрученные по часовой стрелке."""
-    petals = []
+def arevakhach_masks(cx, cy, R, n=8, band=.085, rot=-90):
+    """Аревахач по классическому построению: 8 кругов радиуса R/2 через центр.
+    Лопасть k — серп между кругом k и соседним кругом k+1; тёмные полосы — границы кругов.
+    Возвращает (окно-срез, маска всего знака, список масок лопастей, углы лопастей) в локальном окне."""
+    pad = 4
+    x0, x1 = int((cx - R - pad) * S), int((cx + R + pad) * S)
+    y0, y1 = int((cy - R - pad) * S), int((cy + R + pad) * S)
+    yy, xx = np.mgrid[y0:y1, x0:x1] / S
+    r = np.hypot(xx - cx, yy - cy)
+    w = R * band * (.35 + .65 * np.clip(r / R, 0, 1))        # полоса тоньше к центру, как на эскизе
+    ds = []
     for k in range(n):
-        a = k * 360 / n
-        pts = []
-        for t in np.linspace(0, 1, 40):  # внешний край: от центра наружу с закруткой
-            rr = R * (.1 + .9 * t); ang = a + 95 * t ** .85
-            pts.append((cx + rr * math.cos(math.radians(ang)), cy + rr * math.sin(math.radians(ang))))
-        for t in np.linspace(1, 0, 40):  # внутренний край возвращается к центру со сдвигом
-            rr = R * (.1 + .9 * t); ang = a + 360 / n + 70 * t ** .7
-            pts.append((cx + rr * math.cos(math.radians(ang)), cy + rr * math.sin(math.radians(ang))))
-        petals.append(pts)
-    return petals
+        a = math.radians(rot + k * 360 / n)
+        ccx, ccy = cx + R / 2 * math.cos(a), cy + R / 2 * math.sin(a)
+        ds.append(np.hypot(xx - ccx, yy - ccy) - R / 2)
+    aa = lambda v: np.clip(.5 + v * S, 0, 1)
+    union = np.max([aa(-d) for d in ds], axis=0)
+    petals = [aa(-ds[k] - w) * aa(ds[(k + 1) % n] - w) for k in range(n)]
+    angles = [rot + k * 360 / n + 360 / n / 2 for k in range(n)]
+    return (slice(y0, y1), slice(x0, x1)), union, petals, angles
+
+
+def arevakhach_inlay(alb, h, cx, cy, R, light, dark, seed, gloss=None):
+    """Маркетри: знак из тёмного ореха, лопасти — светлое дерево, волокна каждой лопасти вдоль неё."""
+    sl, union, petals, angles = arevakhach_masks(cx, cy, R)
+    hh, ww = union.shape
+    big = int(max(hh, ww) * 1.5)
+    dtex = wood(hh, ww, *dark, rings=18, seed=seed, contrast=.45, fiber=.12)
+    base = wood(big, big, *light, rings=16, seed=seed + 1, contrast=.3, fiber=.1, warp=1.2)
+    a = alb[sl]
+    a = a * (1 - union[..., None]) + dtex * union[..., None]
+    for k, pm in enumerate(petals):
+        rt = ndi.rotate(base, angles[k] + 90, axes=(0, 1), reshape=False, order=1, mode='reflect')
+        oy, ox = (big - hh) // 2, (big - ww) // 2
+        tex = rt[oy:oy + hh, ox:ox + ww] * (.94 + .1 * (k % 2))   # соседние лопасти чуть различаются тоном
+        a = a * (1 - pm[..., None]) + tex * pm[..., None]
+        glue = np.clip(pm - ndi.grey_erosion(pm, size=3), 0, 1)
+        a = a * (1 - glue[..., None] * .35)
+    alb[sl] = a
+    lit = np.max(petals, axis=0)
+    h[sl] = h[sl] - union * .4 + lit * .25                    # лопасти чуть выше полос: живой рельеф маркетри
+    return union
 
 
 def fleur(x, y, d):
@@ -333,16 +361,13 @@ def board_ararat():
     h -= dm * .6
     fl = polys(sum([fleur(ptX(i), (276 if is_top(i) else 424), 1 if is_top(i) else -1) for i in range(24)], []))
     alb = put(alb, fl, btex)
-    # розетки-аревахач: светлые лопасти на тёмном диске
+    # аревахач — маркетри: тёмный орех и бук, вокруг тонкий инкрустированный круг
     for cx in (250, 750):
-        disc = circle(cx, 350, 66)
-        alb = put(alb, disc, wood(H, W, (.40, .22, .10), (.20, .10, .04), rings=30, seed=cx, contrast=.4))
-        pm = polys(arevakhach_petals(cx, 350, 62))
-        alb = put(alb, pm, btex)
-        pe = np.clip(pm - ndi.grey_erosion(pm, size=3), 0, 1)
-        alb = alb * (1 - pe[..., None] * .5)
-        ring = np.clip(circle(cx, 350, 70) - circle(cx, 350, 66.5), 0, 1)
-        alb = put(alb, ring, btex)
+        arevakhach_inlay(alb, h, cx, 350, 64, BEECH, ((.30, .16, .07), (.12, .06, .02)), cx)
+        for r0, r1 in ((72, 70.4), (75.5, 74.7)):
+            ring = np.clip(circle(cx, 350, r0) - circle(cx, 350, r1), 0, 1)
+            alb = put(alb, ring, btex)
+            h -= ring * .3
     # стык половин и петли
     gap = rrect(497.5, 30, 502.5, 670, 2)
     h -= gap * 14
@@ -410,8 +435,7 @@ def board_yerevan():
     disc2 = circle(750, 345, 62)
     alb = put(alb, disc2, btex)
     alb = put(alb, np.clip(circle(750, 345, 62) - circle(750, 345, 59), 0, 1), np.ones((H, W, 3)) * burn)
-    pm = polys(arevakhach_petals(750, 345, 46))
-    alb = put(alb, np.clip(circle(750, 345, 48) - pm, 0, 1) * disc2, np.ones((H, W, 3)) * burn * 1.25)
+    arevakhach_inlay(alb, h, 750, 345, 48, BIRCH, ((.50, .28, .11), (.30, .15, .05)), 77)
     ribbon = poly(bez((672, 392), (720, 404), (780, 404), (828, 392), 30) + [(836, 410), (824, 418)] +
                   bez((824, 418), (780, 432), (720, 432), (676, 418), 30) + [(664, 410)])
     alb = put(alb, ribbon, btex)

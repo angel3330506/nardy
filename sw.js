@@ -1,5 +1,5 @@
 // Офлайн-кэш: оболочка приложения кэшируется при установке, шрифты — при первом запросе.
-const VERSION = 'nardy-v2';
+const VERSION = 'nardy-v3';
 const SHELL = [
   './',
   'index.html',
@@ -10,10 +10,30 @@ const SHELL = [
 ];
 const SOUNDS = ['dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a','chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a','chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a','chips-stack-1.m4a','chips-stack-2.m4a']; // те же файлы, что SOUND_FILES в index.html
 
+// Стили Google Fonts — те же адреса, что в <link> в index.html. Файлы шрифтов из них кэшируются при установке.
+const FONT_CSS = [
+  'https://fonts.googleapis.com/css2?family=Forum&family=Onest:wght@400;500;700&display=swap',
+  'https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@600&text=ՀԱՅՍՏՆՐ&display=swap',
+];
+
+async function cacheFonts(c) {
+  for (const href of FONT_CSS) {
+    try {
+      const r = await fetch(href, { mode: 'cors' });
+      if (!r.ok) continue;
+      await c.put(href, r.clone());
+      const urls = [...(await r.text()).matchAll(/url\((https:[^)]+)\)/g)].map(m => m[1]);
+      await Promise.all(urls.map(u => c.add(u).catch(() => {})));
+    } catch (e) { /* без шрифтов игра работает на системных */ }
+  }
+}
+
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(VERSION)
-      .then(c => c.addAll(SHELL).then(() => Promise.all(SOUNDS.map(f => c.add('sounds/' + f).catch(() => {})))))
+      .then(c => c.addAll(SHELL)
+        .then(() => Promise.all(SOUNDS.map(f => c.add('sounds/' + f).catch(() => {}))))
+        .then(() => cacheFonts(c)))
       .then(() => self.skipWaiting())
   );
 });

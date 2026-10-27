@@ -1,5 +1,5 @@
 // Офлайн-кэш: оболочка приложения кэшируется при установке, шрифты — при первом запросе.
-const VERSION = 'nardy-v1';
+const VERSION = 'nardy-v2';
 const SHELL = [
   './',
   'index.html',
@@ -8,7 +8,7 @@ const SHELL = [
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
 ];
-const SOUNDS = []; // заполняется вместе с SOUND_FILES в index.html
+const SOUNDS = ['dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a','chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a','chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a','chips-stack-1.m4a','chips-stack-2.m4a']; // те же файлы, что SOUND_FILES в index.html
 
 self.addEventListener('install', e => {
   e.waitUntil(

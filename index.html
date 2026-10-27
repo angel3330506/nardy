@@ -15,6 +15,7 @@
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=Onest:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@600&text=ՀԱՅՍՏՆՐ&display=swap">
 <style>
 /* Layout: экран-приложение без прокрутки. Партия всегда в альбомной раскладке: доска слева, узкая панель справа.
    На телефоне в портрете игра поворачивается на 90°, отступы берутся из safe-area (Dynamic Island, полоска «Домой»). */
@@ -64,8 +65,9 @@ button.primary:hover:not(:disabled){background:linear-gradient(180deg,#f0d38f,#c
   container-type:size;
   padding:max(8px,var(--sat)) max(10px,var(--sar)) max(8px,var(--sab)) max(10px,var(--sal));
 }
-.board-box{flex:1 1 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center}
-svg#board{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6))}
+.board-box{flex:1 1 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
+.board-frame{position:relative;width:min(100cqw,calc(100cqh * 1100 / 700));aspect-ratio:1100/700;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6))}
+svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 .panel{
   flex:0 0 clamp(150px,25cqw,300px);min-width:0;min-height:0;
   display:flex;flex-direction:column;gap:clamp(5px,1.8cqh,12px);
@@ -88,6 +90,22 @@ svg#board{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 30px rg
 .tgt{animation:pulse 1.1s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
 .hit{cursor:pointer}
+
+/* ---------- 3D кубики ---------- */
+.dice3d{position:absolute;inset:0;pointer-events:none;perspective:calc(var(--ds,50px) * 14);overflow:visible}
+.d3{position:absolute;width:var(--ds,50px);height:var(--ds,50px);margin:calc(var(--ds,50px) / -2) 0 0 calc(var(--ds,50px) / -2);transform-style:preserve-3d;transition:opacity .25s}
+.d3.used{opacity:.32}
+.d3 .shadow{position:absolute;inset:6%;border-radius:22%;background:rgba(0,0,0,.55);filter:blur(calc(var(--ds,50px) * .08));transform:translate(6%,9%)}
+.d3 .mover{position:absolute;inset:0;transform-style:preserve-3d}
+.d3 .cube{position:absolute;inset:0;transform-style:preserve-3d}
+.d3 .face{
+  position:absolute;inset:0;border-radius:18%;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:radial-gradient(circle at 32% 28%,#fffdf6 0%,#efe5cf 55%,#d4c4a0 100%);
+  box-shadow:inset 0 0 0 1px rgba(176,138,62,.55),inset 0 calc(var(--ds,50px) * -.06) calc(var(--ds,50px) * .12) rgba(90,60,20,.25);
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:16%;
+}
+.d3 .pip{width:68%;height:68%;margin:auto;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a2a1a,#0f0904);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}
+.d3 .pip.red{background:radial-gradient(circle at 40% 35%,#c0484a,#6e1517)}
 
 .win{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);z-index:5;padding:16px}
 .card{background:linear-gradient(180deg,#1d1710,#120e0a);border:1px solid var(--gold);border-radius:16px;padding:clamp(14px,4cqh,28px) 26px;text-align:center;max-width:380px;box-shadow:0 30px 80px rgba(0,0,0,.7)}
@@ -125,7 +143,8 @@ svg#board{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 30px rg
 .menu-in h1{font-family:var(--display);font-weight:400;font-size:clamp(44px,13vw,64px);letter-spacing:.05em;margin:0;line-height:1;color:var(--gold-hi)}
 .menu-in .sub{color:var(--muted);letter-spacing:.2em;text-transform:uppercase;font-size:12px;margin-top:6px}
 .mbtns{display:grid;gap:10px;width:100%}
-.mbtns button{padding:15px;font-size:17px}
+.mbtns button{padding:13px 15px;font-size:17px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.mbtns .cap{font-size:12px;font-weight:500;opacity:.7}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
 .install{font-size:13.5px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;width:100%}
 .install b{color:var(--fg);font-weight:500}
@@ -137,11 +156,22 @@ svg#board{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 30px rg
 }
 
 .sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:0 max(0px,var(--sar)) 0 max(0px,var(--sal))}
-.sheet-in{width:100%;max-width:560px;max-height:88%;overflow:auto;background:linear-gradient(180deg,#1d1710,#120e0a);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;padding:20px 20px max(20px,var(--sab))}
-.sheet h3{font-family:var(--display);font-weight:400;font-size:28px;color:var(--gold-hi);margin:0 0 8px}
-.sheet ul{padding-left:18px;margin:0 0 16px;color:var(--muted);font-size:14px;display:grid;gap:8px}
+.sheet-in{width:100%;max-width:620px;max-height:90%;overflow:auto;background:linear-gradient(180deg,#1d1710,#120e0a);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;padding:20px 20px max(20px,var(--sab));display:flex;flex-direction:column;gap:14px}
+.sheet h3{font-family:var(--display);font-weight:400;font-size:28px;color:var(--gold-hi);margin:0}
+.sheet h4{margin:0;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.sheet ul{padding-left:18px;margin:0;color:var(--muted);font-size:14px;display:grid;gap:8px}
 .sheet b{color:var(--fg);font-weight:500}
-.sheet button{width:100%}
+.sheet .done{width:100%}
+.skins{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (min-width:700px){.skins{grid-template-columns:repeat(4,1fr)}}
+.skin{padding:6px;border-radius:12px;display:flex;flex-direction:column;gap:6px;align-items:stretch;text-align:left}
+.skin svg{width:100%;height:auto;display:block;border-radius:6px}
+.skin span{font-size:13.5px;padding:0 4px 2px}
+.skin.on{border-color:var(--gold);background:rgba(217,181,106,.1)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;color:var(--muted);padding:10px 6px}
+.seg button.on{background:rgba(217,181,106,.16);color:var(--gold-hi)}
+.hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
 @media (prefers-reduced-motion:reduce){.tgt{animation:none}}
 </style>
 </head>
@@ -149,58 +179,53 @@ svg#board{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 30px rg
 
 <div id="app">
   <div class="board-box">
-    <svg id="board" viewBox="0 0 1100 700" aria-label="Доска для длинных нард">
-      <defs>
-        <radialGradient id="gIvory" cx="38%" cy="30%" r="75%">
-          <stop offset="0" stop-color="#fffdf7"/><stop offset=".55" stop-color="#ece0c6"/><stop offset="1" stop-color="#bfa97e"/>
-        </radialGradient>
-        <radialGradient id="gOnyx" cx="38%" cy="30%" r="75%">
-          <stop offset="0" stop-color="#62626b"/><stop offset=".5" stop-color="#24242a"/><stop offset="1" stop-color="#08080a"/>
-        </radialGradient>
-        <linearGradient id="gWood" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#2e1c12"/><stop offset=".5" stop-color="#3e2618"/><stop offset="1" stop-color="#1c110b"/>
-        </linearGradient>
-        <radialGradient id="gField" cx="50%" cy="50%" r="70%">
-          <stop offset="0" stop-color="#1d2a23"/><stop offset="1" stop-color="#0b120e"/>
-        </radialGradient>
-        <linearGradient id="gRedT" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#9a2f31"/><stop offset="1" stop-color="#5a1518"/>
-        </linearGradient>
-        <linearGradient id="gRedB" x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0" stop-color="#9a2f31"/><stop offset="1" stop-color="#5a1518"/>
-        </linearGradient>
-        <linearGradient id="gBoneT" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#efe3c8"/><stop offset="1" stop-color="#b9a47a"/>
-        </linearGradient>
-        <linearGradient id="gBoneB" x1="0" y1="1" x2="0" y2="0">
-          <stop offset="0" stop-color="#efe3c8"/><stop offset="1" stop-color="#b9a47a"/>
-        </linearGradient>
-        <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#f6dc96"/><stop offset=".5" stop-color="#b08638"/><stop offset="1" stop-color="#ecca7a"/>
-        </linearGradient>
-        <linearGradient id="gDie" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#d9ccb0"/>
-        </linearGradient>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      <g id="lStatic"></g>
-      <g id="lDyn"></g>
-      <g id="lHit"></g>
-      <g id="lDice"></g>
-      <g id="lFx"></g>
-    </svg>
+    <div class="board-frame" id="frame">
+      <svg id="board" viewBox="0 0 1100 700" aria-label="Доска для длинных нард">
+        <defs>
+          <radialGradient id="gIvory" cx="38%" cy="30%" r="75%">
+            <stop offset="0" stop-color="#fffdf7"/><stop offset=".55" stop-color="#ece0c6"/><stop offset="1" stop-color="#bfa97e"/>
+          </radialGradient>
+          <radialGradient id="gOnyx" cx="38%" cy="30%" r="75%">
+            <stop offset="0" stop-color="#62626b"/><stop offset=".5" stop-color="#24242a"/><stop offset="1" stop-color="#08080a"/>
+          </radialGradient>
+          <radialGradient id="gBeech" cx="38%" cy="30%" r="78%">
+            <stop offset="0" stop-color="#fdeccc"/><stop offset=".6" stop-color="#e8c896"/><stop offset="1" stop-color="#c49a62"/>
+          </radialGradient>
+          <radialGradient id="gWalnut" cx="38%" cy="30%" r="78%">
+            <stop offset="0" stop-color="#a77548"/><stop offset=".55" stop-color="#704424"/><stop offset="1" stop-color="#3c210d"/>
+          </radialGradient>
+          <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f6dc96"/><stop offset=".5" stop-color="#b08638"/><stop offset="1" stop-color="#ecca7a"/>
+          </linearGradient>
+          <linearGradient id="gBrass" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#e8cf8a"/><stop offset=".5" stop-color="#8f6a2a"/><stop offset="1" stop-color="#d4b46a"/>
+          </linearGradient>
+          <linearGradient id="gSilver" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#d8d8dc"/><stop offset=".5" stop-color="#77777f"/><stop offset="1" stop-color="#c2c2c8"/>
+          </linearGradient>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <defs id="skinDefs"></defs>
+        <g id="lStatic"></g>
+        <g id="lDyn"></g>
+        <g id="lHit"></g>
+        <g id="lBtn"></g>
+        <g id="lFx"></g>
+      </svg>
+      <div class="dice3d" id="dice3d"></div>
+    </div>
   </div>
 
   <aside class="panel">
     <div class="pl" id="p0">
-      <svg class="chip" viewBox="-32 -32 64 64"><circle r="30" fill="url(#gIvory)" stroke="#b08a3e" stroke-width="2"/><g id="chipStar0"></g></svg>
+      <svg class="chip" viewBox="-32 -32 64 64" id="chip0"></svg>
       <div><div class="name" id="n0">Белые</div><div class="meta" id="m0"></div></div>
       <div class="score" id="s0">0</div>
     </div>
     <div class="pl" id="p1">
-      <svg class="chip" viewBox="-32 -32 64 64"><circle r="30" fill="url(#gOnyx)" stroke="#8d8d94" stroke-width="2"/><g id="chipStar1"></g></svg>
+      <svg class="chip" viewBox="-32 -32 64 64" id="chip1"></svg>
       <div><div class="name" id="n1">Чёрные</div><div class="meta" id="m1"></div></div>
       <div class="score" id="s1">0</div>
     </div>
@@ -234,16 +259,37 @@ svg#board{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 30px rg
     </div>
     <div class="mbtns">
       <button class="primary" id="mContinue" hidden>Продолжить партию</button>
-      <button class="primary" id="mAi">Играть с компьютером</button>
+      <button class="primary" id="mAi">Играть с компьютером<span class="cap" id="lvlCap"></span></button>
       <button id="mPvp">Играть вдвоём</button>
     </div>
     <div class="mrow">
-      <button id="bSound">Звук: вкл</button>
+      <button id="bSettings">Настройки</button>
       <button id="bRules">Правила</button>
     </div>
     <button id="bInstall" hidden style="width:100%">Установить приложение</button>
     <div class="install" id="iosHint" hidden>Чтобы играть как в приложении: в Safari нажмите <b>«Поделиться»</b> → <b>«На экран „Домой“»</b>.</div>
     <div class="scoreline" id="scoreline"></div>
+  </div>
+</div>
+
+<div class="sheet" id="settings" hidden>
+  <div class="sheet-in">
+    <h3>Настройки</h3>
+    <h4>Доска</h4>
+    <div class="skins" id="skins"></div>
+    <h4>Сложность компьютера</h4>
+    <div class="seg" id="levels">
+      <button data-lvl="easy">Лёгкий</button>
+      <button data-lvl="medium">Средний</button>
+      <button data-lvl="hard">Сильный</button>
+    </div>
+    <p class="hint" id="lvlHint"></p>
+    <h4>Звук</h4>
+    <div class="seg" id="sounds" style="grid-template-columns:1fr 1fr">
+      <button data-snd="on">Включён</button>
+      <button data-snd="off">Выключен</button>
+    </div>
+    <button class="primary done" id="bSettingsClose">Готово</button>
   </div>
 </div>
 
@@ -255,11 +301,12 @@ svg#board{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 30px rg
       <li><b>Бить нельзя.</b> Пункт с хотя бы одной чужой шашкой закрыт.</li>
       <li>С головы за ход снимается <b>одна шашка</b>. Исключение — первый бросок 6‑6, 4‑4 или 3‑3: можно снять две.</li>
       <li>Дубль играется <b>четыре раза</b>. Если можно сыграть оба кубика, играть обязательно оба; если только один — большой.</li>
+      <li>Кубики можно сыграть <b>одной шашкой подряд</b>: при 2‑2 — пойти одной на 4, 6 или 8, при 4‑5 — сразу на 9. Промежуточные пункты должны быть свободны.</li>
       <li>Нельзя ставить <b>заграждение из 6 шашек подряд</b>, если впереди него нет ни одной шашки соперника.</li>
       <li>Выбрасывать можно, когда все 15 шашек в доме. Кто выбросил все первым — победил; если у соперника не вышло ни одной — <b>марс</b>, двойная победа.</li>
-      <li>Как ходить: нажмите на шашку, затем на подсвеченный пункт. Цифра на пункте — кубик, которым вы туда идёте. Выброс — нажатие на лоток справа.</li>
+      <li>Как ходить: нажмите на шашку, затем на подсвеченный пункт. Цифра на пункте — на сколько вы идёте. Выброс — нажатие на лоток справа.</li>
     </ul>
-    <button class="primary" id="bRulesClose">Понятно</button>
+    <button class="primary done" id="bRulesClose">Понятно</button>
   </div>
 </div>
 
@@ -268,22 +315,83 @@ svg#board{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 30px rg
 'use strict';
 const $=id=>document.getElementById(id);
 const NS='http://www.w3.org/2000/svg';
+const f2=v=>(+v).toFixed(1);
 
-/* ---------- воровская звезда ---------- */
-function star(cx,cy,R,r,light,dark,rot=-90,stroke=''){
-  let s='';
-  for(let k=0;k<8;k++){
-    const a=(rot+k*45)*Math.PI/180, a1=a-Math.PI/8, a2=a+Math.PI/8;
+/* ---------- звёзды и орнаменты ---------- */
+// воровская звезда: каждый луч разделён на светлую и тёмную половину
+function star(cx,cy,R,r,light,dark,rot=-90,stroke='',n=8,sw){
+  let s='';const step=360/n, half=Math.PI/n;
+  for(let k=0;k<n;k++){
+    const a=(rot+k*step)*Math.PI/180;
     const tx=cx+R*Math.cos(a), ty=cy+R*Math.sin(a);
-    const lx=cx+r*Math.cos(a1), ly=cy+r*Math.sin(a1);
-    const rx=cx+r*Math.cos(a2), ry=cy+r*Math.sin(a2);
-    const st=stroke?` stroke="${stroke}" stroke-width="${R/40}" stroke-linejoin="round"`:'';
-    s+=`<path d="M${cx} ${cy}L${tx.toFixed(2)} ${ty.toFixed(2)}L${lx.toFixed(2)} ${ly.toFixed(2)}Z" fill="${light}"${st}/>`;
-    s+=`<path d="M${cx} ${cy}L${tx.toFixed(2)} ${ty.toFixed(2)}L${rx.toFixed(2)} ${ry.toFixed(2)}Z" fill="${dark}"${st}/>`;
+    const lx=cx+r*Math.cos(a-half), ly=cy+r*Math.sin(a-half);
+    const rx=cx+r*Math.cos(a+half), ry=cy+r*Math.sin(a+half);
+    const st=stroke?` stroke="${stroke}" stroke-width="${sw||R/40}" stroke-linejoin="round"`:'';
+    s+=`<path d="M${f2(cx)} ${f2(cy)}L${f2(tx)} ${f2(ty)}L${f2(lx)} ${f2(ly)}Z" fill="${light}"${st}/>`;
+    s+=`<path d="M${f2(cx)} ${f2(cy)}L${f2(tx)} ${f2(ty)}L${f2(rx)} ${f2(ry)}Z" fill="${dark}"${st}/>`;
   }
   return s;
 }
-const STAR_W=['#fbf4e4','#1d1915'], STAR_B=['#ece6dc','#060607'];
+// аревахач — армянский знак вечности
+function arevakhach(cx,cy,R,light,dark,n=8){
+  let s=`<circle cx="${cx}" cy="${cy}" r="${f2(R*1.04)}" fill="${dark}"/>`;
+  const P=(rr,deg)=>[cx+rr*Math.cos(deg*Math.PI/180),cy+rr*Math.sin(deg*Math.PI/180)];
+  for(let k=0;k<n;k++){
+    const a=k*360/n;
+    const [sx,sy]=P(R*.1,a), [ex,ey]=P(R*.98,a+95), [qx,qy]=P(R*.1,a+360/n);
+    s+=`<path d="M${f2(sx)} ${f2(sy)}A${f2(R*.56)} ${f2(R*.56)} 0 0 1 ${f2(ex)} ${f2(ey)}A${f2(R*.72)} ${f2(R*.72)} 0 0 0 ${f2(qx)} ${f2(qy)}Z" fill="${light}" stroke="${dark}" stroke-width="${f2(R*.03)}" stroke-linejoin="round"/>`;
+  }
+  s+=`<circle cx="${cx}" cy="${cy}" r="${f2(R*.09)}" fill="${dark}"/>`;
+  return s;
+}
+// резная рамка с волнистым краем
+function wavyRect(x0,y0,x1,y1,amp,nx,ny){
+  let d=`M${x0} ${y0}`;
+  const edge=(ax,ay,bx,by,n,ox,oy)=>{
+    for(let i=0;i<n;i++){
+      const t0=i/n,t1=(i+1)/n;
+      const sx=ax+(bx-ax)*t0, sy=ay+(by-ay)*t0, ex=ax+(bx-ax)*t1, ey=ay+(by-ay)*t1;
+      const s=(i%2?-.6:1)*amp;
+      d+=`C${f2(sx+(ex-sx)*.2+ox*s)} ${f2(sy+(ey-sy)*.2+oy*s)} ${f2(sx+(ex-sx)*.8+ox*s)} ${f2(sy+(ey-sy)*.8+oy*s)} ${f2(ex)} ${f2(ey)}`;
+    }
+  };
+  edge(x0,y0,x1,y0,nx,0,-1); edge(x1,y0,x1,y1,ny,1,0); edge(x1,y1,x0,y1,nx,0,1); edge(x0,y1,x0,y0,ny,-1,0);
+  return d+'Z';
+}
+// древесные волокна (детерминированные)
+function grain(x,y,w,h,color,n,seed,op=.25){
+  let r=seed;const rnd=()=>((r=(r*9301+49297)%233280)/233280);
+  let s='';
+  for(let i=0;i<n;i++){
+    let gx=x+(i+rnd())*w/n, d=`M${f2(gx)} ${y}`;
+    const segs=6;
+    for(let k=1;k<=segs;k++){
+      const ny=y+h*k/segs, wob=(rnd()-.5)*w/n*1.4;
+      d+=`Q${f2(gx+wob)} ${f2(ny-h/segs/2)} ${f2(gx+wob*.4)} ${f2(ny)}`;
+      gx+=wob*.4;
+    }
+    s+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="${f2(.8+rnd()*1.8)}" opacity="${f2(op*(.5+rnd()))}"/>`;
+  }
+  return s;
+}
+// пункт-капля: круглый конец у края, остриё к центру
+function teardrop(x,top,tip,w,inset=0){
+  const r=w/2;
+  if(top){const cy=40+r+6+inset;return `M${x-r} ${cy}A${r} ${r} 0 0 1 ${x+r} ${cy}L${x} ${tip}Z`;}
+  const cy=660-r-6-inset;return `M${x-r} ${cy}A${r} ${r} 0 0 0 ${x+r} ${cy}L${x} ${tip}Z`;
+}
+function fleur(x,y,dir,color){
+  const t=(dx,dy)=>`${f2(x+dx)} ${f2(y+dy*dir)}`;
+  return `<path d="M${t(0,0)}L${t(5,12)}L${t(0,24)}L${t(-5,12)}Z M${t(-3,10)}L${t(-14,4)}L${t(-9,15)}Z M${t(3,10)}L${t(14,4)}L${t(9,15)}Z" fill="${color}"/>`;
+}
+function hinges(fill){
+  let s='';
+  for(const y of [118,522]){
+    s+=`<rect x="482" y="${y}" width="36" height="60" rx="4" fill="${fill}" stroke="rgba(0,0,0,.45)"/>`;
+    for(const yy of [y+12,y+48]) s+=`<circle cx="490" cy="${yy}" r="3" fill="rgba(0,0,0,.45)"/><circle cx="510" cy="${yy}" r="3" fill="rgba(0,0,0,.45)"/>`;
+  }
+  return s;
+}
 
 /* ---------- геометрия доски ---------- */
 // физические пункты 0..23: низ справа налево 0..11, верх слева направо 12..23
@@ -298,6 +406,175 @@ function slotXY(i,k,n){
   return isTop(i)?[x,70+k*sp]:[x,630-k*sp];
 }
 function traySlot(pl,k){ return pl===0?[1055,50+k*18+7]:[1055,650-k*18-7]; }
+
+/* ---------- скины досок ---------- */
+const CK_STAR={w:{fill:'url(#gIvory)',stroke:'#b08a3e',ring:'rgba(110,75,25,.35)',star:['#fbf4e4','#1d1915'],slab:'#a07e38',cntBg:'#1a130c',cntFg:'#f3d993'},
+               b:{fill:'url(#gOnyx)',stroke:'#9a9aa3',ring:'rgba(255,255,255,.14)',star:['#ece6dc','#060607'],slab:'#7d7d86',cntBg:'#efe6d4',cntFg:'#1a130c'}};
+const CK_WOOD={w:{fill:'url(#gBeech)',stroke:'#a57a42',ring:'rgba(110,70,25,.3)',wood:true,slab:'#a57a42',cntBg:'#4a2c14',cntFg:'#fbe9c8'},
+               b:{fill:'url(#gWalnut)',stroke:'#2e1808',ring:'rgba(255,220,170,.16)',wood:true,slab:'#2e1808',cntBg:'#fbe9c8',cntFg:'#3c210d'}};
+
+const SKINS={
+  night:{
+    name:'Ночь', ck:CK_STAR,
+    defs:p=>`
+      <linearGradient id="${p}-wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2e1c12"/><stop offset=".5" stop-color="#3e2618"/><stop offset="1" stop-color="#1c110b"/></linearGradient>
+      <radialGradient id="${p}-field" cx="50%" cy="50%" r="70%"><stop offset="0" stop-color="#1d2a23"/><stop offset="1" stop-color="#0b120e"/></radialGradient>
+      <linearGradient id="${p}-redT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a2f31"/><stop offset="1" stop-color="#5a1518"/></linearGradient>
+      <linearGradient id="${p}-redB" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#9a2f31"/><stop offset="1" stop-color="#5a1518"/></linearGradient>
+      <linearGradient id="${p}-boneT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe3c8"/><stop offset="1" stop-color="#b9a47a"/></linearGradient>
+      <linearGradient id="${p}-boneB" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#efe3c8"/><stop offset="1" stop-color="#b9a47a"/></linearGradient>`,
+    art:p=>{
+      let h=`<rect x="0" y="0" width="1000" height="700" rx="24" fill="url(#${p}-wood)"/>`;
+      h+=`<rect x="10" y="10" width="980" height="680" rx="18" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="2"/>`;
+      h+=`<rect x="28" y="28" width="944" height="644" rx="10" fill="none" stroke="url(#gGold)" stroke-width="2"/>`;
+      for(const x0 of [40,540]) h+=`<rect x="${x0}" y="40" width="420" height="620" rx="4" fill="url(#${p}-field)"/>`;
+      for(const cx of [250,750]) h+=`<circle cx="${cx}" cy="350" r="190" fill="none" stroke="rgba(217,181,106,.06)"/>`;
+      for(let i=0;i<24;i++){
+        const x=ptX(i), red=i%2===0, top=isTop(i);
+        const fill=`url(#${p}-${red?'red':'bone'}${top?'T':'B'})`;
+        const d=top?`M${x-33} 40L${x+33} 40L${x} 296Z`:`M${x-33} 660L${x+33} 660L${x} 404Z`;
+        h+=`<path d="${d}" fill="${fill}" stroke="rgba(217,181,106,.55)" stroke-width="1"/>`;
+        const ix=top?`M${x-18} 40L${x+18} 40L${x} 180Z`:`M${x-18} 660L${x+18} 660L${x} 520Z`;
+        h+=`<path d="${ix}" fill="none" stroke="${red?'rgba(240,210,150,.18)':'rgba(90,40,20,.18)'}"/>`;
+      }
+      h+=`<rect x="460" y="28" width="80" height="644" fill="url(#${p}-wood)"/>`;
+      h+=`<line x1="500" y1="40" x2="500" y2="660" stroke="url(#gGold)" stroke-width="1.5" opacity=".7"/>`;
+      h+=`<circle cx="500" cy="350" r="34" fill="#140d08" stroke="url(#gGold)" stroke-width="2"/>`;
+      h+=star(500,350,28,10,'#f1d48a','#1a120b');
+      for(const y of [150,550]) h+=star(500,y,15,5.5,'#d9b56a','#1a120b');
+      h+=`<circle cx="250" cy="350" r="47" fill="none" stroke="rgba(217,181,106,.45)"/>`;
+      h+=star(250,350,42,15,'#e8cb84','#120c08',-90,'rgba(0,0,0,.3)');
+      for(const [x,y] of [[20,20],[980,20],[20,680],[980,680]]) h+=star(x,y,13,4.8,'#d9b56a','#140d08');
+      h+=`<rect x="1010" y="0" width="90" height="700" rx="20" fill="url(#${p}-wood)"/>`;
+      h+=`<rect x="1020" y="40" width="70" height="300" rx="8" fill="#0d0907" stroke="rgba(217,181,106,.4)"/>`;
+      h+=`<rect x="1020" y="360" width="70" height="300" rx="8" fill="#0d0907" stroke="rgba(217,181,106,.4)"/>`;
+      h+=star(1055,350,12,4.4,'#d9b56a','#140d08');
+      h+=star(1055,20,9,3.4,'#efe6d4','#1d1915');
+      h+=star(1055,680,9,3.4,'#5a5a62','#060607');
+      return h;
+    },
+    tgt:'#f3d993'
+  },
+  ararat:{
+    name:'Арарат', ck:CK_WOOD,
+    defs:p=>`
+      <linearGradient id="${p}-frame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7d4b25"/><stop offset=".5" stop-color="#5c3315"/><stop offset="1" stop-color="#734420"/></linearGradient>
+      <radialGradient id="${p}-field" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#875329"/><stop offset="1" stop-color="#5e3517"/></radialGradient>
+      <linearGradient id="${p}-beech" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e6c189"/><stop offset=".5" stop-color="#f7dfb0"/><stop offset="1" stop-color="#e2ba7e"/></linearGradient>
+      <linearGradient id="${p}-groove" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2e1a0a"/><stop offset=".5" stop-color="#4e2d12"/><stop offset="1" stop-color="#2e1a0a"/></linearGradient>`,
+    art:p=>{
+      let h=`<path d="${wavyRect(10,10,1090,690,11,7,3)}" fill="url(#${p}-frame)" stroke="#2e1a0a" stroke-width="2"/>`;
+      h+=grain(10,10,1080,680,'#3a200c',46,7,.22);
+      for(const x0 of [40,540]){
+        h+=`<rect x="${x0-6}" y="34" width="432" height="632" rx="10" fill="#3a200c" opacity=".55"/>`;
+        h+=`<rect x="${x0}" y="40" width="420" height="620" rx="6" fill="url(#${p}-field)"/>`;
+        h+=grain(x0,40,420,620,'#4a2a10',18,x0+3,.3);
+        // резной волнистый бортик у края
+        for(const top of [true,false]){
+          let d='';const y=top?40:660, dir=top?1:-1;
+          for(let k=0;k<6;k++){const cx=x0+35+70*k; d+=`M${cx-33} ${y}Q${cx} ${y+dir*22} ${cx+33} ${y}`;}
+          h+=`<path d="${d}" fill="none" stroke="#3a200c" stroke-width="3" opacity=".55"/>`;
+        }
+        h+=`<rect x="${x0}" y="40" width="420" height="620" rx="6" fill="none" stroke="#2e1a0a" stroke-width="3"/>`;
+      }
+      for(let i=0;i<24;i++){
+        const x=ptX(i), top=isTop(i), tip=top?270:430;
+        h+=`<path d="${teardrop(x,top,tip,48)}" fill="url(#${p}-beech)" stroke="#5a3415" stroke-width="1.2"/>`;
+        h+=fleur(x,top?tip+6:tip-6,top?1:-1,'#f1d6a4');
+      }
+      h+=arevakhach(250,350,64,'#f0d29c','#6a3d1a')+arevakhach(750,350,64,'#f0d29c','#6a3d1a');
+      h+=`<rect x="462" y="34" width="76" height="632" fill="url(#${p}-frame)"/>`;
+      h+=`<line x1="500" y1="34" x2="500" y2="666" stroke="#24140a" stroke-width="5"/>`;
+      h+=hinges('url(#gBrass)');
+      h+=`<rect x="1016" y="40" width="70" height="300" rx="35" fill="url(#${p}-groove)" stroke="#24140a" stroke-width="2"/>`;
+      h+=`<rect x="1016" y="360" width="70" height="300" rx="35" fill="url(#${p}-groove)" stroke="#24140a" stroke-width="2"/>`;
+      return h;
+    },
+    tgt:'#fff1cf'
+  },
+  glass:{
+    name:'Воровская звезда', ck:CK_STAR,
+    defs:p=>`
+      <linearGradient id="${p}-frame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#57525f"/><stop offset=".5" stop-color="#3a3641"/><stop offset="1" stop-color="#4b4653"/></linearGradient>
+      <linearGradient id="${p}-glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#25272d"/><stop offset=".5" stop-color="#17181c"/><stop offset="1" stop-color="#2a2c33"/></linearGradient>
+      <linearGradient id="${p}-shine" x1="0" y1="0" x2="1" y2="1"><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".09"/><stop offset=".55" stop-color="#fff" stop-opacity=".03"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></linearGradient>`,
+    art:p=>{
+      let h=`<path d="${wavyRect(10,10,1090,690,12,7,3)}" fill="url(#${p}-frame)" stroke="#1d1b21" stroke-width="2"/>`;
+      h+=grain(10,10,1080,680,'#cfc8da',40,11,.08);
+      for(const x0 of [40,540]){
+        h+=`<rect x="${x0}" y="40" width="420" height="620" fill="url(#${p}-glass)" stroke="#0b0b0d" stroke-width="4"/>`;
+        const cx=x0+210;
+        h+=star(cx,350,165,62,'#f1f1f4','#c5c6cd',-90,'#1c1d22',6,2.5);
+        h+=`<rect x="${x0}" y="40" width="420" height="620" fill="url(#${p}-shine)"/>`;
+        for(const top of [true,false]){
+          const y=top?40:660, dir=top?1:-1;
+          for(let k=0;k<6;k++){const c=x0+35+70*k; h+=`<path d="M${c-27} ${y}Q${c-27} ${y+dir*14} ${c} ${y+dir*14}Q${c+27} ${y+dir*14} ${c+27} ${y}Z" fill="#3f3b46"/>`;}
+        }
+      }
+      for(let i=0;i<24;i++){
+        const x=ptX(i), top=isTop(i);
+        const d=top?`M${x-27} 54L${x+27} 54L${x} 290Z`:`M${x-27} 646L${x+27} 646L${x} 410Z`;
+        h+=`<path d="${d}" fill="rgba(255,255,255,.035)" stroke="rgba(235,235,245,.32)" stroke-width="1.4"/>`;
+      }
+      h+=`<rect x="462" y="34" width="76" height="632" fill="url(#${p}-frame)"/>`;
+      h+=`<line x1="500" y1="34" x2="500" y2="666" stroke="#141317" stroke-width="5"/>`;
+      h+=hinges('url(#gSilver)');
+      h+=`<rect x="1016" y="40" width="70" height="300" rx="10" fill="#141518" stroke="#0b0b0d" stroke-width="3"/>`;
+      h+=`<rect x="1016" y="360" width="70" height="300" rx="10" fill="#141518" stroke="#0b0b0d" stroke-width="3"/>`;
+      return h;
+    },
+    tgt:'#ffffff'
+  },
+  yerevan:{
+    name:'Ереван', ck:CK_WOOD,
+    defs:p=>`
+      <linearGradient id="${p}-frame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b57c35"/><stop offset=".5" stop-color="#8b5a21"/><stop offset="1" stop-color="#a66f2d"/></linearGradient>
+      <radialGradient id="${p}-field" cx="50%" cy="45%" r="80%"><stop offset="0" stop-color="#a56f2e"/><stop offset="1" stop-color="#744a1a"/></radialGradient>
+      <linearGradient id="${p}-engr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e2b874"/><stop offset=".5" stop-color="#f4d9a2"/><stop offset="1" stop-color="#dfb26c"/></linearGradient>
+      <linearGradient id="${p}-groove" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a2c0e"/><stop offset=".5" stop-color="#7a4c1c"/><stop offset="1" stop-color="#4a2c0e"/></linearGradient>`,
+    art:p=>{
+      let h=`<path d="${wavyRect(10,10,1090,690,13,7,3)}" fill="url(#${p}-frame)" stroke="#4a2c0e" stroke-width="2"/>`;
+      h+=grain(10,10,1080,680,'#4f300c',40,23,.3);
+      for(const x0 of [40,540]){
+        h+=`<rect x="${x0}" y="40" width="420" height="620" rx="6" fill="url(#${p}-field)"/>`;
+        h+=grain(x0,40,420,620,'#4a2a08',22,x0+17,.42);
+        for(const top of [true,false]){
+          let d='';const y=top?40:660, dir=top?1:-1;
+          for(let k=0;k<6;k++){const cx=x0+35+70*k; d+=`M${cx-33} ${y}Q${cx} ${y+dir*20} ${cx+33} ${y}`;}
+          h+=`<path d="${d}" fill="none" stroke="#5a3810" stroke-width="3" opacity=".6"/>`;
+        }
+        h+=`<rect x="${x0}" y="40" width="420" height="620" rx="6" fill="none" stroke="#4a2c0e" stroke-width="3"/>`;
+      }
+      for(let i=0;i<24;i++){
+        const x=ptX(i), top=isTop(i), tip=top?262:438, dir=top?1:-1;
+        h+=`<path d="${teardrop(x,top,tip,42)}" fill="url(#${p}-engr)" stroke="#8a5a22" stroke-width="1.2"/>`;
+        h+=`<path d="${teardrop(x,top,top?tip-30:tip+30,26,12)}" fill="none" stroke="#a5722f" stroke-width="1.4"/>`;
+        const sy=top?84:616;
+        h+=`<path d="M${x} ${sy}m-7 0a7 7 0 1 0 14 0a5 5 0 1 0 -10 0a3 3 0 1 0 6 0" fill="none" stroke="#9c6828" stroke-width="1.4"/>`;
+        h+=`<circle cx="${x}" cy="${tip+dir*16}" r="4.5" fill="#f0d29a"/>`;
+        if(i%6!==5) h+=`<circle cx="${x+(top?35:-35)}" cy="${top?54:646}" r="3.5" fill="#f0d29a" opacity=".9"/>`;
+      }
+      // левый медальон — Арарат, правый — аревахач с лентой «ՀԱՅԱՍՏԱՆ»
+      h+=`<circle cx="250" cy="350" r="66" fill="url(#${p}-engr)" stroke="#7a4c1c" stroke-width="3"/>`;
+      h+=`<circle cx="250" cy="350" r="58" fill="none" stroke="#a5722f" stroke-width="1.2"/>`;
+      h+=`<path d="M196 378L222 346L232 354L262 312L282 334L304 378Z" fill="#8b5a22"/>`;
+      h+=`<path d="M262 312L251 327L258 325L264 331L271 323L277 328L282 334Z M222 346L217 352L224 351L228 355Z" fill="#fbebc5"/>`;
+      h+=`<text x="250" y="398" text-anchor="middle" font-family="'Noto Serif Armenian',serif" font-weight="600" font-size="14" fill="#6e4216" letter-spacing="2">ԱՐԱՐԱՏ</text>`;
+      h+=`<circle cx="750" cy="345" r="62" fill="url(#${p}-engr)" stroke="#7a4c1c" stroke-width="3"/>`;
+      h+=arevakhach(750,345,46,'#f4d9a2','#8b5a22');
+      h+=`<path d="M672 392Q750 410 828 392L836 410L824 418Q750 436 676 418L664 410Z" fill="url(#${p}-engr)" stroke="#7a4c1c" stroke-width="1.6"/>`;
+      h+=`<text x="750" y="419" text-anchor="middle" font-family="'Noto Serif Armenian',serif" font-weight="600" font-size="14" fill="#6e4216" letter-spacing="2">ՀԱՅԱՍՏԱՆ</text>`;
+      h+=`<rect x="462" y="34" width="76" height="632" fill="url(#${p}-frame)"/>`;
+      h+=`<line x1="500" y1="34" x2="500" y2="666" stroke="#3a220a" stroke-width="5"/>`;
+      h+=hinges('url(#gBrass)');
+      h+=`<rect x="1016" y="40" width="70" height="300" rx="35" fill="url(#${p}-groove)" stroke="#3a220a" stroke-width="2"/>`;
+      h+=`<rect x="1016" y="360" width="70" height="300" rx="35" fill="url(#${p}-groove)" stroke="#3a220a" stroke-width="2"/>`;
+      h+=`<circle cx="1051" cy="350" r="9" fill="url(#${p}-groove)" stroke="#3a220a" stroke-width="2"/>`;
+      return h;
+    },
+    tgt:'#fff1cf'
+  }
+};
 
 /* ---------- правила ---------- */
 const P=(pl,p)=>pl===0?p:(p+12)%24;
@@ -362,6 +639,19 @@ function legalSteps(ctx,memo){
   }
   return list;
 }
+// Все пункты, куда может дойти выбранная шашка за один или несколько кубиков подряд
+function movesFrom(ctx,src){
+  const res=new Map(), memo=new Map();
+  (function go(c,pos,path){
+    for(const st of legalSteps(c,memo)){
+      if(st.src!==pos) continue;
+      const p=path.concat([st]);
+      if(!res.has(st.to)||res.get(st.to).length>p.length) res.set(st.to,p);
+      if(st.to!=='off') go(nextCtx(c,st),st.to,p);
+    }
+  })(ctx,src,[]);
+  return res;
+}
 
 /* ---------- компьютер ---------- */
 function evaluate(s,pl){
@@ -378,29 +668,69 @@ function evaluate(s,pl){
   const h=P(pl,0); if(own(s,h,pl)) sc-=s.n[h]*0.4;
   return sc;
 }
-function aiChoose(){
+const V=(s,pl)=>evaluate(s,pl)-evaluate(s,1-pl);
+function enumerate(ctx){
   const memo=new Map(), ends=new Map(), seen=new Set();
-  const pl=G.turn;
-  (function dfs(ctx,path){
-    const steps=legalSteps(ctx,memo);
-    if(!steps.length){const k=key(ctx.s);if(!ends.has(k))ends.set(k,{s:ctx.s,path});return;}
+  (function dfs(c,path){
+    const steps=legalSteps(c,memo);
+    if(!steps.length){const k=key(c.s);if(!ends.has(k))ends.set(k,{s:c.s,path});return;}
     for(const st of steps){
-      const nc=nextCtx(ctx,st), sk=ctxKey(nc);
+      const nc=nextCtx(c,st), sk=ctxKey(nc);
       if(seen.has(sk)) continue; seen.add(sk);
       dfs(nc,path.concat([st]));
     }
-  })(curCtx(),[]);
-  let best=null,bv=-1e9;
-  for(const e of ends.values()){const v=evaluate(e.s,pl)+Math.random()*0.8;if(v>bv){bv=v;best=e;}}
-  return best?best.path:[];
+  })(ctx,[]);
+  return [...ends.values()];
+}
+function aiChoose(level){
+  const pl=G.turn, ends=enumerate(curCtx());
+  if(!ends.length) return [];
+  if(level==='easy'){
+    let best=null,bv=-1e9;
+    for(const e of ends){const v=evaluate(e.s,pl)+Math.random()*14;if(v>bv){bv=v;best=e;}}
+    return best.path;
+  }
+  if(level!=='hard'){
+    let best=null,bv=-1e9;
+    for(const e of ends){const v=evaluate(e.s,pl)+Math.random()*0.8;if(v>bv){bv=v;best=e;}}
+    return best.path;
+  }
+  // сильный: лучшие 4 варианта проверяем на все 21 бросок соперника
+  const opp=1-pl;
+  const cands=ends.map(e=>({e,v:V(e.s,pl)})).sort((a,b)=>b.v-a.v).slice(0,4);
+  if(cands.length===1) return cands[0].e.path;
+  let best=cands[0].e,bv=-1e9;
+  for(const c of cands){
+    let exp=0;
+    for(let a=1;a<=6;a++) for(let b=a;b<=6;b++){
+      const w=a===b?1:2, rem=a===b?[a,a,a,a]:[a,b];
+      const hl=(G.first[opp]&&a===b&&(a===3||a===4||a===6))?2:1;
+      const replies=enumerate({s:c.e.s,pl:opp,rem,headUsed:0,headLimit:hl});
+      let worst=replies.length?1e9:V(c.e.s,pl);
+      for(const o of replies){const v=V(o.s,pl);if(v<worst)worst=v;}
+      exp+=w*worst;
+    }
+    exp=exp/36+c.v*0.15;
+    if(exp>bv){bv=exp;best=c.e;}
+  }
+  return best.path;
 }
 
 /* ---------- звук ---------- */
-// Записанные звуки (Kenney Casino Audio, CC0). Если файлов нет — синтезированный запасной вариант.
-const SOUND_FILES={roll:[],place:[],off:[],win:[]};
+// Записанные звуки: Kenney Casino Audio (CC0). Если файл не загрузился — синтезированный запасной вариант.
+const SOUND_FILES={
+  roll:['dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a'],
+  place:['chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a'],
+  stack:['chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a'],
+  off:['chips-stack-1.m4a','chips-stack-2.m4a']
+};
 const buffers={};
-let AC=null, soundOn=true, soundsLoading=false;
-try{soundOn=localStorage.getItem('nardy-sound')!=='off';}catch(e){}
+let AC=null, soundsLoading=false;
+const settings={skin:'night',level:'medium',sound:true};
+try{Object.assign(settings,JSON.parse(localStorage.getItem('nardy-settings-v1')||'{}'));}catch(e){}
+try{if(localStorage.getItem('nardy-sound')==='off')settings.sound=false;}catch(e){}
+if(!SKINS[settings.skin]) settings.skin='night';
+const saveSettings=()=>{try{localStorage.setItem('nardy-settings-v1',JSON.stringify(settings));}catch(e){}};
 function ac(){
   if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null}}
   if(AC&&AC.state!=='running') AC.resume().catch(()=>{});
@@ -418,24 +748,24 @@ function loadSounds(){
   }
 }
 function play(k,vol=1,delay=0){
-  const a=soundOn&&ac(); const l=buffers[k];
+  const a=settings.sound&&ac(); const l=buffers[k];
   if(!a||!l||!l.length) return false;
   const src=a.createBufferSource(), g=a.createGain();
   src.buffer=l[Math.random()*l.length|0];
-  src.playbackRate.value=0.95+Math.random()*0.1;
+  src.playbackRate.value=0.94+Math.random()*0.12;
   g.gain.value=vol;
   src.connect(g).connect(a.destination); src.start(a.currentTime+delay);
   return true;
 }
 function synthClack(){
-  const a=soundOn&&ac(); if(!a) return; const t=a.currentTime;
+  const a=settings.sound&&ac(); if(!a) return; const t=a.currentTime;
   const o=a.createOscillator(), g=a.createGain();
   o.type='triangle'; o.frequency.setValueAtTime(620,t); o.frequency.exponentialRampToValueAtTime(170,t+.07);
   g.gain.setValueAtTime(.22,t); g.gain.exponentialRampToValueAtTime(.001,t+.1);
   o.connect(g).connect(a.destination); o.start(t); o.stop(t+.12);
 }
 function synthRattle(){
-  const a=soundOn&&ac(); if(!a) return; const t=a.currentTime;
+  const a=settings.sound&&ac(); if(!a) return; const t=a.currentTime;
   const buf=a.createBuffer(1,a.sampleRate*.04,a.sampleRate), d=buf.getChannelData(0);
   for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
   for(let k=0;k<6;k++){
@@ -445,10 +775,9 @@ function synthRattle(){
     src.connect(f).connect(g).connect(a.destination); src.start(t+k*.06+Math.random()*.02);
   }
 }
-const sClack=()=>{ if(!play('place',.9)) synthClack(); };
+const sClack=onStack=>{ if(!play(onStack?'stack':'place',.95)) synthClack(); };
 const sOff=()=>{ if(!play('off',.9)&&!play('place',.7)) synthClack(); };
-const sRoll=()=>{ if(!play('roll')) synthRattle(); };
-const sWin=()=>{ play('win',.9); };
+const sRoll=()=>{ if(!play('roll',1,.28)) setTimeout(synthRattle,280); };
 
 /* ---------- состояние ---------- */
 let mode='ai', score=[0,0], G=null, busy=false, flyHide=null, timers=[];
@@ -460,15 +789,19 @@ function saveGame(){
   if(!G) return;
   try{
     if(G.phase==='over'||G.phase==='start'){localStorage.removeItem('nardy-game-v1');return;}
-    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase:G.phase,dice:G.dice,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first}));
+    const phase=G.phase==='rolling'?'roll':G.phase;
+    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first}));
   }catch(e){}
 }
 function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')||'null');}catch(e){return null;}}
 
 const isHuman=pl=>mode==='pvp'||pl===0;
 const NAME=['Белые','Чёрные'];
+const LEVELS={easy:['Лёгкий','лёгкий','Часто ошибается, подходит для знакомства с правилами.'],
+              medium:['Средний','средний','Строит заборы и не копит шашки кучей.'],
+              hard:['Сильный','сильный','Просчитывает все ответные броски соперника. Думает до пары секунд.']};
 function curCtx(){return {s:G.s,pl:G.turn,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit};}
-function refreshSteps(){G.steps=G.phase==='move'?legalSteps(curCtx(),new Map()):[];}
+function refreshSteps(){G.steps=G.phase==='move'?legalSteps(curCtx(),new Map()):[];G.targets=null;}
 
 function freshState(){
   const s={o:new Int8Array(24),n:new Int8Array(24),off:[0,0]};
@@ -479,19 +812,20 @@ function newGame(m){
   clearTimers();
   if(m) mode=m;
   loadScore();
-  G={s:freshState(),turn:0,phase:'start',dice:[0,0],rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[]};
-  $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML='';
+  G={s:freshState(),turn:0,phase:'start',dice:[0,0],rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null};
+  $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
   showGame();
   render();
-  later(rollOff,350);
+  later(rollOff,450);
 }
 function resumeGame(){
   const v=readSaved(); if(!v){newGame(mode);return;}
   clearTimers();
   mode=v.mode; loadScore();
-  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[]};
+  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null};
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML='';
   showGame();
+  if(G.phase==='move') placeDice(G.dice); else clearDice();
   refreshSteps(); render();
   if(G.phase==='roll'){ if(isHuman(G.turn)) promptRoll(); else later(aiTurn,500); }
   else if(G.phase==='move'){
@@ -501,21 +835,91 @@ function resumeGame(){
   }
 }
 
-function animateDice(final,done){
-  busy=true; sRoll(); let f=0;
-  const tick=()=>{
-    if(f<10){G.dice=[1+Math.random()*6|0,1+Math.random()*6|0];G.spin=f;renderDice();f++;later(tick,55);}
-    else{G.dice=final;G.spin=null;busy=false;renderDice();done();}
-  };
-  tick();
+/* ---------- 3D кубики ---------- */
+const FACE={1:[0,0],6:[0,180],3:[0,90],4:[0,-90],2:[90,0],5:[-90,0]};
+const PIPIDX={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const DIE_POS=[[712,350],[788,350]];
+const frame=$('frame'), diceBox=$('dice3d');
+function sizeDice(){ frame.style.setProperty('--ds',(frame.clientWidth*54/1100)+'px'); }
+new ResizeObserver(sizeDice).observe(frame);
+function dieEl(v){
+  const el=document.createElement('div'); el.className='d3';
+  let faces='';
+  for(const f of [1,2,3,4,5,6]){
+    const [a,b]=FACE[f]; let pips='';
+    for(let k=0;k<9;k++) pips+=PIPIDX[f].includes(k)?`<i class="pip${f===1?' red':''}"></i>`:'<i></i>';
+    faces+=`<div class="face" style="transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) / 2))">${pips}</div>`;
+  }
+  el.innerHTML=`<div class="shadow"></div><div class="mover"><div class="cube">${faces}</div></div>`;
+  el.dataset.v=v;
+  return el;
 }
+const finalRot=(v,z,spinX=0,spinY=0)=>{const [a,b]=FACE[v];return `rotateZ(${z}deg) rotateY(${-b+360*spinY}deg) rotateX(${-a+360*spinX}deg)`;};
+function clearDice(){diceBox.innerHTML='';}
+function placeDice(vals){
+  clearDice();
+  vals.forEach((v,i)=>{
+    if(!v) return;
+    const el=dieEl(v), [x,y]=DIE_POS[i];
+    el.style.left=(x/11)+'%'; el.style.top=(y/7)+'%';
+    el.querySelector('.cube').style.transform=finalRot(v,i?8:-7);
+    diceBox.appendChild(el);
+  });
+}
+function throwDice(vals,from,done){
+  clearDice(); sizeDice();
+  const k=frame.clientWidth/1100, D=matchMedia('(prefers-reduced-motion: reduce)').matches?1:1050;
+  const r=(a,b)=>a+Math.random()*(b-a);
+  vals.forEach((v,i)=>{
+    const el=dieEl(v);
+    const x=DIE_POS[i][0]+r(-10,10), y=DIE_POS[i][1]+r(-16,16);
+    el.style.left=(x/11)+'%'; el.style.top=(y/7)+'%';
+    diceBox.appendChild(el);
+    const side=from[i]===0?1:-1;
+    const sx=r(-160,160)*k, sy=side*r(380,460)*k, H=r(220,300)*k;
+    const at=(f,z)=>`translate3d(${f*sx}px,${f*sy}px,${z}px)`;
+    el.querySelector('.mover').animate([
+      {transform:at(1,H),offset:0,easing:'ease-in'},
+      {transform:at(.34,0),offset:.4,easing:'ease-out'},
+      {transform:at(.16,H*.28),offset:.55,easing:'ease-in'},
+      {transform:at(.06,0),offset:.7,easing:'ease-out'},
+      {transform:at(.02,H*.07),offset:.8,easing:'ease-in'},
+      {transform:at(0,0),offset:.9,easing:'ease-out'},
+      {transform:at(0,0),offset:1}
+    ],{duration:D,fill:'forwards'});
+    el.querySelector('.shadow').animate([
+      {transform:`translate(${sx}px,${sy}px) scale(1.5)`,opacity:.15,offset:0},
+      {transform:`translate(${sx*.34}px,${sy*.34}px) scale(1)`,opacity:.9,offset:.4},
+      {transform:`translate(${sx*.16}px,${sy*.16}px) scale(1.15)`,opacity:.6,offset:.55},
+      {transform:`translate(${sx*.06}px,${sy*.06}px) scale(1)`,opacity:.9,offset:.7},
+      {transform:'translate(6%,9%) scale(1)',opacity:1,offset:1}
+    ],{duration:D,fill:'forwards'});
+    const z=r(-25,25);
+    el.querySelector('.cube').animate([
+      {transform:`rotateZ(${r(-180,180)}deg) rotateY(${r(-60,60)}deg) rotateX(${r(-60,60)}deg)`},
+      {transform:finalRot(v,z,Math.random()<.5?2:-2,Math.random()<.5?1:-1)}
+    ],{duration:D*.9,easing:'cubic-bezier(.12,.55,.25,1)',fill:'forwards'});
+  });
+  sRoll();
+  later(done,D+60);
+}
+function renderDiceState(){
+  const els=diceBox.querySelectorAll('.d3'); if(els.length!==2||G.phase!=='move') {els.forEach(e=>e.classList.remove('used'));return;}
+  const [a,b]=G.dice; let ua,ub;
+  if(a===b){ua=G.rem.length<2;ub=G.rem.length<1;}
+  else{ua=!G.rem.includes(a);ub=!G.rem.includes(b);}
+  els[0].classList.toggle('used',ua); els[1].classList.toggle('used',ub);
+}
+
 function rollOff(){
   let a,b; do{a=1+Math.random()*6|0;b=1+Math.random()*6|0;}while(a===b);
   setStatus('Разыгрываем первый ход…');
-  animateDice([a,b],()=>{
+  busy=true;
+  throwDice([a,b],[0,1],()=>{
+    busy=false;
     G.turn=a>b?0:1;
     setStatus(`Белые — <b>${a}</b>, чёрные — <b>${b}</b>. Начинают ${NAME[G.turn].toLowerCase()}.`);
-    later(()=>{G.phase='roll';render();if(!isHuman(G.turn))aiTurn();else promptRoll();},1300);
+    later(()=>{clearDice();G.phase='roll';render();if(!isHuman(G.turn))aiTurn();else promptRoll();},1500);
   });
 }
 function promptRoll(){ setStatus(mode==='ai'?'Ваш ход — бросайте кубики.':`Ходят ${NAME[G.turn].toLowerCase()} — бросайте кубики.`); }
@@ -523,8 +927,10 @@ function promptRoll(){ setStatus(mode==='ai'?'Ваш ход — бросайте
 function doRoll(after){
   if(G.phase!=='roll'||busy) return;
   const a=1+Math.random()*6|0, b=1+Math.random()*6|0;
-  G.phase='rolling'; renderPanel();
-  animateDice([a,b],()=>{
+  G.phase='rolling'; busy=true; render();
+  throwDice([a,b],[G.turn,G.turn],()=>{
+    busy=false;
+    G.dice=[a,b];
     G.rem=a===b?[a,a,a,a]:[a,b];
     G.headUsed=0;
     G.headLimit=(G.first[G.turn]&&a===b&&(a===3||a===4||a===6))?2:1;
@@ -534,7 +940,7 @@ function doRoll(after){
     if(!G.steps.length){
       setStatus(`${NAME[G.turn]}: ${a}–${b}. Ходов нет, ход переходит.`);
       render();
-      later(endTurn,1500);
+      later(endTurn,1600);
       return;
     }
     if(isHuman(G.turn)) setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`);
@@ -550,16 +956,21 @@ function applyStep(st,cb){
   G.sel=null;
   const n0=prev.n[st.src];
   const from=slotXY(st.src,n0-1,n0);
-  let to;
+  let to, onStack=false;
   if(st.to==='off') to=traySlot(pl,G.s.off[pl]-1);
-  else{const n=G.s.n[st.to]; to=slotXY(st.to,n-1,n);}
+  else{const n=G.s.n[st.to]; to=slotXY(st.to,n-1,n); onStack=n>1;}
   refreshSteps();
   flyHide=st.to; render();
   fly(pl,from,to,st.to==='off',()=>{
-    flyHide=null; st.to==='off'?sOff():sClack(); render();
+    flyHide=null; st.to==='off'?sOff():sClack(onStack); render();
     if(G.s.off[pl]===15){gameOver(pl);return;}
     afterStep(); cb&&cb();
   });
+}
+function applyPath(path){
+  G.auto=true; let i=0;
+  const next=()=>{ if(i<path.length) applyStep(path[i++],()=>later(next,60)); else {G.auto=false; render();} };
+  next();
 }
 function afterStep(){
   if(!isHuman(G.turn)) return;
@@ -583,13 +994,13 @@ function fly(pl,[x0,y0],[x1,y1],toOff,done){
   requestAnimationFrame(step);
 }
 function undo(){
-  if(busy||!G.hist.length||!isHuman(G.turn)||G.phase!=='move') return;
+  if(busy||G.auto||!G.hist.length||!isHuman(G.turn)||G.phase!=='move') return;
   const h=G.hist.pop(); G.s=h.s; G.rem=h.rem; G.headUsed=h.headUsed; G.sel=null;
   refreshSteps(); setStatus(`Ход отменён. Осталось: <b>${G.rem.join(', ')}</b>.`); render();
 }
 function endTurn(){
-  G.turn=1-G.turn; G.phase='roll'; G.rem=[]; G.hist=[]; G.sel=null; G.steps=[];
-  render();
+  G.turn=1-G.turn; G.phase='roll'; G.rem=[]; G.hist=[]; G.sel=null; G.steps=[]; G.targets=null;
+  clearDice(); render();
   if(!isHuman(G.turn)) later(aiTurn,450); else promptRoll();
 }
 function aiTurn(){
@@ -597,24 +1008,22 @@ function aiTurn(){
   doRoll(()=>{
     const [a,b]=G.dice;
     setStatus(`Компьютер: <b>${a}–${b}</b>. Думает…`);
-    later(aiPlay,350);
+    later(aiPlay,380);
   });
 }
 function aiPlay(){
-  const path=aiChoose(); let k=0;
+  const path=aiChoose(settings.level); let k=0;
   const next=()=>{
     if(G.phase!=='move') return;
-    if(k>=path.length){later(endTurn,350);return;}
-    applyStep(path[k++],()=>later(next,260));
+    if(k>=path.length){later(endTurn,450);return;}
+    applyStep(path[k++],()=>later(next,240));
   };
   next();
 }
 function gameOver(pl){
-  G.phase='over';
+  G.phase='over'; G.auto=false;
   const mars=G.s.off[1-pl]===0, pts=mars?2:1;
   score[pl]+=pts; saveScore(); render();
-  const youWin=mode==='ai'?pl===0:true;
-  if(youWin) sWin();
   $('wTitle').textContent=mode==='ai'?(pl===0?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
   $('wText').textContent=(mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
   setStatus(`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
@@ -622,64 +1031,44 @@ function gameOver(pl){
 }
 
 /* ---------- отрисовка ---------- */
-function checker(x,y,pl,cnt){
-  const st=pl?STAR_B:STAR_W;
+const skin=()=>SKINS[settings.skin];
+function checker(x,y,pl,cnt,ck=skin().ck){
+  const c=pl?ck.b:ck.w;
+  let inner;
+  if(c.wood){
+    inner=`<circle r="24" fill="none" stroke="${c.ring}" stroke-width="2"/><circle r="17" fill="none" stroke="${c.ring}" stroke-width="1.4"/><circle r="9" fill="none" stroke="${c.ring}" stroke-width="1.2"/><circle r="2.5" fill="${c.ring}"/>`;
+  }else{
+    inner=`<circle r="23" fill="none" stroke="${c.ring}" stroke-width="1.3"/>${star(0,0,16,5.8,c.star[0],c.star[1])}`;
+  }
   return `<g transform="translate(${x},${y})">
     <circle cy="3" r="30" fill="rgba(0,0,0,.45)"/>
-    <circle r="30" fill="url(#${pl?'gOnyx':'gIvory'})"/>
-    <circle r="30" fill="none" stroke="${pl?'#9a9aa3':'#b08a3e'}" stroke-width="2"/>
-    <circle r="23" fill="none" stroke="${pl?'rgba(255,255,255,.14)':'rgba(110,75,25,.35)'}" stroke-width="1.3"/>
-    ${star(0,0,16,5.8,st[0],st[1],-90)}
-    ${cnt?`<circle r="11" fill="${pl?'#efe6d4':'#1a130c'}"/><text y="5.5" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="15" fill="${pl?'#1a130c':'#f3d993'}">${cnt}</text>`:''}
+    <circle r="30" fill="${c.fill}"/>
+    <circle r="30" fill="none" stroke="${c.stroke}" stroke-width="2"/>
+    ${inner}
+    ${cnt?`<circle r="11" fill="${c.cntBg}"/><text y="5.5" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="15" fill="${c.cntFg}">${cnt}</text>`:''}
   </g>`;
 }
 function buildStatic(){
-  let h='';
-  h+=`<rect x="0" y="0" width="1000" height="700" rx="24" fill="url(#gWood)"/>`;
-  h+=`<rect x="10" y="10" width="980" height="680" rx="18" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="2"/>`;
-  h+=`<rect x="28" y="28" width="944" height="644" rx="10" fill="none" stroke="url(#gGold)" stroke-width="2"/>`;
-  for(const x0 of [40,540]) h+=`<rect x="${x0}" y="40" width="420" height="620" rx="4" fill="url(#gField)"/>`;
-  for(const cx of [250,750]) h+=`<circle cx="${cx}" cy="350" r="190" fill="none" stroke="rgba(217,181,106,.06)" stroke-width="1"/>`;
-  for(let i=0;i<24;i++){
-    const x=ptX(i), red=i%2===0, top=isTop(i);
-    const fill=red?(top?'url(#gRedT)':'url(#gRedB)'):(top?'url(#gBoneT)':'url(#gBoneB)');
-    const d=top?`M${x-33} 40L${x+33} 40L${x} 296Z`:`M${x-33} 660L${x+33} 660L${x} 404Z`;
-    h+=`<path d="${d}" fill="${fill}" stroke="rgba(217,181,106,.55)" stroke-width="1"/>`;
-    const ix=top?`M${x-18} 40L${x+18} 40L${x} 180Z`:`M${x-18} 660L${x+18} 660L${x} 520Z`;
-    h+=`<path d="${ix}" fill="none" stroke="${red?'rgba(240,210,150,.18)':'rgba(90,40,20,.18)'}" stroke-width="1"/>`;
+  const k=settings.skin, sk=SKINS[k];
+  $('skinDefs').innerHTML=sk.defs(k);
+  $('lStatic').innerHTML=sk.art(k);
+  $('chip0').innerHTML=checker(0,0,0,0).replace('<circle cy="3" r="30" fill="rgba(0,0,0,.45)"/>','');
+  $('chip1').innerHTML=checker(0,0,1,0).replace('<circle cy="3" r="30" fill="rgba(0,0,0,.45)"/>','');
+  if(!$('lHit').innerHTML){
+    let hit='';
+    for(let i=0;i<24;i++){
+      const x=ptX(i)-35, y=isTop(i)?40:350;
+      hit+=`<rect class="hit" data-pt="${i}" x="${x}" y="${y}" width="70" height="310" fill="transparent"/>`;
+    }
+    hit+=`<rect class="hit" data-pt="off" x="1010" y="0" width="90" height="700" fill="transparent"/>`;
+    $('lHit').innerHTML=hit;
   }
-  h+=`<rect x="460" y="28" width="80" height="644" fill="url(#gWood)"/>`;
-  h+=`<line x1="500" y1="40" x2="500" y2="660" stroke="url(#gGold)" stroke-width="1.5" opacity=".7"/>`;
-  h+=`<circle cx="500" cy="350" r="34" fill="#140d08" stroke="url(#gGold)" stroke-width="2"/>`;
-  h+=star(500,350,28,10,'#f1d48a','#1a120b',-90);
-  for(const y of [150,550]) h+=star(500,y,15,5.5,'#d9b56a','#1a120b',-90);
-  h+=`<circle cx="250" cy="350" r="47" fill="none" stroke="rgba(217,181,106,.45)" stroke-width="1"/>`;
-  h+=star(250,350,42,15,'#e8cb84','#120c08',-90,'rgba(0,0,0,.3)');
-  for(const [x,y] of [[20,20],[980,20],[20,680],[980,680]]) h+=star(x,y,13,4.8,'#d9b56a','#140d08',-90);
-  h+=`<rect x="1010" y="0" width="90" height="700" rx="20" fill="url(#gWood)"/>`;
-  h+=`<rect x="1020" y="40" width="70" height="300" rx="8" fill="#0d0907" stroke="rgba(217,181,106,.4)"/>`;
-  h+=`<rect x="1020" y="360" width="70" height="300" rx="8" fill="#0d0907" stroke="rgba(217,181,106,.4)"/>`;
-  h+=star(1055,350,12,4.4,'#d9b56a','#140d08',-90);
-  h+=star(1055,20,9,3.4,'#efe6d4','#1d1915',-90);
-  h+=star(1055,680,9,3.4,'#5a5a62','#060607',-90);
-  $('lStatic').innerHTML=h;
-  $('chipStar0').innerHTML=star(0,0,16,5.8,STAR_W[0],STAR_W[1]);
-  $('chipStar1').innerHTML=star(0,0,16,5.8,STAR_B[0],STAR_B[1]);
-  $('winStar').innerHTML=star(0,0,46,16,'#f1d48a','#1a120b',-90,'rgba(0,0,0,.4)');
-  $('menuStar').innerHTML=`<circle r="96" fill="#140d08" stroke="url(#gGold)" stroke-width="3"/><circle r="84" fill="none" stroke="rgba(217,181,106,.35)" stroke-width="1"/>`+star(0,0,78,27,'#f1d48a','#120c08',-90,'rgba(0,0,0,.35)');
-  let hit='';
-  for(let i=0;i<24;i++){
-    const x=ptX(i)-35, y=isTop(i)?40:350;
-    hit+=`<rect class="hit" data-pt="${i}" x="${x}" y="${y}" width="70" height="310" fill="transparent"/>`;
-  }
-  hit+=`<rect class="hit" data-pt="off" x="1010" y="0" width="90" height="700" fill="transparent"/>`;
-  $('lHit').innerHTML=hit;
 }
-
 function render(){
   const s=G.s; let h='';
-  const human=isHuman(G.turn)&&G.phase==='move'&&!busy;
+  const human=isHuman(G.turn)&&G.phase==='move'&&!busy&&!G.auto;
   const srcs=new Set(human?G.steps.map(x=>x.src):[]);
+  const T=skin().tgt;
   for(let i=0;i<24;i++){
     let n=s.n[i]; if(!n) continue;
     const pl=s.o[i];
@@ -690,59 +1079,45 @@ function render(){
     }
     if(srcs.has(i)&&show>0){
       const [x,y]=slotXY(i,show-1,n), sel=G.sel===i;
-      h+=`<circle cx="${x}" cy="${y}" r="${sel?34:32.5}" fill="none" stroke="${sel?'#fff6dc':'#f3d993'}" stroke-width="${sel?4:2.2}" ${sel?'filter="url(#glow)"':'opacity=".75"'} pointer-events="none"/>`;
+      h+=`<circle cx="${x}" cy="${y}" r="${sel?34:32.5}" fill="none" stroke="${sel?'#fff6dc':T}" stroke-width="${sel?4:2.4}" ${sel?'filter="url(#glow)"':'opacity=".8"'} pointer-events="none"/>`;
     }
   }
+  const ck=skin().ck;
   for(const pl of [0,1]){
-    const c=s.off[pl]-(flyHide==='off'&&G.turn===pl?1:0);
+    const c=s.off[pl]-(flyHide==='off'&&G.turn===pl?1:0), cc=pl?ck.b:ck.w;
     for(let k=0;k<c;k++){
       const [x,y]=traySlot(pl,k);
-      h+=`<rect x="${x-29}" y="${y-7}" width="58" height="14" rx="4" fill="url(#${pl?'gOnyx':'gIvory'})" stroke="${pl?'#7d7d86':'#a07e38'}" stroke-width="1"/>`;
+      h+=`<rect x="${x-27}" y="${y-7}" width="54" height="14" rx="5" fill="${cc.fill}" stroke="${cc.slab}" stroke-width="1"/>`;
     }
   }
   if(human&&G.sel!=null){
-    for(const st of G.steps.filter(x=>x.src===G.sel)){
-      if(st.to==='off'){
+    if(!G.targets) G.targets=movesFrom(curCtx(),G.sel);
+    for(const [to,path] of G.targets){
+      const sum=path.reduce((a,st)=>a+st.d,0);
+      if(to==='off'){
         const y=G.turn===0?40:360;
-        h+=`<rect class="tgt" x="1020" y="${y}" width="70" height="300" rx="8" fill="rgba(243,217,147,.12)" stroke="#f3d993" stroke-width="2.5" pointer-events="none"/>`;
+        h+=`<rect class="tgt" x="1018" y="${y}" width="66" height="300" rx="12" fill="rgba(243,217,147,.12)" stroke="${T}" stroke-width="2.5" pointer-events="none"/>`;
       }else{
-        const n=s.n[st.to]; const [x,y]=slotXY(st.to,n,n+1);
-        h+=`<circle class="tgt" cx="${x}" cy="${y}" r="27" fill="rgba(243,217,147,.2)" stroke="#f3d993" stroke-width="2.5" stroke-dasharray="6 5" pointer-events="none"/>`;
-        h+=`<text x="${x}" y="${y+7}" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="20" fill="#f3d993" pointer-events="none">${st.d}</text>`;
+        const n=s.n[to]; const [x,y]=slotXY(to,n,n+1);
+        h+=`<circle class="tgt" cx="${x}" cy="${y}" r="27" fill="rgba(20,14,8,.35)" stroke="${T}" stroke-width="2.5" stroke-dasharray="6 5" pointer-events="none"/>`;
+        h+=`<text x="${x}" y="${y+7}" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="20" fill="${T}" pointer-events="none">${sum}</text>`;
       }
     }
   }
   $('lDyn').innerHTML=h;
-  renderDice(); renderPanel(); saveGame();
+  renderButtons(); renderDiceState(); renderPanel(); saveGame();
 }
-const PIPS={1:[[0,0]],2:[[-1,-1],[1,1]],3:[[-1,-1],[0,0],[1,1]],4:[[-1,-1],[1,-1],[-1,1],[1,1]],5:[[-1,-1],[1,-1],[0,0],[-1,1],[1,1]],6:[[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]]};
-function die(cx,cy,v,used,rot){
-  let p='';
-  for(const [a,b] of PIPS[v]||[]) p+=`<circle cx="${a*14}" cy="${b*14}" r="5.4" fill="${v===1?'#8e2a2c':'#1a130c'}"/>`;
-  return `<g transform="translate(${cx},${cy}) rotate(${rot||0})" opacity="${used?.3:1}">
-    <rect x="-27" y="-24" width="54" height="54" rx="11" fill="rgba(0,0,0,.45)"/>
-    <rect x="-27" y="-27" width="54" height="54" rx="11" fill="url(#gDie)" stroke="#b08a3e" stroke-width="1.5"/>${p}</g>`;
-}
-function renderDice(){
-  if(!G) return;
-  const [a,b]=G.dice; let h='';
-  if(a){
-    let ua=false,ub=false;
-    if(G.phase==='move'){
-      if(a===b){ ua=G.rem.length<2; ub=G.rem.length<1; }
-      else{ ua=!G.rem.includes(a); ub=!G.rem.includes(b); }
-    }
-    const r1=G.spin!=null?(Math.random()*40-20):-6, r2=G.spin!=null?(Math.random()*40-20):7;
-    h+=die(712,350,a,ua,r1)+die(788,350,b,ub,r2);
-    if(a===b&&G.phase==='move'){
-      for(let k=0;k<4;k++) h+=`<circle cx="${728+k*15}" cy="395" r="4" fill="${k<G.rem.length?'#f3d993':'rgba(243,217,147,.2)'}"/>`;
-    }
+function renderButtons(){
+  let h='';
+  const [a,b]=G.dice;
+  if(G.phase==='move'&&a===b&&a){
+    for(let k=0;k<4;k++) h+=`<circle cx="${728+k*15}" cy="398" r="4.5" fill="${k<G.rem.length?'#f3d993':'rgba(243,217,147,.25)'}" stroke="rgba(0,0,0,.5)"/>`;
   }
   if(G.phase==='roll'&&isHuman(G.turn)&&!busy){
-    h+=`<g data-act="roll" class="hit"><rect x="650" y="314" width="200" height="72" rx="36" fill="rgba(217,181,106,.14)" stroke="#d9b56a" stroke-width="1.5" class="tgt"/>
-      <text x="750" y="358" text-anchor="middle" font-family="Forum,serif" font-size="30" fill="#f3d993" letter-spacing="1">Бросить</text></g>`;
+    h+=`<g data-act="roll" class="hit"><rect x="650" y="314" width="200" height="72" rx="36" fill="rgba(20,14,8,.55)" stroke="#d9b56a" stroke-width="2" class="tgt"/>
+      <text x="750" y="359" text-anchor="middle" font-family="Forum,serif" font-size="31" fill="#f3d993" letter-spacing="1">Бросить</text></g>`;
   }
-  $('lDice').innerHTML=h;
+  $('lBtn').innerHTML=h;
 }
 function renderPanel(){
   const s=G.s;
@@ -752,13 +1127,13 @@ function renderPanel(){
     $('s'+pl).textContent=score[pl];
   }
   $('n0').textContent=mode==='ai'?'Вы':'Белые';
-  $('n1').textContent=mode==='ai'?'Компьютер':'Чёрные';
+  $('n1').textContent=mode==='ai'?`Компьютер · ${LEVELS[settings.level][1]}`:'Чёрные';
   const b=$('bMain'), human=isHuman(G.turn);
   if(G.phase==='over'){b.textContent='Новая партия';b.disabled=false;}
   else if(G.phase==='roll'){b.textContent='Бросить кубики';b.disabled=!human||busy;}
-  else if(G.phase==='move'){b.textContent='Завершить ход';b.disabled=!human||busy||G.steps.length>0;}
+  else if(G.phase==='move'){b.textContent='Завершить ход';b.disabled=!human||busy||G.auto||G.steps.length>0;}
   else {b.textContent='Бросить кубики';b.disabled=true;}
-  $('bUndo').disabled=!(G.phase==='move'&&human&&G.hist.length&&!busy);
+  $('bUndo').disabled=!(G.phase==='move'&&human&&G.hist.length&&!busy&&!G.auto);
 }
 function setStatus(t){$('status').innerHTML=t;}
 
@@ -778,12 +1153,13 @@ function unlockOrientation(){
   try{screen.orientation.unlock();}catch(e){}
   try{if(document.fullscreenElement&&!isStandalone())document.exitFullscreen();}catch(e){}
 }
-function showGame(){ document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); }
+function showGame(){ document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); }
 function showMenu(){
   document.body.classList.remove('playing'); $('menu').hidden=false; unlockOrientation();
   const v=readSaved();
   $('mContinue').hidden=!v;
   $('mAi').classList.toggle('primary',!v);
+  $('lvlCap').textContent='Сложность: '+LEVELS[settings.level][1];
   let sc='';
   try{const all=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};
     if(all.ai&&(all.ai[0]||all.ai[1])) sc+=`С компьютером ${all.ai[0]} : ${all.ai[1]}`;
@@ -796,37 +1172,57 @@ let deferredInstall=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;$('bInstall').hidden=false;});
 $('bInstall').addEventListener('click',async()=>{ if(!deferredInstall) return; deferredInstall.prompt(); try{await deferredInstall.userChoice;}catch(e){} deferredInstall=null; $('bInstall').hidden=true; });
 
+/* ---------- настройки ---------- */
+function buildSkinPicker(){
+  let h='';
+  for(const [k,sk] of Object.entries(SKINS)){
+    let pv='';
+    for(let n=0;n<5;n++){const [x,y]=slotXY(0,n,5);pv+=checker(x,y,0,0,sk.ck);}
+    for(let n=0;n<5;n++){const [x,y]=slotXY(12,n,5);pv+=checker(x,y,1,0,sk.ck);}
+    h+=`<button class="skin" data-skin="${k}"><svg viewBox="0 0 1100 700"><defs>${sk.defs(k)}</defs>${sk.art(k)}${pv}</svg><span>${sk.name}</span></button>`;
+  }
+  $('skins').innerHTML=h;
+}
+function paintSettings(){
+  document.querySelectorAll('#skins .skin').forEach(b=>b.classList.toggle('on',b.dataset.skin===settings.skin));
+  document.querySelectorAll('#levels button').forEach(b=>b.classList.toggle('on',b.dataset.lvl===settings.level));
+  document.querySelectorAll('#sounds button').forEach(b=>b.classList.toggle('on',(b.dataset.snd==='on')===settings.sound));
+  $('lvlHint').textContent=LEVELS[settings.level][2];
+  $('lvlCap').textContent='Сложность: '+LEVELS[settings.level][1];
+}
+$('skins').addEventListener('click',e=>{const b=e.target.closest('.skin'); if(!b) return; settings.skin=b.dataset.skin; saveSettings(); buildStatic(); if(G) render(); paintSettings();});
+$('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.level=b.dataset.lvl; saveSettings(); paintSettings(); if(G) renderPanel();});
+$('sounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);}});
+$('bSettings').addEventListener('click',()=>{ if(!$('skins').innerHTML) buildSkinPicker(); paintSettings(); $('settings').hidden=false; });
+$('bSettingsClose').addEventListener('click',()=>{$('settings').hidden=true;});
+$('settings').addEventListener('click',e=>{if(e.target===$('settings'))$('settings').hidden=true;});
+
 /* ---------- ввод ---------- */
 $('board').addEventListener('click',e=>{
-  const el=e.target.closest('[data-pt],[data-act]'); if(!el||busy||!G) return;
+  const el=e.target.closest('[data-pt],[data-act]'); if(!el||busy||!G||G.auto) return;
   ac();
   if(el.dataset.act==='roll'){doRoll();return;}
   if(G.phase!=='move'||!isHuman(G.turn)) return;
   const v=el.dataset.pt, t=v==='off'?'off':+v;
-  if(G.sel!=null){
-    const opts=G.steps.filter(x=>x.src===G.sel&&x.to===t).sort((a,b)=>a.d-b.d);
-    if(opts.length){applyStep(opts[0]);return;}
-  }
+  if(G.sel!=null&&G.targets&&G.targets.has(t)){ applyPath(G.targets.get(t)); return; }
   if(t!=='off'&&G.steps.some(x=>x.src===t)){
-    G.sel=G.sel===t?null:t; render(); return;
+    G.sel=G.sel===t?null:t; G.targets=null; render(); return;
   }
-  G.sel=null; render();
+  G.sel=null; G.targets=null; render();
 });
 $('bMain').addEventListener('click',()=>{
   ac();
   if(G.phase==='over'){newGame(mode);return;}
   if(G.phase==='roll') doRoll();
-  else if(G.phase==='move'&&!G.steps.length) endTurn();
+  else if(G.phase==='move'&&!G.steps.length&&!G.auto) endTurn();
 });
 $('bUndo').addEventListener('click',undo);
-$('bMenu').addEventListener('click',()=>{ if(!busy) showMenu(); });
+$('bMenu').addEventListener('click',()=>{ if(!busy&&!G.auto) showMenu(); });
 $('bAgain').addEventListener('click',()=>{ac();newGame(mode);});
 $('bToMenu').addEventListener('click',showMenu);
 $('mAi').addEventListener('click',()=>{ac();newGame('ai');});
 $('mPvp').addEventListener('click',()=>{ac();newGame('pvp');});
 $('mContinue').addEventListener('click',()=>{ac(); if(G&&G.phase!=='over'&&readSaved()) showGame(); else resumeGame();});
-function paintSound(){$('bSound').textContent='Звук: '+(soundOn?'вкл':'выкл');}
-$('bSound').addEventListener('click',()=>{soundOn=!soundOn;try{localStorage.setItem('nardy-sound',soundOn?'on':'off');}catch(e){} paintSound(); if(soundOn){ac();sClack();}});
 $('bRules').addEventListener('click',()=>{$('rules').hidden=false;});
 $('bRulesClose').addEventListener('click',()=>{$('rules').hidden=true;});
 $('rules').addEventListener('click',e=>{if(e.target===$('rules'))$('rules').hidden=true;});
@@ -840,7 +1236,9 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 
 buildStatic();
-paintSound();
+$('winStar').innerHTML=star(0,0,46,16,'#f1d48a','#1a120b',-90,'rgba(0,0,0,.4)');
+$('menuStar').innerHTML=`<circle r="96" fill="#5c181a" stroke="url(#gGold)" stroke-width="3"/><circle r="84" fill="none" stroke="rgba(217,181,106,.45)" stroke-width="1"/>`+star(0,0,78,27,'#f3d68c','#100b08',-90,'rgba(200,160,90,.6)');
+paintSettings();
 showMenu();
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();

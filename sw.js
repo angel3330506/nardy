@@ -1,5 +1,6 @@
 // Офлайн-кэш: страница, доски, звуки и шрифты кэшируются при установке.
-const VERSION = 'nardy-v7';
+const V = '8';                 // = APP_VERSION в index.html
+const VERSION = 'nardy-v' + V;
 const SHELL = [
   './',
   'index.html',
@@ -7,8 +8,8 @@ const SHELL = [
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
-  ...['night', 'ararat', 'glass', 'yerevan'].flatMap(k => [`boards/${k}.webp`, `boards/${k}-thumb.webp`]),
-  ...['ivory', 'onyx', 'beech', 'walnut'].map(k => `boards/ck-${k}.png`),
+  ...['night', 'ararat', 'glass', 'yerevan'].flatMap(k => [`boards/${k}.webp?v=${V}`, `boards/${k}-thumb.webp?v=${V}`]),
+  ...['ivory', 'onyx', 'beech', 'walnut'].map(k => `boards/ck-${k}.png?v=${V}`),
 ];
 const SOUNDS = ['dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a','chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a','chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a','chips-stack-1.m4a','chips-stack-2.m4a']; // те же файлы, что SOUND_FILES в index.html
 
@@ -33,7 +34,8 @@ async function cacheFonts(c) {
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(VERSION)
-      .then(c => c.addAll(SHELL)
+      // cache:'reload' — мимо HTTP-кэша браузера, иначе в новый кэш попадут старые файлы
+      .then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))
         .then(() => Promise.all(SOUNDS.map(f => c.add('sounds/' + f).catch(() => {}))))
         .then(() => cacheFonts(c)))
       .then(() => self.skipWaiting())

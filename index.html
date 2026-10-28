@@ -303,7 +303,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='7';   // совпадает с VERSION в sw.js
+const APP_VERSION='8';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -354,7 +354,7 @@ const SKINS={
   yerevan:{name:'Армения',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'}
 };
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
-for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}`;}
+for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}?v=${APP_VERSION}`;}
 
 /* ---------- правила ---------- */
 const P=(pl,p)=>pl===0?p:(p+12)%24;
@@ -950,15 +950,15 @@ function checker(x,y,pl,cnt,ck=skin().ck){
   const c=pl?ck.b:ck.w;
   return `<g transform="translate(${x},${y})">
     <circle cx="2" cy="4" r="30" fill="rgba(0,0,0,.42)"/>
-    <image href="boards/ck-${c.img}.png" x="-30" y="-30" width="60" height="60"/>
+    <image href="boards/ck-${c.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>
     ${cnt?`<circle r="11" fill="${c.cntBg}"/><text y="5.5" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="15" fill="${c.cntFg}">${cnt}</text>`:''}
   </g>`;
 }
 function buildStatic(){
   const k=settings.skin, sk=SKINS[k];
-  $('lStatic').innerHTML=`<image href="boards/${k}.webp" x="0" y="0" width="1100" height="700"/>`;
-  $('chip0').innerHTML=`<image href="boards/ck-${sk.ck.w.img}.png" x="-30" y="-30" width="60" height="60"/>`;
-  $('chip1').innerHTML=`<image href="boards/ck-${sk.ck.b.img}.png" x="-30" y="-30" width="60" height="60"/>`;
+  $('lStatic').innerHTML=`<image href="boards/${k}.webp?v=${APP_VERSION}" x="0" y="0" width="1100" height="700"/>`;
+  $('chip0').innerHTML=`<image href="boards/ck-${sk.ck.w.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
+  $('chip1').innerHTML=`<image href="boards/ck-${sk.ck.b.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
   if(!$('lHit').innerHTML){
     let hit='';
     for(let i=0;i<24;i++){
@@ -1079,7 +1079,7 @@ function buildSkinPicker(){
     let pv='';
     for(let n=0;n<5;n++){const [x,y]=slotXY(0,n,5);pv+=checker(x,y,0,0,sk.ck);}
     for(let n=0;n<5;n++){const [x,y]=slotXY(12,n,5);pv+=checker(x,y,1,0,sk.ck);}
-    h+=`<button class="skin" data-skin="${k}"><svg viewBox="0 0 1100 700"><image href="boards/${k}-thumb.webp" x="0" y="0" width="1100" height="700"/>${pv}</svg><span>${sk.name}</span></button>`;
+    h+=`<button class="skin" data-skin="${k}"><svg viewBox="0 0 1100 700"><image href="boards/${k}-thumb.webp?v=${APP_VERSION}" x="0" y="0" width="1100" height="700"/>${pv}</svg><span>${sk.name}</span></button>`;
   }
   $('skins').innerHTML=h;
 }

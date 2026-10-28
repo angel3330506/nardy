@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=Onest:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@600&text=ՀԱՅՍՏՆՐ&display=swap">
 <style>
-/* Layout: экран-приложение без прокрутки. Партия всегда в альбомной раскладке: доска слева, узкая панель справа.
+/* Layout: экран-приложение без прокрутки. Партия всегда в альбомной раскладке: сверху тонкая строка счёта, под ней доска по центру.
    На телефоне в портрете игра поворачивается на 90°, отступы берутся из safe-area (Dynamic Island, полоска «Домой»). */
 :root{
   color-scheme: dark;
@@ -61,32 +61,35 @@ button.primary:hover:not(:disabled){background:linear-gradient(180deg,#f0d38f,#c
 
 /* ---------- игра ---------- */
 #app{
-  position:fixed;inset:0;display:flex;gap:clamp(6px,1.4cqw,20px);
+  position:fixed;inset:0;display:flex;flex-direction:column;gap:clamp(4px,1.6cqh,12px);
   container-type:size;
-  padding:max(8px,var(--sat)) max(10px,var(--sar)) max(8px,var(--sab)) max(10px,var(--sal));
+  padding:max(6px,var(--sat)) max(10px,var(--sar)) max(8px,var(--sab)) max(10px,var(--sal));
 }
 .board-box{flex:1 1 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
 .board-frame{position:relative;width:min(100cqw,calc(100cqh * 1100 / 700));aspect-ratio:1100/700;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6))}
 svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
-.panel{
-  flex:0 0 clamp(150px,25cqw,300px);min-width:0;min-height:0;
-  display:flex;flex-direction:column;gap:clamp(5px,1.8cqh,12px);
-  background:linear-gradient(180deg,var(--bg2),var(--panel));border:1px solid var(--line);border-radius:14px;
-  padding:clamp(7px,2.2cqh,16px);overflow:hidden;
-  font-size:clamp(11px,3.3cqh,15px);
+/* строка партии: игроки по краям, подсказка посередине, снизу золотая волосяная линия */
+.bar{
+  flex:0 0 auto;position:relative;display:flex;align-items:center;gap:clamp(6px,1.4cqw,16px);
+  height:clamp(32px,8.5cqh,46px);font-size:clamp(11px,2.9cqh,14px);
+  width:min(100%,1180px);margin:0 auto;padding:0 2px;
 }
-.pl{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:clamp(4px,1.5cqh,10px) 8px;border-radius:10px;border:1px solid transparent;background:rgba(255,255,255,.02);transition:border-color .2s,background .2s}
-.pl.active{border-color:var(--gold);background:rgba(217,181,106,.09)}
-.pl .chip{width:clamp(20px,7cqh,34px);height:clamp(20px,7cqh,34px)}
+.bar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,rgba(217,181,106,.55) 15%,rgba(217,181,106,.55) 85%,transparent)}
+.ib{flex:0 0 auto;width:clamp(28px,7.5cqh,38px);height:clamp(28px,7.5cqh,38px);padding:0;display:grid;place-items:center;border-radius:50%;border-color:transparent;background:transparent;color:var(--muted)}
+.ib svg{width:58%;height:58%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ib:hover:not(:disabled){color:var(--gold-hi);border-color:transparent}
+.pl{flex:0 1 auto;min-width:0;display:flex;align-items:center;gap:8px;padding:2px 2px 3px;border-bottom:2px solid transparent;transition:border-color .25s}
+.pl.right{flex-direction:row-reverse;text-align:right}
+.pl.active{border-bottom-color:var(--gold)}
+.pl .chip{flex:0 0 auto;width:clamp(18px,5.5cqh,26px);height:clamp(18px,5.5cqh,26px)}
+.pl .who{min-width:0;display:flex;flex-direction:column;line-height:1.15}
 .pl .name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl .meta{color:var(--muted);font-size:.84em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl .score{font-family:var(--display);font-size:2em;line-height:1;color:var(--gold-hi);font-variant-numeric:tabular-nums}
-.pl>div{min-width:0}
-.status{flex:1 1 auto;min-height:0;overflow:hidden;padding:clamp(5px,1.6cqh,10px) 10px;border-left:2px solid var(--gold);background:rgba(217,181,106,.06);border-radius:0 8px 8px 0;font-size:.95em}
-.status b{color:var(--gold-hi)}
-#bMain{font-size:1.08em;padding:clamp(8px,2.6cqh,14px) 8px}
-.tools{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.tools button{padding:clamp(6px,1.8cqh,10px) 6px;font-size:.92em}
+.pl.active .name{color:var(--gold-hi)}
+.pl .meta{color:var(--muted);font-size:.84em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pl .score{font-family:var(--display);font-weight:400;font-size:1.9em;line-height:1;color:var(--gold-hi);font-variant-numeric:tabular-nums;padding:0 2px}
+.status{flex:1 1 auto;min-width:0;text-align:center;color:var(--muted);font-size:.95em;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.status b{color:var(--gold-hi);font-weight:500}
+.go{flex:0 0 auto;padding:clamp(4px,1.2cqh,8px) 14px;border-radius:999px;font-size:.95em;white-space:nowrap}
 .tgt{animation:pulse 1.1s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
 .hit{cursor:pointer}
@@ -95,6 +98,16 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 .dice3d{position:absolute;inset:0;pointer-events:none;perspective:calc(var(--ds,50px) * 14);overflow:visible}
 .d3{position:absolute;width:var(--ds,50px);height:var(--ds,50px);margin:calc(var(--ds,50px) / -2) 0 0 calc(var(--ds,50px) / -2);transform-style:preserve-3d;transition:opacity .25s}
 .d3.used{opacity:.32}
+.d3.grab{pointer-events:auto;cursor:grab;touch-action:none}
+.d3.grab .cube{animation:nudge 2.4s ease-in-out infinite}
+.d3.grab .shadow{animation:glowShadow 2.4s ease-in-out infinite}
+.d3.held{cursor:grabbing;z-index:2}
+.d3.tap{pointer-events:auto;cursor:pointer}
+.d3.held .cube{animation:none}
+.d3.held .mover{transform:scale(1.15) rotateZ(var(--rz,0deg))}
+.d3.held .shadow{animation:none;transform:translate(22%,32%) scale(1.1);opacity:.55}
+@keyframes nudge{0%,80%,100%{translate:0 0}86%{translate:0 -7%}92%{translate:0 0}96%{translate:0 -3%}}
+@keyframes glowShadow{0%,100%{box-shadow:0 0 0 0 rgba(243,217,147,0)}50%{box-shadow:0 0 calc(var(--ds,50px) * .35) calc(var(--ds,50px) * .06) rgba(243,217,147,.55)}}
 .d3 .shadow{position:absolute;inset:6%;border-radius:22%;background:rgba(0,0,0,.55);filter:blur(calc(var(--ds,50px) * .08));transform:translate(6%,9%)}
 .d3 .mover{position:absolute;inset:0;transform-style:preserve-3d}
 .d3 .cube{position:absolute;inset:0;transform-style:preserve-3d}
@@ -119,15 +132,10 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
     inset:auto;top:0;left:0;
     width:100vh;height:100vw;width:100dvh;height:100dvw;
     transform-origin:top left;transform:rotate(90deg) translateY(-100%);
-    padding:max(8px,var(--sar)) max(10px,var(--sab)) max(8px,var(--sal)) max(10px,var(--sat));
+    padding:max(6px,var(--sar)) max(10px,var(--sab)) max(8px,var(--sal)) max(10px,var(--sat));
   }
 }
-/* Узкое окно на компьютере: панель под доской */
-@media (orientation:portrait) and (pointer:fine){
-  #app{flex-direction:column}
-  .panel{flex:0 0 auto}
-  .status{min-height:44px}
-}
+@media (max-width:620px) and (pointer:fine){ .pl .meta{display:none} }
 
 /* ---------- меню ---------- */
 #menu{
@@ -172,12 +180,29 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 .seg button{border:0;border-radius:0;background:transparent;color:var(--muted);padding:10px 6px}
 .seg button.on{background:rgba(217,181,106,.16);color:var(--gold-hi)}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
-@media (prefers-reduced-motion:reduce){.tgt{animation:none}}
+@media (prefers-reduced-motion:reduce){.tgt,.d3.grab .cube,.d3.grab .shadow{animation:none}}
 </style>
 </head>
 <body>
 
 <div id="app">
+  <header class="bar">
+    <button class="ib" id="bMenu" aria-label="Меню"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <div class="pl" id="p0">
+      <svg class="chip" viewBox="-32 -32 64 64" id="chip0"></svg>
+      <div class="who"><span class="name" id="n0">Белые</span><span class="meta" id="m0"></span></div>
+      <b class="score" id="s0">0</b>
+    </div>
+    <div class="status" id="status" aria-live="polite">…</div>
+    <div class="pl right" id="p1">
+      <svg class="chip" viewBox="-32 -32 64 64" id="chip1"></svg>
+      <div class="who"><span class="name" id="n1">Чёрные</span><span class="meta" id="m1"></span></div>
+      <b class="score" id="s1">0</b>
+    </div>
+    <button class="primary go" id="bMain" hidden>Завершить ход</button>
+    <button class="ib" id="bUndo" aria-label="Отменить ход"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+  </header>
+
   <div class="board-box">
     <div class="board-frame" id="frame">
       <svg id="board" viewBox="0 0 1100 700" aria-label="Доска для длинных нард">
@@ -198,25 +223,6 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       <div class="dice3d" id="dice3d"></div>
     </div>
   </div>
-
-  <aside class="panel">
-    <div class="pl" id="p0">
-      <svg class="chip" viewBox="-32 -32 64 64" id="chip0"></svg>
-      <div><div class="name" id="n0">Белые</div><div class="meta" id="m0"></div></div>
-      <div class="score" id="s0">0</div>
-    </div>
-    <div class="pl" id="p1">
-      <svg class="chip" viewBox="-32 -32 64 64" id="chip1"></svg>
-      <div><div class="name" id="n1">Чёрные</div><div class="meta" id="m1"></div></div>
-      <div class="score" id="s1">0</div>
-    </div>
-    <div class="status" id="status">…</div>
-    <button class="primary" id="bMain">Бросить кубики</button>
-    <div class="tools">
-      <button id="bUndo">Отменить</button>
-      <button id="bMenu">Меню</button>
-    </div>
-  </aside>
 
   <div class="win" id="over" hidden>
     <div class="card">
@@ -286,6 +292,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       <li>Кубики можно сыграть <b>одной шашкой подряд</b>: при 2‑2 — пойти одной на 4, 6 или 8, при 4‑5 — сразу на 9. Промежуточные пункты должны быть свободны.</li>
       <li>Нельзя ставить <b>заграждение из 6 шашек подряд</b>, если впереди него нет ни одной шашки соперника.</li>
       <li>Выбрасывать можно, когда все 15 шашек в доме. Кто выбросил все первым — победил; если у соперника не вышло ни одной — <b>марс</b>, двойная победа.</li>
+      <li>Чтобы бросить, <b>потяните кубики</b> с середины доски пальцем на свою половину и отпустите (на компьютере — пробел).</li>
       <li>Как ходить: нажмите на шашку, затем на подсвеченный пункт. Цифра на пункте — на сколько вы идёте. Выброс — нажатие на лоток справа.</li>
     </ul>
     <button class="primary done" id="bRulesClose">Понятно</button>
@@ -296,7 +303,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='6';   // совпадает с VERSION в sw.js
+const APP_VERSION='7';   // совпадает с VERSION в sw.js
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -342,9 +349,9 @@ const CK={
 };
 const SKINS={
   night:{name:'Ночь',ck:{w:CK.ivory,b:CK.onyx},tgt:'#f3d993'},
-  ararat:{name:'Арарат',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
-  glass:{name:'Воровская звезда',ck:{w:CK.ivory,b:CK.onyx},tgt:'#ffffff'},
-  yerevan:{name:'Ереван',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'}
+  ararat:{name:'Аревахач',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
+  glass:{name:'Воровские звёзды',ck:{w:CK.ivory,b:CK.onyx},tgt:'#ffffff'},
+  yerevan:{name:'Армения',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'}
 };
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
 for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}`;}
@@ -563,7 +570,7 @@ function saveGame(){
   try{
     if(G.phase==='over'||G.phase==='start'){localStorage.removeItem('nardy-game-v1');return;}
     const phase=G.phase==='rolling'?'roll':G.phase;
-    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first}));
+    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first}));
   }catch(e){}
 }
 function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')||'null');}catch(e){return null;}}
@@ -585,7 +592,7 @@ function newGame(m){
   clearTimers();
   if(m) mode=m;
   loadScore();
-  G={s:freshState(),turn:0,phase:'start',dice:[0,0],rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null};
+  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null};
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
   showGame();
   render();
@@ -595,7 +602,7 @@ function resumeGame(){
   const v=readSaved(); if(!v){newGame(mode);return;}
   clearTimers();
   mode=v.mode; loadScore();
-  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null};
+  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null};
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML='';
   showGame();
   if(G.phase==='move') placeDice(G.dice); else clearDice();
@@ -611,7 +618,11 @@ function resumeGame(){
 /* ---------- 3D кубики ---------- */
 const FACE={1:[0,0],6:[0,180],3:[0,90],4:[0,-90],2:[90,0],5:[-90,0]};
 const PIPIDX={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
-const DIE_POS=[[712,350],[788,350]];   // центр правой половины, внутри полосы, куда стопки не доходят (см. STACK_MAX)
+// Кубики лежат на стыке половин (REST). Бросок — потянуть их пальцем на свою половину и отпустить:
+// они летят по инерции и падают в центральную полосу той половины, куда их отпустили (стопки туда не доходят, см. STACK_MAX).
+const REST=[[500,316],[500,384]];
+const ZONE={l:[90,410],r:[590,910],y:[300,400]};
+const DIE_POS=[[712,350],[788,350]];
 const frame=$('frame'), diceBox=$('dice3d');
 function sizeDice(){ frame.style.setProperty('--ds',(frame.clientWidth*54/1100)+'px'); }
 new ResizeObserver(sizeDice).observe(frame);
@@ -628,28 +639,49 @@ function dieEl(v){
   return el;
 }
 const finalRot=(v,z,spinX=0,spinY=0)=>{const [a,b]=FACE[v];return `rotateZ(${z}deg) rotateY(${-b+360*spinY}deg) rotateX(${-a+360*spinX}deg)`;};
-function clearDice(){diceBox.innerHTML='';}
-function placeDice(vals){
+const setPos=(el,[x,y])=>{el.style.left=(x/11)+'%'; el.style.top=(y/7)+'%';};
+function clearDice(){diceBox.innerHTML='';diceBox.dataset.state='';}
+function placeDice(vals,pos=G.diceAt||DIE_POS){
   clearDice();
   vals.forEach((v,i)=>{
     if(!v) return;
-    const el=dieEl(v), [x,y]=DIE_POS[i];
-    el.style.left=(x/11)+'%'; el.style.top=(y/7)+'%';
+    const el=dieEl(v); setPos(el,pos[i]);
     el.querySelector('.cube').style.transform=finalRot(v,i?8:-7);
     diceBox.appendChild(el);
   });
 }
-function throwDice(vals,from,done){
+// кубики в покое на стыке; если сейчас бросает человек — их можно схватить
+function syncRest(){
+  if(!G||drag||busy) return;
+  if(G.phase!=='roll'&&G.phase!=='start') return;
+  if(diceBox.dataset.state!=='rest'){
+    clearDice();
+    const vals=[G.dice[0]||6,G.dice[1]||5];
+    vals.forEach((v,i)=>{
+      const el=dieEl(v); setPos(el,REST[i]);
+      el.querySelector('.cube').style.transform=finalRot(v,i?96:84);
+      diceBox.appendChild(el);
+    });
+    diceBox.dataset.state='rest';
+  }
+  const can=G.phase==='roll'&&isHuman(G.turn);
+  diceBox.querySelectorAll('.d3').forEach(e=>e.classList.toggle('grab',can));
+}
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const clampV=(v,[a,b])=>Math.max(a,Math.min(b,v));
+// куда лягут два кубика, если бросок пришёлся в точку (x,y) половины side ('l'|'r')
+function landing(side,x=(ZONE[side][0]+ZONE[side][1])/2,y=350){
+  const cx=clampV(x,[ZONE[side][0]+40,ZONE[side][1]-40]), cy=clampV(y,ZONE.y);
+  const dx=rnd(34,44), dy=rnd(-22,22);
+  return [[cx-dx,clampV(cy-dy,ZONE.y)],[cx+dx,clampV(cy+dy,ZONE.y)]];
+}
+// анимация: кубик летит из start в land, кувыркаясь и подпрыгивая; lift — с какой высоты падает
+function throwDice(vals,start,land,done,lift=1){
   clearDice(); sizeDice();
   const k=frame.clientWidth/1100, D=matchMedia('(prefers-reduced-motion: reduce)').matches?1:1050;
-  const r=(a,b)=>a+Math.random()*(b-a);
   vals.forEach((v,i)=>{
-    const el=dieEl(v);
-    const x=DIE_POS[i][0]+r(-10,10), y=DIE_POS[i][1]+r(-16,16);
-    el.style.left=(x/11)+'%'; el.style.top=(y/7)+'%';
-    diceBox.appendChild(el);
-    const side=from[i]===0?1:-1;
-    const sx=r(-160,160)*k, sy=side*r(380,460)*k, H=r(220,300)*k;
+    const el=dieEl(v); setPos(el,land[i]); diceBox.appendChild(el);
+    const sx=(start[i][0]-land[i][0])*k, sy=(start[i][1]-land[i][1])*k, H=rnd(160,230)*k*lift;
     const at=(f,z)=>`translate3d(${f*sx}px,${f*sy}px,${z}px)`;
     el.querySelector('.mover').animate([
       {transform:at(1,H),offset:0,easing:'ease-in'},
@@ -667,10 +699,9 @@ function throwDice(vals,from,done){
       {transform:`translate(${sx*.06}px,${sy*.06}px) scale(1)`,opacity:.9,offset:.7},
       {transform:'translate(6%,9%) scale(1)',opacity:1,offset:1}
     ],{duration:D,fill:'forwards'});
-    const z=r(-25,25);
     el.querySelector('.cube').animate([
-      {transform:`rotateZ(${r(-180,180)}deg) rotateY(${r(-60,60)}deg) rotateX(${r(-60,60)}deg)`},
-      {transform:finalRot(v,z,Math.random()<.5?2:-2,Math.random()<.5?1:-1)}
+      {transform:`rotateZ(${rnd(-180,180)}deg) rotateY(${rnd(-60,60)}deg) rotateX(${rnd(-60,60)}deg)`},
+      {transform:finalRot(v,rnd(-25,25),Math.random()<.5?2:-2,Math.random()<.5?1:-1)}
     ],{duration:D*.9,easing:'cubic-bezier(.12,.55,.25,1)',fill:'forwards'});
   });
   sRoll();
@@ -682,28 +713,85 @@ function renderDiceState(){
   if(a===b){ua=G.rem.length<2;ub=G.rem.length<1;}
   else{ua=!G.rem.includes(a);ub=!G.rem.includes(b);}
   els[0].classList.toggle('used',ua); els[1].classList.toggle('used',ub);
+  const done=isHuman(G.turn)&&!G.steps.length&&!busy&&!G.auto;
+  els.forEach(e=>e.classList.toggle('tap',done));
 }
+
+/* ---------- бросок пальцем ---------- */
+// Экранная точка → координаты доски. На телефоне в портрете вся партия повёрнута на 90° (см. CSS).
+function toBoard(cx,cy){
+  const r=frame.getBoundingClientRect();
+  if(getComputedStyle($('app')).transform!=='none') return [(cy-r.top)/r.height*1100,(r.right-cx)/r.width*700];
+  return [(cx-r.left)/r.width*1100,(cy-r.top)/r.height*700];
+}
+let drag=null;
+diceBox.addEventListener('pointerdown',e=>{
+  const d=e.target.closest('.d3.grab'); if(!d||drag||busy||!G||G.phase!=='roll'||!isHuman(G.turn)) return;
+  e.preventDefault(); ac();
+  const p=toBoard(e.clientX,e.clientY), els=[...diceBox.querySelectorAll('.d3')];
+  drag={id:e.pointerId,els,p0:p,off:REST.map(([x,y])=>[x-p[0],y-p[1]]),pos:REST.map(q=>q.slice()),trail:[[p[0],p[1],e.timeStamp]]};
+  try{d.setPointerCapture(e.pointerId);}catch(_){}
+  els.forEach(el=>{el.classList.add('held');});
+});
+diceBox.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.id) return;
+  const [x,y]=toBoard(e.clientX,e.clientY);
+  drag.trail.push([x,y,e.timeStamp]); if(drag.trail.length>8) drag.trail.shift();
+  drag.els.forEach((el,i)=>{
+    drag.pos[i]=[clampV(x+drag.off[i][0],[30,1000]),clampV(y+drag.off[i][1],[30,670])];
+    setPos(el,drag.pos[i]);
+    el.style.setProperty('--rz',((x-drag.p0[0])*.4+(i?12:-12))+'deg');
+  });
+});
+function dropDice(e){
+  if(!drag||e.pointerId!==drag.id) return;
+  const dr=drag; drag=null;
+  dr.els.forEach(el=>el.classList.remove('held'));
+  const [x,y]=toBoard(e.clientX,e.clientY);
+  if(e.type==='pointercancel'||Math.hypot(x-dr.p0[0],y-dr.p0[1])<45){
+    // не дотянули — кубики возвращаются на стык
+    dr.els.forEach((el,i)=>{ el.animate([{left:el.style.left,top:el.style.top},{left:(REST[i][0]/11)+'%',top:(REST[i][1]/7)+'%'}],{duration:220,easing:'ease-out'}); setPos(el,REST[i]); });
+    setStatus('Потяните кубики на свою половину доски и отпустите.');
+    return;
+  }
+  // скорость по последним точкам — бросок летит по инерции
+  const a=dr.trail[0], b=dr.trail[dr.trail.length-1], dt=Math.max(16,b[2]-a[2]);
+  const vx=(b[0]-a[0])/dt, vy=(b[1]-a[1])/dt;
+  const side=x<500?'l':'r';
+  const land=landing(side,x+vx*180,y+vy*180);
+  doRoll(null,dr.pos,land,.55);
+}
+diceBox.addEventListener('pointerup',dropDice);
+diceBox.addEventListener('pointercancel',dropDice);
+// касание кубиков после хода — завершить ход
+diceBox.addEventListener('click',e=>{
+  if(!e.target.closest('.d3')||!G||busy||G.auto) return;
+  if(G.phase==='move'&&isHuman(G.turn)&&!G.steps.length) endTurn();
+});
 
 function rollOff(){
   let a,b; do{a=1+Math.random()*6|0;b=1+Math.random()*6|0;}while(a===b);
   setStatus('Разыгрываем первый ход…');
   busy=true;
-  throwDice([a,b],[0,1],()=>{
+  const L=landing('r'), R=landing('l');
+  throwDice([a,b],REST,[L[0],R[1]],()=>{
     busy=false;
     G.turn=a>b?0:1;
     setStatus(`Белые — <b>${a}</b>, чёрные — <b>${b}</b>. Начинают ${NAME[G.turn].toLowerCase()}.`);
-    later(()=>{clearDice();G.phase='roll';render();if(!isHuman(G.turn))aiTurn();else promptRoll();},1500);
+    later(()=>{G.phase='roll';render();if(!isHuman(G.turn))aiTurn();else promptRoll();},1500);
   });
 }
-function promptRoll(){ setStatus(mode==='ai'?'Ваш ход — бросайте кубики.':`Ходят ${NAME[G.turn].toLowerCase()} — бросайте кубики.`); }
+function promptRoll(){ setStatus(mode==='ai'?'Ваш ход — потяните кубики на доску.':`Ходят ${NAME[G.turn].toLowerCase()} — потяните кубики на доску.`); }
 
-function doRoll(after){
+// start/land — откуда летят и куда лягут; без них кубики бросаются со стыка на половину бросающего
+function doRoll(after,start=REST,land,lift=1){
   if(G.phase!=='roll'||busy) return;
   const a=1+Math.random()*6|0, b=1+Math.random()*6|0;
+  land=land||landing(mode==='ai'&&G.turn===1?'l':'r');
   G.phase='rolling'; busy=true; render();
-  throwDice([a,b],[G.turn,G.turn],()=>{
+  throwDice([a,b],start,land,()=>{
     busy=false;
-    G.dice=[a,b];
+    G.dice=[a,b]; G.diceAt=land;
     G.rem=a===b?[a,a,a,a]:[a,b];
     G.headUsed=0;
     G.headLimit=(G.first[G.turn]&&a===b&&(a===3||a===4||a===6))?2:1;
@@ -719,7 +807,7 @@ function doRoll(after){
     if(isHuman(G.turn)) setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`);
     render();
     after&&after();
-  });
+  },lift);
 }
 
 function applyStep(st,cb){
@@ -922,17 +1010,15 @@ function render(){
     }
   }
   $('lDyn').innerHTML=h;
-  renderButtons(); renderDiceState(); renderPanel(); saveGame();
+  renderButtons(); syncRest(); renderDiceState(); renderPanel(); saveGame();
 }
 function renderButtons(){
   let h='';
   const [a,b]=G.dice;
   if(G.phase==='move'&&a===b&&a){
-    for(let k=0;k<4;k++) h+=`<circle cx="${728+k*15}" cy="398" r="4.5" fill="${k<G.rem.length?'#f3d993':'rgba(243,217,147,.25)'}" stroke="rgba(0,0,0,.5)"/>`;
-  }
-  if(G.phase==='roll'&&isHuman(G.turn)&&!busy){
-    h+=`<g data-act="roll" class="hit"><rect x="650" y="314" width="200" height="72" rx="36" fill="rgba(20,14,8,.55)" stroke="#d9b56a" stroke-width="2" class="tgt"/>
-      <text x="750" y="359" text-anchor="middle" font-family="Forum,serif" font-size="31" fill="#f3d993" letter-spacing="1">Бросить</text></g>`;
+    // при дубле — четыре точки над кубиками: сколько ходов осталось
+    const at=G.diceAt||DIE_POS, cx=(at[0][0]+at[1][0])/2, cy=Math.min(at[0][1],at[1][1])-42;
+    for(let k=0;k<4;k++) h+=`<circle cx="${cx-22.5+k*15}" cy="${cy}" r="4.5" fill="${k<G.rem.length?'#f3d993':'rgba(243,217,147,.25)'}" stroke="rgba(0,0,0,.5)"/>`;
   }
   $('lBtn').innerHTML=h;
 }
@@ -945,11 +1031,8 @@ function renderPanel(){
   }
   $('n0').textContent=mode==='ai'?'Вы':'Белые';
   $('n1').textContent=mode==='ai'?`Компьютер · ${LEVELS[settings.level][1]}`:'Чёрные';
-  const b=$('bMain'), human=isHuman(G.turn);
-  if(G.phase==='over'){b.textContent='Новая партия';b.disabled=false;}
-  else if(G.phase==='roll'){b.textContent='Бросить кубики';b.disabled=!human||busy;}
-  else if(G.phase==='move'){b.textContent='Завершить ход';b.disabled=!human||busy||G.auto||G.steps.length>0;}
-  else {b.textContent='Бросить кубики';b.disabled=true;}
+  const human=isHuman(G.turn);
+  $('bMain').hidden=!(G.phase==='move'&&human&&!busy&&!G.auto&&!G.steps.length);
   $('bUndo').disabled=!(G.phase==='move'&&human&&G.hist.length&&!busy&&!G.auto);
 }
 function setStatus(t){$('status').innerHTML=t;}
@@ -1018,7 +1101,6 @@ $('settings').addEventListener('click',e=>{if(e.target===$('settings'))$('settin
 $('board').addEventListener('click',e=>{
   const el=e.target.closest('[data-pt],[data-act]'); if(!el||busy||!G||G.auto) return;
   ac();
-  if(el.dataset.act==='roll'){doRoll();return;}
   if(G.phase!=='move'||!isHuman(G.turn)) return;
   const v=el.dataset.pt, t=v==='off'?'off':+v;
   if(G.sel!=null&&G.targets&&G.targets.has(t)){ applyPath(G.targets.get(t)); return; }
@@ -1031,9 +1113,7 @@ $('board').addEventListener('click',e=>{
 });
 $('bMain').addEventListener('click',()=>{
   ac();
-  if(G.phase==='over'){newGame(mode);return;}
-  if(G.phase==='roll') doRoll();
-  else if(G.phase==='move'&&!G.steps.length&&!G.auto) endTurn();
+  if(G.phase==='move'&&!G.steps.length&&!G.auto&&!busy) endTurn();
 });
 $('bUndo').addEventListener('click',undo);
 $('bMenu').addEventListener('click',()=>{ if(!busy&&!G.auto) showMenu(); });
@@ -1048,7 +1128,10 @@ $('rules').addEventListener('click',e=>{if(e.target===$('rules'))$('rules').hidd
 document.addEventListener('keydown',e=>{
   if(!G||!$('menu').hidden) return;
   if(e.target.closest('button')) return;
-  if(e.code==='Space'){e.preventDefault(); $('bMain').click();}
+  if(e.code==='Space'){
+    e.preventDefault(); ac();
+    if(G.phase==='roll'&&isHuman(G.turn)&&!drag) doRoll(); else $('bMain').click();
+  }
   if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}
 });
 document.addEventListener('gesturestart',e=>e.preventDefault());

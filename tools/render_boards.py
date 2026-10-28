@@ -11,7 +11,8 @@ OUT = os.path.join(ROOT, 'boards')
 os.makedirs(OUT, exist_ok=True)
 S = 2
 W, H = 1100 * S, 700 * S
-ARM_FONT = 'C:/Windows/Fonts/sylfaen.ttf'
+ARM_FONT = next((f for f in ('C:/Windows/Fonts/sylfaen.ttf', '/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf')
+                 if os.path.exists(f)), 'sylfaen.ttf')
 
 
 # ---------- шум и дерево ----------
@@ -111,6 +112,30 @@ def text_mask(txt, cx, cy, size, font=ARM_FONT, spacing=0):
     else:
         d.text((cx * S, cy * S), txt, font=f, fill=255, anchor='mm')
     return to_arr(im, .5)
+
+
+def arc_text_mask(txt, cx, cy, radius, size, font=ARM_FONT, spacing=1.0, bottom=True):
+    """Надпись по дуге внутри круга: буквы стоят «головой» к центру, середина строки — внизу (или вверху)."""
+    im = canvas()
+    f = ImageFont.truetype(font, int(size * S * 3))
+    d0 = ImageDraw.Draw(Image.new('L', (1, 1)))
+    widths = [d0.textlength(ch, font=f) / (3 * S) + spacing for ch in txt]
+    total = sum(widths) - spacing
+    ang = math.degrees(total / radius)
+    a = 90 + ang / 2 if bottom else -90 - ang / 2
+    for ch, wd in zip(txt, widths):
+        mid = a - math.degrees((wd - spacing) / 2 / radius) * (1 if bottom else -1)
+        n = int(size * S * 3 * 1.8)
+        g = Image.new('L', (n, n), 0)
+        ImageDraw.Draw(g).text((n / 2, n / 2), ch, font=f, fill=255, anchor='mm')
+        g = g.rotate(-(mid - 90) if bottom else -(mid + 90), resample=Image.BICUBIC)
+        g = g.resize((n // 3, n // 3), Image.LANCZOS)
+        px = (cx + radius * math.cos(math.radians(mid))) * S - n // 6
+        py = (cy + radius * math.sin(math.radians(mid))) * S - n // 6
+        layer = Image.new('L', im.size, 0); layer.paste(g, (int(round(px)), int(round(py))))
+        im = Image.fromarray(np.maximum(np.asarray(im), np.asarray(layer)))
+        a -= math.degrees(wd / radius) * (1 if bottom else -1)
+    return to_arr(im, .4)
 
 
 # ---------- геометрия ----------
@@ -223,6 +248,89 @@ def arevakhach_inlay(alb, h, cx, cy, R, light, dark, seed, gloss=None):
     lit = np.max(petals, axis=0)
     h[sl] = h[sl] - union * .4 + lit * .25                    # лопасти чуть выше полос: живой рельеф маркетри
     return union
+
+
+# Силуэт Арарата из Араратской долины: слева малый Сис, справа Масис с длинным пологим западным склоном.
+# Точки (x, высота) в пикселях эталонного пейзажа 480 px шириной, высота — над линией долины.
+ARARAT_RIDGE = [(-60, 6), (0, 20), (40, 38), (72, 54), (80, 57), (88, 54), (110, 45), (132, 39), (160, 42), (200, 51),
+                (240, 66), (262, 82), (280, 98), (295, 110), (303, 113), (316, 111), (334, 103), (352, 95), (372, 85),
+                (392, 74), (414, 64), (440, 52), (480, 35), (540, 14)]
+
+
+def ararat_painting(R, seed=7):
+    """Миниатюра под лаком: заснеженные Сис и Масис над зелёной долиной. Возвращает RGB размером (2R*S)^2."""
+    N = int(2 * R * S) * 3                                    # рисуем с запасом и уменьшаем
+    v, u = (np.mgrid[0:N, 0:N] + .5) / N * 2 - 1              # u вправо, v вниз, оба в -1..1
+    rng = np.random.default_rng(seed)
+    hor, sc = .34, 1 / 175                                    # линия долины, масштаб эталона
+    x = u[0]
+    px = x / sc + 240
+    ridge = np.interp(px, *zip(*ARARAT_RIDGE)) * sc
+    ridge = ndi.gaussian_filter1d(ridge, N / 400)
+    jag = np.cumsum(rng.normal(0, 1, N)); jag -= np.linspace(jag[0], jag[-1], N)
+    ridge = ridge + ndi.gaussian_filter1d(jag, N / 300) / (np.abs(jag).max() + 1e-6) * .008
+    top = hor - ridge
+    # небо и кучевые облака
+    t = np.clip((v + 1) / (hor + 1), 0, 1)[..., None]
+    img = np.array((.24, .55, .86)) * (1 - t) ** 1.3 + np.array((.70, .83, .93)) * (1 - (1 - t) ** 1.3)
+    for cx_, cy_, w_ in ((-.55, -.42, .16), (.05, -.62, .13), (.5, -.78, .2), (-.9, -.05, .08), (.62, -.12, .07)):
+        cl = np.zeros((N, N))
+        for k in range(7):
+            ex, ey = cx_ + rng.uniform(-1, 1) * w_, cy_ + rng.uniform(-.25, .2) * w_
+            rr = w_ * rng.uniform(.25, .45)
+            cl = np.maximum(cl, np.clip(1 - np.hypot((u - ex) / rr, (v - ey) / (rr * .6)), 0, 1))
+        cl = np.clip(cl * 3, 0, 1) * (v < cy_ + w_ * .12)
+        cl = ndi.gaussian_filter(cl, N / 300) * (.85 + .3 * fbm(N, N, 30, 30, seed + 20, 3))
+        shade_c = np.clip((v - cy_ + w_ * .2) / (w_ * .4), 0, 1)[..., None]
+        ccol = np.array((1.0, 1.0, .99)) * (1 - shade_c) + np.array((.80, .84, .90)) * shade_c
+        img = img * (1 - cl[..., None]) + ccol * cl[..., None]
+    # горы: снег, освещённый слева, синие тени на восточных склонах, рёбра от вершин
+    mnt = np.clip((v - top[None, :]) * N / 2.2, 0, 1)
+    wS = (1 / (1 + np.exp((px - 132) / 14)))[None, :]      # доля Сиса: склоны двух вершин сливаются без шва
+    def peak_relief(pxk, hk, sd):
+        du, dv = u - (pxk - 240) * sc, v - (hor - hk * sc)
+        rad = np.hypot(du, dv * 1.5); ang = np.arctan2(du, dv + .02)
+        def streaks(fa, fr, sd):
+            G = fbm(int(fr), int(fa), fr / 8, fa / 6, sd, 4)
+            return ndi.map_coordinates(G, [np.clip(rad * fr * .5, 0, fr - 1), (ang / math.pi * .5 + .5) * (fa - 1)], order=1, mode='nearest')
+        rib = 1 - np.abs(streaks(500, 100, sd) - .5) * 2
+        rib2 = 1 - np.abs(streaks(1400, 220, sd + 1) - .5) * 2
+        return ndi.gaussian_filter(rib ** 3 * .7 + rib2 ** 2 * .3, 1.5), np.tanh(-du / .1)
+    rS, fS = peak_relief(80, 57, seed + 3); rM, fM = peak_relief(303, 113, seed + 5)
+    relief = rS * wS + rM * (1 - wS)
+    gy, gx = np.gradient(relief)
+    slope = np.gradient(ridge)[None, :] / (2 / N)             # наклон гребня: > 0 — склон к западу (освещён)
+    face = np.tanh(slope * 1.5) * .5 + (fS * wS + fM * (1 - wS)) * .5
+    light = .58 + .5 * face + (-gx * .8 - gy * .3) * N / 70 + (relief - .5) * .08
+    light = np.clip(light, 0, 1.1)[..., None]
+    snowS, snowL = np.array((.40, .46, .80)), np.array((1.0, 1.0, .99))
+    m_col = snowS + (snowL - snowS) * light
+    low = np.clip((v - (hor - .07)) / .07, 0, 1)[..., None]        # у подножия снег сходит, проступает склон в дымке
+    m_col = m_col * (1 - low * .55) + np.array((.58, .62, .74)) * low * .55
+    img = img * (1 - mnt[..., None]) + m_col * mnt[..., None]
+    # тёмный холм у подножия Сиса и полоса садов
+    hill = np.interp(px, [-60, -10, 30, 70, 110, 140], [0, 8, 14, 12, 4, 0]) * sc
+    hm = np.clip((v - (hor - hill)[None, :]) * N / 2.2, 0, 1)
+    img = img * (1 - hm[..., None]) + np.array((.22, .20, .30)) * hm[..., None]
+    band = hor + .012
+    trees = band - (.004 + .012 * np.clip(fbm(1, N, 1, 90, seed + 11, 3)[0] - .3, 0, 1))
+    tm = np.clip((v - trees[None, :]) * N / 2.2, 0, 1)
+    img = img * (1 - tm[..., None]) + np.array((.33, .40, .18)) * tm[..., None]
+    # поле: ряды всходов сходятся к горизонту, ближе — сочнее и темнее
+    base = band + .02
+    gv = np.clip((v - base) / (1 - base), 0, 1)
+    rows = np.sin((u + .15) / (gv + .02) * 16) * .5 + .5
+    rows = rows ** 2 * np.clip(gv * 6, 0, 1)
+    field = np.array((.62, .74, .28)) * (1 - gv[..., None]) + np.array((.12, .45, .12)) * gv[..., None]
+    field = field * (1 - rows[..., None] * .2) * (.9 + .2 * fbm(N, N, 30, 60, seed + 12, 3)[..., None])
+    strip = np.exp(-((v - base - .03) / .015) ** 2)[..., None] * .35    # светлая жёлтая полоса вдали
+    field = field * (1 - strip) + np.array((.85, .80, .40)) * strip
+    vm = np.clip((v - band) * N / 2.2, 0, 1)
+    img = img * (1 - vm[..., None]) + field * vm[..., None]
+    # тёплый тон лака и мазок кисти
+    img = img * np.array((1.0, .97, .90)) * (.97 + .06 * fbm(N, N, 90, 90, seed + 14, 2)[..., None])
+    out = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).resize((N // 3, N // 3), Image.LANCZOS)
+    return np.asarray(out, float) / 255
 
 
 def fleur(x, y, d):
@@ -417,32 +525,32 @@ def board_yerevan():
     dmask = np.zeros((H, W))
     for (x, y) in dots: dmask = np.maximum(dmask, circle(x, y, 4.5))
     alb = put(alb, dmask, btex)
-    # медальон «Арарат»
-    disc = circle(250, 350, 66)
-    alb = put(alb, disc, btex)
-    alb = put(alb, np.clip(circle(250, 350, 66) - circle(250, 350, 63), 0, 1), np.ones((H, W, 3)) * burn)
-    alb = put(alb, np.clip(circle(250, 350, 58.5) - circle(250, 350, 57.3), 0, 1) * .8, np.ones((H, W, 3)) * burn)
-    mount = poly([(196, 378), (222, 346), (232, 354), (262, 312), (282, 334), (304, 378)])
-    shade_m = wood(H, W, (.62, .38, .16), (.42, .22, .08), rings=40, seed=31, contrast=.4)
-    alb = put(alb, mount, shade_m)
-    snow = polys([[(262, 312), (251, 327), (258, 325), (264, 331), (271, 323), (277, 328), (282, 334)],
-                  [(222, 346), (217, 352), (224, 351), (228, 355)]])
-    alb = put(alb, snow, btex)
-    t1 = text_mask('ԱՐԱՐԱՏ', 250, 398, 15, spacing=2)
-    alb = put(alb, t1 * .9, np.ones((H, W, 3)) * burn)
-    h -= (eng.max() * 0 + mount * .8 + t1 * 1)
-    # медальон с аревахачем и лентой «ՀԱՅԱՍՏԱՆ»
-    disc2 = circle(750, 345, 62)
-    alb = put(alb, disc2, btex)
-    alb = put(alb, np.clip(circle(750, 345, 62) - circle(750, 345, 59), 0, 1), np.ones((H, W, 3)) * burn)
-    arevakhach_inlay(alb, h, 750, 345, 48, BIRCH, ((.50, .28, .11), (.30, .15, .05)), 77)
-    ribbon = poly(bez((672, 392), (720, 404), (780, 404), (828, 392), 30) + [(836, 410), (824, 418)] +
-                  bez((824, 418), (780, 432), (720, 432), (676, 418), 30) + [(664, 410)])
-    alb = put(alb, ribbon, btex)
-    alb = put(alb, np.clip(ribbon - ndi.grey_erosion(ribbon, size=3), 0, 1), np.ones((H, W, 3)) * burn)
-    t2 = text_mask('ՀԱՅԱՍՏԱՆ', 750, 414, 14, spacing=2)
-    alb = put(alb, t2 * .9, np.ones((H, W, 3)) * burn)
-    h += ribbon * 1.5 - t2
+    # два медальона: берёзовый круг с выжженным кантом, надпись по дуге внутри пояска
+    def medallion(cx, cy, word):
+        nonlocal alb, h
+        disc = circle(cx, cy, 74.5)
+        alb = put(alb, disc, btex)
+        for r0, r1 in ((74.5, 72.3), (60.2, 58.8)):
+            alb = put(alb, np.clip(circle(cx, cy, r0) - circle(cx, cy, r1), 0, 1) * .9, np.ones((H, W, 3)) * burn)
+        txt = arc_text_mask(word, cx, cy, 66.6, 11.5, spacing=2.2)
+        dots = np.zeros((H, W))
+        for k in range(-4, 5):
+            a_ = math.radians(-90 + k * 9)
+            dots = np.maximum(dots, circle(cx + 66.6 * math.cos(a_), cy + 66.6 * math.sin(a_), 1.9 if k else 2.6))
+        alb = put(alb, np.maximum(txt, dots) * .92, np.ones((H, W, 3)) * burn)
+        h += disc * 1.2 - (txt + dots) * .8
+    medallion(250, 350, 'ԱՐԱՐԱՏ')
+    medallion(750, 350, 'ՀԱՅԱՍՏԱՆ')
+    # слева — живописная миниатюра Арарата под лаком
+    pic = np.zeros((H, W, 3)); n = int(2 * 58 * S)
+    y0, x0 = int((350 - 58) * S), int((250 - 58) * S)
+    pic[y0:y0 + n, x0:x0 + n] = ararat_painting(58)
+    pm = circle(250, 350, 58.2)
+    alb = put(alb, pm, pic)
+    gloss = np.maximum(gloss, pm)
+    h -= pm * .6
+    # справа — аревахач маркетри
+    arevakhach_inlay(alb, h, 750, 350, 54, BIRCH, ((.50, .28, .11), (.30, .15, .05)), 77)
     gap = rrect(497.5, 30, 502.5, 670, 2)
     h -= gap * 14
     alb = alb * (1 - gap[..., None] * .6)
@@ -465,14 +573,19 @@ def board_glass():
     gloss = np.full((H, W), .25)
     fields = np.maximum(field_with_bays(40, 27, 15), field_with_bays(540, 27, 15))
     glass = np.ones((H, W, 3)) * np.array((.045, .05, .06))
-    # звёзды под стеклом: белая краска, половины лучей разного тона, тёмные швы
+    # под стеклом — тёмный камень и две воровские звезды: восемь равных лучей,
+    # у каждого луча одна половина залита белой краской, вторая — только тонкий контур
+    stone = np.array((.10, .10, .11)) * (.75 + .5 * fbm(H, W, 40, 60, 43, 5)[..., None])
+    glass = put(glass, fields, stone)
     for cx in (250, 750):
-        halves = star_halves(cx, 350, 168, 64, n=6)
-        lt = polys([a for a, b in halves]); dk = polys([b for a, b in halves])
-        glass = put(glass, lt, np.ones((H, W, 3)) * np.array((.93, .93, .95)))
-        glass = put(glass, dk, np.ones((H, W, 3)) * np.array((.74, .75, .79)))
-        seams = lines([[(cx, 350), a[1]] for a, b in halves] + [star_poly(cx, 350, 168, 64, 6) + [star_poly(cx, 350, 168, 64, 6)[0]]], 2.2)
-        glass = put(glass, seams * .9 * np.maximum(lt, dk), np.ones((H, W, 3)) * .08)
+        R, r = 172, 52
+        halves = star_halves(cx, 350, R, r, n=8)
+        lt = polys([b for a, b in halves])
+        chalk = np.array((.90, .90, .92)) * (.86 + .22 * fbm(H, W, 120, 180, 44 + cx, 3)[..., None])
+        glass = put(glass, lt, chalk)
+        sp = star_poly(cx, 350, R, r, 8)
+        outline = lines([sp + [sp[0]]] + [[(cx, 350), a[1]] for a, b in halves], 2.0)
+        glass = put(glass, outline * .9, np.ones((H, W, 3)) * np.array((.84, .84, .87)))
     # тонкие матовые контуры пунктов
     tri = []
     for i in range(24):

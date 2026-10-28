@@ -95,8 +95,9 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hit{cursor:pointer}
 
 /* ---------- 3D кубики ---------- */
-.dice3d{position:absolute;inset:0;pointer-events:none;perspective:calc(var(--ds,50px) * 14);overflow:visible}
-.d3{position:absolute;width:var(--ds,50px);height:var(--ds,50px);margin:calc(var(--ds,50px) / -2) 0 0 calc(var(--ds,50px) / -2);transform-style:preserve-3d;transition:opacity .25s}
+.dice3d{position:absolute;inset:0;pointer-events:none;overflow:visible}
+/* у каждого кубика своя перспектива с точкой зрения прямо над ним: лежащий кубик показывает только верхнюю грань */
+.d3{position:absolute;width:var(--ds,50px);height:var(--ds,50px);margin:calc(var(--ds,50px) / -2) 0 0 calc(var(--ds,50px) / -2);perspective:calc(var(--ds,50px) * 14);transition:opacity .25s}
 .d3.used{opacity:.32}
 .d3.grab{pointer-events:auto;cursor:grab;touch-action:none}
 .d3.grab .cube{animation:nudge 2.4s ease-in-out infinite}
@@ -117,6 +118,8 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
   box-shadow:inset 0 0 0 1px rgba(176,138,62,.55),inset 0 calc(var(--ds,50px) * -.06) calc(var(--ds,50px) * .12) rgba(90,60,20,.25);
   display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:16%;
 }
+/* внутренний сердечник: закрывает щели между скруглёнными гранями, когда кубик повёрнут ребром */
+.d3 .core{position:absolute;inset:3%;border-radius:16%;background:#d9cba8}
 .d3 .pip{width:68%;height:68%;margin:auto;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a2a1a,#0f0904);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}
 .d3 .pip.red{background:radial-gradient(circle at 40% 35%,#c0484a,#6e1517)}
 
@@ -303,7 +306,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='8';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='9';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -633,6 +636,7 @@ function dieEl(v){
     const [a,b]=FACE[f]; let pips='';
     for(let k=0;k<9;k++) pips+=PIPIDX[f].includes(k)?`<i class="pip${f===1?' red':''}"></i>`:'<i></i>';
     faces+=`<div class="face" style="transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) / 2))">${pips}</div>`;
+    faces+=`<div class="core" style="transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) * .47))"></div>`;
   }
   el.innerHTML=`<div class="shadow"></div><div class="mover"><div class="cube">${faces}</div></div>`;
   el.dataset.v=v;

@@ -257,79 +257,92 @@ ARARAT_RIDGE = [(-60, 6), (0, 20), (40, 38), (72, 54), (80, 57), (88, 54), (110,
                 (392, 74), (414, 64), (440, 52), (480, 35), (540, 14)]
 
 
-def ararat_painting(R, seed=7):
-    """Миниатюра под лаком: заснеженные Сис и Масис над зелёной долиной. Возвращает RGB размером (2R*S)^2."""
-    N = int(2 * R * S) * 3                                    # рисуем с запасом и уменьшаем
-    v, u = (np.mgrid[0:N, 0:N] + .5) / N * 2 - 1              # u вправо, v вниз, оба в -1..1
+def veneer(n, cols, angle, seed, **kw):
+    """Квадратный лист шпона n×n с волокнами под углом angle (градусы)."""
+    big = int(n * 1.45)
+    t = wood(big, big, *cols, seed=seed, **kw)
+    t = ndi.rotate(t, angle, axes=(0, 1), reshape=False, order=1, mode='reflect')
+    o = (big - n) // 2
+    return t[o:o + n, o:o + n]
+
+
+def ararat_marquetry(R, seed=7):
+    """Арарат маркетри: каждая часть пейзажа — отдельный кусок шпона своей породы со своим направлением волокон,
+    между кусками тонкий клеевой шов, края подпалены песком (sand shading) для объёма.
+    Сис и Масис целиком помещаются в круг радиуса R. Возвращает RGB размером (2R*S)^2."""
+    N = int(2 * R * S) * 2
+    v, u = (np.mgrid[0:N, 0:N] + .5) / N * 2 - 1
     rng = np.random.default_rng(seed)
-    hor, sc = .34, 1 / 175                                    # линия долины, масштаб эталона
+    hor, sx, sy = .40, 1 / 262, 1 / 150                       # по высоте горы чуть вытянуты, чтобы читались в круге
     x = u[0]
-    px = x / sc + 240
-    ridge = np.interp(px, *zip(*ARARAT_RIDGE)) * sc
-    ridge = ndi.gaussian_filter1d(ridge, N / 400)
-    jag = np.cumsum(rng.normal(0, 1, N)); jag -= np.linspace(jag[0], jag[-1], N)
-    ridge = ridge + ndi.gaussian_filter1d(jag, N / 300) / (np.abs(jag).max() + 1e-6) * .008
+    px = x / sx + 255
+    ridge = np.interp(px, *zip(*ARARAT_RIDGE)) * sy
+    ridge = ndi.gaussian_filter1d(ridge, N / 300)
     top = hor - ridge
-    # небо и кучевые облака
-    t = np.clip((v + 1) / (hor + 1), 0, 1)[..., None]
-    img = np.array((.24, .55, .86)) * (1 - t) ** 1.3 + np.array((.70, .83, .93)) * (1 - (1 - t) ** 1.3)
-    for cx_, cy_, w_ in ((-.55, -.42, .16), (.05, -.62, .13), (.5, -.78, .2), (-.9, -.05, .08), (.62, -.12, .07)):
-        cl = np.zeros((N, N))
-        for k in range(7):
-            ex, ey = cx_ + rng.uniform(-1, 1) * w_, cy_ + rng.uniform(-.25, .2) * w_
-            rr = w_ * rng.uniform(.25, .45)
-            cl = np.maximum(cl, np.clip(1 - np.hypot((u - ex) / rr, (v - ey) / (rr * .6)), 0, 1))
-        cl = np.clip(cl * 3, 0, 1) * (v < cy_ + w_ * .12)
-        cl = ndi.gaussian_filter(cl, N / 300) * (.85 + .3 * fbm(N, N, 30, 30, seed + 20, 3))
-        shade_c = np.clip((v - cy_ + w_ * .2) / (w_ * .4), 0, 1)[..., None]
-        ccol = np.array((1.0, 1.0, .99)) * (1 - shade_c) + np.array((.80, .84, .90)) * shade_c
-        img = img * (1 - cl[..., None]) + ccol * cl[..., None]
-    # горы: снег, освещённый слева, синие тени на восточных склонах, рёбра от вершин
-    mnt = np.clip((v - top[None, :]) * N / 2.2, 0, 1)
-    wS = (1 / (1 + np.exp((px - 132) / 14)))[None, :]      # доля Сиса: склоны двух вершин сливаются без шва
-    def peak_relief(pxk, hk, sd):
-        du, dv = u - (pxk - 240) * sc, v - (hor - hk * sc)
-        rad = np.hypot(du, dv * 1.5); ang = np.arctan2(du, dv + .02)
-        def streaks(fa, fr, sd):
-            G = fbm(int(fr), int(fa), fr / 8, fa / 6, sd, 4)
-            return ndi.map_coordinates(G, [np.clip(rad * fr * .5, 0, fr - 1), (ang / math.pi * .5 + .5) * (fa - 1)], order=1, mode='nearest')
-        rib = 1 - np.abs(streaks(500, 100, sd) - .5) * 2
-        rib2 = 1 - np.abs(streaks(1400, 220, sd + 1) - .5) * 2
-        return ndi.gaussian_filter(rib ** 3 * .7 + rib2 ** 2 * .3, 1.5), np.tanh(-du / .1)
-    rS, fS = peak_relief(80, 57, seed + 3); rM, fM = peak_relief(303, 113, seed + 5)
-    relief = rS * wS + rM * (1 - wS)
-    gy, gx = np.gradient(relief)
-    slope = np.gradient(ridge)[None, :] / (2 / N)             # наклон гребня: > 0 — склон к западу (освещён)
-    face = np.tanh(slope * 1.5) * .5 + (fS * wS + fM * (1 - wS)) * .5
-    light = .58 + .5 * face + (-gx * .8 - gy * .3) * N / 70 + (relief - .5) * .08
-    light = np.clip(light, 0, 1.1)[..., None]
-    snowS, snowL = np.array((.40, .46, .80)), np.array((1.0, 1.0, .99))
-    m_col = snowS + (snowL - snowS) * light
-    low = np.clip((v - (hor - .07)) / .07, 0, 1)[..., None]        # у подножия снег сходит, проступает склон в дымке
-    m_col = m_col * (1 - low * .55) + np.array((.58, .62, .74)) * low * .55
-    img = img * (1 - mnt[..., None]) + m_col * mnt[..., None]
-    # тёмный холм у подножия Сиса и полоса садов
-    hill = np.interp(px, [-60, -10, 30, 70, 110, 140], [0, 8, 14, 12, 4, 0]) * sc
-    hm = np.clip((v - (hor - hill)[None, :]) * N / 2.2, 0, 1)
-    img = img * (1 - hm[..., None]) + np.array((.22, .20, .30)) * hm[..., None]
-    band = hor + .012
-    trees = band - (.004 + .012 * np.clip(fbm(1, N, 1, 90, seed + 11, 3)[0] - .3, 0, 1))
-    tm = np.clip((v - trees[None, :]) * N / 2.2, 0, 1)
-    img = img * (1 - tm[..., None]) + np.array((.33, .40, .18)) * tm[..., None]
-    # поле: ряды всходов сходятся к горизонту, ближе — сочнее и темнее
-    base = band + .02
-    gv = np.clip((v - base) / (1 - base), 0, 1)
-    rows = np.sin((u + .15) / (gv + .02) * 16) * .5 + .5
-    rows = rows ** 2 * np.clip(gv * 6, 0, 1)
-    field = np.array((.62, .74, .28)) * (1 - gv[..., None]) + np.array((.12, .45, .12)) * gv[..., None]
-    field = field * (1 - rows[..., None] * .2) * (.9 + .2 * fbm(N, N, 30, 60, seed + 12, 3)[..., None])
-    strip = np.exp(-((v - base - .03) / .015) ** 2)[..., None] * .35    # светлая жёлтая полоса вдали
-    field = field * (1 - strip) + np.array((.85, .80, .40)) * strip
-    vm = np.clip((v - band) * N / 2.2, 0, 1)
-    img = img * (1 - vm[..., None]) + field * vm[..., None]
-    # тёплый тон лака и мазок кисти
-    img = img * np.array((1.0, .97, .90)) * (.97 + .06 * fbm(N, N, 90, 90, seed + 14, 2)[..., None])
-    out = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).resize((N // 3, N // 3), Image.LANCZOS)
+    mnt = v > top[None, :]
+    # подножие: пологая линия предгорий, ниже — поле
+    foot = hor + .02 * np.sin(x * 2.3 + .6) + .01 * np.sin(x * 7.1)
+    fieldline = hor + .075 + .015 * np.sin(x * 1.7 - .4)
+    # вершины и линия тени (от вершины вниз-вправо: восточные склоны в тени)
+    peaks = [((80 - 255) * sx, hor - 57 * sy), ((303 - 255) * sx, hor - 113 * sy)]
+    wS = 1 / (1 + np.exp((px - 132) / 10))[None, :]
+    def shadow_side(pu, pv):
+        wob = .03 * np.sin((v - pv) * 9 + pu * 5)
+        return u > pu + (v - pv) * .42 + wob
+    # тень Сиса кончается у седловины: дальше вниз-влево её закрывает западный склон Масиса
+    su, sv = (132 - 255) * sx, hor - 39 * sy
+    sis_sh = shadow_side(*peaks[0]) & (u < su - .04 - (v - sv) * .55)
+    shadow = np.where(wS > .5, sis_sh, shadow_side(*peaks[1]))
+    # снег: языками вниз по кулуарам; вырезан ножом, поэтому края плавные
+    hgtM = np.clip((hor - v) / (113 * sy), 0, 1); hgtS = np.clip((hor - v) / (57 * sy), 0, 1)
+    ws2 = 1 / (1 + np.exp((px - 132) / 28))[None, :]
+    hgt = hgtS * ws2 + hgtM * (1 - ws2)
+    ang = np.where(wS > .5, np.arctan2(u - peaks[0][0], v - peaks[0][1] + .05), np.arctan2(u - peaks[1][0], v - peaks[1][1] + .05))
+    knots = rng.random(64)
+    tf = lambda a, k: np.interp(a * k, np.arange(64) - 32, knots, period=64)
+    tongues = (tf(ang, 5) * ws2 + tf(ang, 9) * (1 - ws2)) ** 2.2
+    snowline = .50 * ws2 + .40 * (1 - ws2) - tongues * .34 + (fbm(N, N, 3, 3, seed + 2, 2) - .5) * .08
+    snow = mnt & (hgt > snowline)
+    # метки кусков
+    L = np.zeros((N, N), int)                                 # 0 небо
+    L[mnt & ~snow & ~shadow] = 1                              # камень, свет
+    L[mnt & ~snow & shadow] = 2                               # камень, тень
+    L[snow & ~shadow] = 3                                     # снег, свет
+    L[snow & shadow] = 4                                      # снег, тень
+    L[v > foot[None, :]] = 5                                  # предгорья
+    L[v > fieldline[None, :]] = 6                             # поле
+    for cx_, cy_, w_ in ((-.45, -.52, .17), (.42, -.70, .13)):  # облака
+        cl = np.zeros((N, N), bool)
+        for k in range(5):
+            ex = cx_ + (k - 2) / 2 * w_ * .8; rr = w_ * (.45 if k in (1, 2, 3) else .3) * rng.uniform(.85, 1.1)
+            cl |= np.hypot((u - ex) / rr, (v - cy_ + rr * .5) / (rr * .75)) < 1
+        L[cl & (v < cy_ + .01) & (L == 0)] = 7
+    # поле — полосы двух пород, сходящиеся к горизонту, как ряды всходов
+    gv = np.clip((v - fieldline[None, :]) / (1 - hor), 0, 1)
+    strip = np.floor((u + .1) / (gv + .08) * 1.6).astype(int) % 2
+    L[(L == 6) & (strip == 1) & (gv > .06)] = 8
+    woods = {0: (((.94, .86, .69), (.86, .75, .55)), 2, dict(rings=8, contrast=.25, fiber=.08, warp=1)),
+             1: (((.72, .47, .27), (.55, .32, .16)), -38, dict(rings=14, contrast=.45, fiber=.12)),
+             2: (((.44, .27, .15), (.27, .15, .07)), 42, dict(rings=16, contrast=.45, fiber=.12)),
+             3: (((.99, .95, .86), (.93, .87, .74)), -60, dict(rings=10, contrast=.22, fiber=.07, warp=1)),
+             4: (((.83, .77, .65), (.71, .63, .50)), 60, dict(rings=10, contrast=.3, fiber=.08, warp=1)),
+             5: (((.50, .33, .18), (.33, .20, .09)), 0, dict(rings=10, contrast=.5, fiber=.12)),
+             6: (((.78, .64, .38), (.62, .48, .26)), 90, dict(rings=26, contrast=.4, fiber=.1)),
+             7: (((.99, .95, .86), (.93, .87, .74)), 0, dict(rings=6, contrast=.2, fiber=.06)),
+             8: (((.66, .52, .29), (.52, .39, .20)), 90, dict(rings=26, contrast=.4, fiber=.1))}
+    img = np.zeros((N, N, 3))
+    for k, (cols, angle, kw) in woods.items():
+        m = L == k
+        if not m.any(): continue
+        tex = veneer(N, cols, angle, seed * 10 + k, **kw)
+        # песочная подпалина: кусок темнее у краёв, сильнее у нижнего края снега и у гребня предгорий
+        d = ndi.distance_transform_edt(m) / N
+        burn = np.exp(-d / .025) * (.28 if k in (3, 4, 5) else .16)
+        img[m] = (tex * (1 - burn[..., None]))[m]
+    # клеевые швы между кусками — линия в пиксель
+    seam = (ndi.maximum_filter(L, 2) != ndi.minimum_filter(L, 2)).astype(float)
+    img = img * (1 - seam[..., None] * .55)
+    out = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).resize((N // 2, N // 2), Image.LANCZOS)
     return np.asarray(out, float) / 255
 
 
@@ -541,14 +554,13 @@ def board_yerevan():
         h += disc * 1.2 - (txt + dots) * .8
     medallion(250, 350, 'ԱՐԱՐԱՏ')
     medallion(750, 350, 'ՀԱՅԱՍՏԱՆ')
-    # слева — живописная миниатюра Арарата под лаком
+    # слева — Арарат маркетри
     pic = np.zeros((H, W, 3)); n = int(2 * 58 * S)
     y0, x0 = int((350 - 58) * S), int((250 - 58) * S)
-    pic[y0:y0 + n, x0:x0 + n] = ararat_painting(58)
+    pic[y0:y0 + n, x0:x0 + n] = ararat_marquetry(58)
     pm = circle(250, 350, 58.2)
     alb = put(alb, pm, pic)
-    gloss = np.maximum(gloss, pm)
-    h -= pm * .6
+    h -= pm * .3
     # справа — аревахач маркетри
     arevakhach_inlay(alb, h, 750, 350, 54, BIRCH, ((.50, .28, .11), (.30, .15, .05)), 77)
     gap = rrect(497.5, 30, 502.5, 670, 2)

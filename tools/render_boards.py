@@ -321,142 +321,270 @@ def rosette(rv, cx, cy, r, petals, base, height, seed=0):
     rv.raise_(rv.disc(cx, cy, r * .3), base, height * 1.25, r * .25, .5)
 
 
+def weave(x, y, P, w, ang=45):
+    """Плетёнка из двух систем лент с переплетением «над-под»: высота 0..1."""
+    a = math.radians(ang)
+    u = (x * math.cos(a) + y * math.sin(a)) / P; v = (-x * math.sin(a) + y * math.cos(a)) / P
+    fu, fv = u % 1 - .5, v % 1 - .5
+    r1 = np.sqrt(np.clip(1 - (fu / w) ** 2, 0, 1)); r2 = np.sqrt(np.clip(1 - (fv / w) ** 2, 0, 1))
+    over = (np.floor(u) + np.floor(v)) % 2 == 0
+    # на перекрёстке верхняя лента целая, нижняя ныряет под неё с зазором
+    h1 = r1 + np.where(over, .35, -.35) * (r2 > 0); h2 = r2 + np.where(over, -.35, .35) * (r1 > 0)
+    gap1 = (r1 > 0) & (np.abs(fv) > w) & (np.abs(fv) < w + .06) & ~over
+    gap2 = (r2 > 0) & (np.abs(fu) > w) & (np.abs(fu) < w + .06) & over
+    hgt = np.maximum(np.where(r1 > 0, h1, 0), np.where(r2 > 0, h2, 0))
+    return np.clip(hgt - (gap1 | gap2) * .8, 0, None)
+
+
 def khachkar(R=58, seed=11, sc=1.0):
-    """Хачкар: каменная плита с витым бордюром, крест с раздвоенными концами на розетке,
-    виноградные побеги, розетки над перекладиной и кружевной фон."""
+    """Хачкар по образцу классической плиты: карниз с нишей и крестиком, широкая рамка-плетёнка,
+    в выбранном поле крест на «крыльях» с концами-завитками, под ним пара больших волют-побегов,
+    колесо-розетка и плетёный фриз; плита стоит на резном постаменте."""
     rv = Relief(R, seed, sc)
     x, y = rv.x, rv.y
     rv.h[:] = -7.5                                            # уровень поля доски
-    X0, X1, Y0, Y1 = -29, 29, -48, 38
-    slab = [(X0 + 4, Y0)] + arc_pts(X1 - 4, Y0 + 4, 4, -90, 0, 8) + [(X1, Y1), (X0, Y1)] + arc_pts(X0 + 4, Y0 + 4, 4, 180, 270, 8)
-    rv.raise_(rv.poly(slab), -7.5, 7.5, .9, .5)
-    # постамент ступенями
-    rv.raise_(rv.poly([(-34, 38), (34, 38), (35, 44), (-35, 44)]), -7.5, 6.0, .7)
-    rv.raise_(rv.poly([(-26, 44), (26, 44), (27, 50), (-27, 50)]), -7.5, 4.5, .7)
-    # витой бордюр: косые валики-«верёвка» по периметру
-    B = 5.2
-    band = rv.poly(slab) * (1 - rv.poly([(X0 + B, Y0 + B), (X1 - B, Y0 + B), (X1 - B, Y1 - B), (X0 + B, Y1 - B)]))
-    side = np.abs(x) > (X1 - B) - .01
-    s_ = np.where(side & (y > Y0 + B), y * np.sign(x), x)
-    t_ = np.where(side & (y > Y0 + B), np.abs(x) - (X1 - B / 2), np.where(y < 0, y - (Y0 + B / 2), y - (Y1 - B / 2)))
-    ph = ((s_ + t_ * 1.1) / 3.2) % 1
-    rope = np.sqrt(np.clip(1 - ((ph - .5) * 2.1) ** 2, 0, 1)) * np.sqrt(np.clip(1 - (t_ / (B / 2)) ** 2, 0, 1))
-    rv.h = np.where(band > .5, -1.2 + rope * 2.4, rv.h)
-    # поле внутри — выбрано, по нему кружево: ромбическая решётка с шишечками в ячейках
-    PX0, PX1, PY0, PY1 = X0 + B + .6, X1 - B - .6, Y0 + B + .6, Y1 - B - .6
-    panel = rv.poly([(PX0, PY0), (PX1, PY0), (PX1, PY1), (PX0, PY1)])
-    rv.carve(panel, 0, -4.2, .7)
-    p = 4.4
-    g1 = np.abs(((x + y) / p) % 1 - .5); g2 = np.abs(((x - y) / p) % 1 - .5)
-    lat = np.maximum(np.clip(1 - g1 / .09, 0, 1), np.clip(1 - g2 / .09, 0, 1))
-    boss = np.clip(1 - np.hypot(g1 - .5, g2 - .5) / .14, 0, 1)
-    rv.h = np.where(panel > .5, rv.h + np.sqrt(lat) * 1.1 + np.sqrt(boss) * .9, rv.h)
-    # подложка под крестом и побегами — гладкая, чтобы рисунок читался
-    cx, cy = 0, -14
+    X1, Y0, Y1 = 28.5, -49.5, 37.5                            # плита
+    slab = rv.poly([(-X1, Y0 + 5), (X1, Y0 + 5), (X1, Y1), (-X1, Y1)])
+    rv.raise_(slab, -7.5, 7.5, .9, .5)
+    # карниз-навершие: выступающая полка с нишей посередине
+    top = rv.poly([(-X1 - 1.2, Y0), (X1 + 1.2, Y0), (X1 + 1.2, Y0 + 5.5), (-X1 - 1.2, Y0 + 5.5)])
+    rv.raise_(top, -7.5, 8.6, .8, .5)
+    rv.h -= rv.lines([[(-X1 - 1.2, Y0 + 1.4), (X1 + 1.2, Y0 + 1.4)]], .3) * .6
+    band = weave(x, y, 2.2, .26, 45) * (top > .5) * ((y > Y0 + 2) & (y < Y0 + 5.2) & (np.abs(x) > 4.5))
+    rv.h -= (top > .5) * ((y > Y0 + 2) & (y < Y0 + 5.2) & (np.abs(x) > 4.5)) * 1.4
+    rv.h += band * 1.1
+    niche = [(-3.6, Y0 + 5.4), (-3.6, Y0 + 3.2)] + arc_pts(0, Y0 + 3.2, 3.6, 180, 360, 16) + [(3.6, Y0 + 5.4)]
+    rv.carve(rv.poly(niche), 1.1, -1.4, .4)
+    rv.raise_(rv.lines([[(0, Y0 + 1.6), (0, Y0 + 5.0)], [(-1.4, Y0 + 2.9), (1.4, Y0 + 2.9)]], .55), -1.4, 1.6, .25)
+    # рамка: широкая плетёнка из мелких квадратных узлов
+    B = 8.2
+    fx0, fx1, fy0, fy1 = -X1 + B, X1 - B, Y0 + 5.5 + B * .8, Y1 - 6.5
+    frame = (slab > .5) & ~((np.abs(x) < fx1) & (y > fy0) & (y < fy1)) & (y > Y0 + 5.5)
+    rv.h = np.where(frame, -1.6 + weave(x, y, 2.75, .24, 45) * 1.9, rv.h)
+    cells = (np.abs((x / 3.9) % 1 - .5) > .46) | (np.abs((y / 3.9) % 1 - .5) > .46)
+    rv.h -= frame * cells * .5
+    # нижний фриз плиты: волнистая плетёнка
+    fr = (slab > .5) & (y >= fy1) & (y < Y1 - 1.2) & (np.abs(x) < fx1 + B)
+    s1 = np.sin(x / 2.4 * math.pi) * 1.6 + (fy1 + Y1 - 1.2) / 2; s2 = -np.sin(x / 2.4 * math.pi) * 1.6 + (fy1 + Y1 - 1.2) / 2
+    w1 = np.sqrt(np.clip(1 - ((y - s1) / .75) ** 2, 0, 1)); w2 = np.sqrt(np.clip(1 - ((y - s2) / .75) ** 2, 0, 1))
+    top1 = (np.floor(x / 2.4) % 2) == 0
+    rv.h = np.where(fr, -2.2 + np.maximum(w1 + .3 * top1 * (w2 > 0), w2 + .3 * ~top1 * (w1 > 0)) * 2.2, rv.h)
+    # поле — выбрано гладко
+    field = rv.poly([(-fx1, fy0), (fx1, fy0), (fx1, fy1), (-fx1, fy1)])
+    rv.carve(field, 0, -4.4, .6)
+    F = -4.4
+    # крест: центр перекрестья, ветви расширяются к концам и заканчиваются парой завитков с трилистником
+    cx, cy = 0, -19
     def arm(dx, dy, L, w0, w1):
         px_, py_ = -dy, dx
-        e = (cx + dx * L, cy + dy * L)
-        b0 = (cx + dx * 3, cy + dy * 3)
-        notch = (cx + dx * (L - 3.2), cy + dy * (L - 3.2))
-        return [(b0[0] + px_ * w0 / 2, b0[1] + py_ * w0 / 2), (e[0] + px_ * w1 / 2, e[1] + py_ * w1 / 2), notch,
-                (e[0] - px_ * w1 / 2, e[1] - py_ * w1 / 2), (b0[0] - px_ * w0 / 2, b0[1] - py_ * w0 / 2)], e, (px_, py_)
-    arms = [arm(0, -1, 23, 5.2, 10), arm(-1, 0, 19, 5.2, 10), arm(1, 0, 19, 5.2, 10), arm(0, 1, 27, 5.2, 9)]
-    halo = rv.poly(*[a[0] for a in arms])
-    halo = ndi.binary_dilation(halo > .5, iterations=int(1.6 * rv.k)) | rv.disc(0, 24.5, 9.6)
-    rv.h = np.where(halo, -4.2, rv.h)
-    # побеги из розетки: завитки с листьями-трилистниками и гроздьями
-    for sgn in (-1, 1):
-        stem = [(sgn * 5, 21), (sgn * 10, 17), (sgn * 15, 13), (sgn * 17.5, 7), (sgn * 17, 1.5)]
-        sp = spiral(sgn * 14.6, 2.6, 2.6, 1.15, math.radians(0 if sgn > 0 else 180), cw=-sgn)
-        rv.raise_(rv.lines([stem, sp], 1.5), -4.2, 2.2, .7, .5)
-        for (lx, ly, la) in ((10.5, 16.5, -50), (16.5, 11, -10)):
-            a = math.radians(la if sgn > 0 else 180 - la)
-            c, s2 = math.cos(a), math.sin(a)
-            leaf = [(sgn * lx + c * t * 6.5 - s2 * math.sin(math.pi * t ** .8) * 2.8, ly + s2 * t * 6.5 + c * math.sin(math.pi * t ** .8) * 2.8) for t in np.linspace(0, 1, 12)]
-            leaf += [(sgn * lx + c * t * 6.5 + s2 * math.sin(math.pi * t ** .8) * 2.8, ly + s2 * t * 6.5 - c * math.sin(math.pi * t ** .8) * 2.8) for t in np.linspace(1, 0, 12)]
-            rv.raise_(rv.poly(leaf, jit=.05), -4.2, 2.0, .8, .5)
-            vein = [(sgn * lx + c * .6, ly + s2 * .6), (sgn * lx + c * 5.6, ly + s2 * 5.6)]
-            rv.h -= rv.lines([vein], .35) * .8
-        for (gx, gy) in ((20.5, 22), (21.8, 25), (19.2, 25), (20.5, 28)):    # гроздь в нижнем углу
-            rv.raise_(rv.disc(sgn * gx, gy, 1.45), -4.2, 2.2, .9, .5)
-    # розетки над перекладиной
-    for sgn in (-1, 1): rosette(rv, sgn * 14.6, -31, 5.6, 10, -4.2, 2.6)
-    # розетка-солнце под крестом
-    rv.carve(rv.disc(0, 24.5, 8.6), -4.2, -3.6, .6)
-    rosette(rv, 0, 24.5, 8.2, 12, -3.4, 2.4)
-    # крест: широкий выпуклый, с врезанной по контуру линией, концы раздваиваются в шарики
-    cross = rv.poly(*[a[0] for a in arms]) + rv.disc(cx, cy, 4.6)
-    for a, e, (px_, py_) in arms:
+        e = (cx + dx * L, cy + dy * L); b0 = (cx + dx * 2.5, cy + dy * 2.5)
+        return [(b0[0] + px_ * w0 / 2, b0[1] + py_ * w0 / 2), (e[0] + px_ * w1 / 2, e[1] + py_ * w1 / 2),
+                (e[0] - dx * 1.6, e[1] - dy * 1.6),
+                (e[0] - px_ * w1 / 2, e[1] - py_ * w1 / 2), (b0[0] - px_ * w0 / 2, b0[1] - py_ * w0 / 2)], e, (px_, py_), (dx, dy)
+    arms = [arm(0, -1, 15.5, 4.0, 7.2), arm(-1, 0, 13.5, 4.0, 7.2), arm(1, 0, 13.5, 4.0, 7.2), arm(0, 1, 18, 4.0, 5.4)]
+    cross = rv.poly(*[a[0] for a in arms]) + rv.disc(cx, cy, 3.2)
+    curls = []
+    for poly_, e, (px_, py_), (dx, dy) in arms[:3]:
         for s2 in (-1, 1):
-            cross = cross + rv.disc(e[0] + px_ * s2 * 4.2, e[1] + py_ * s2 * 4.2, 2.1)
+            c0 = (e[0] + px_ * s2 * 3.9 - dx * .6, e[1] + py_ * s2 * 3.9 - dy * .6)
+            a0 = math.atan2(-dy, -dx)
+            curls.append(spiral(c0[0], c0[1], 2.6, 1.3, a0 + s2 * .3, cw=s2 * (1 if dx + dy > 0 else -1) * (-1 if dy else 1)))
+        cross = cross + rv.disc(e[0] + dx * 1.2, e[1] + dy * 1.2, 1.3)          # шишечка-трилистник на конце
     cross = np.clip(cross, 0, 1)
-    rv.raise_(cross, -4.2, 4.6, 1.0, .55)
-    inner = ndi.binary_erosion(cross > .5, iterations=int(1.2 * rv.k)) & ~ndi.binary_erosion(cross > .5, iterations=int(1.6 * rv.k))
-    rv.h -= inner * 1.1
-    rosette(rv, cx, cy, 4.2, 8, .4, 1.4)
-    return rv
-
-
-def garni(R=58, seed=12, sc=1.0):
-    """Храм Гарни: высокий подиум с широкой лестницей, шесть ионических колонн с каннелюрами,
-    антаблемент с зубчиками, фронтон."""
-    rv = Relief(R, seed, sc)
-    x, y = rv.x, rv.y
-    rv.h[:] = -7.5
-    # подиум из блоков
-    rv.raise_(rv.poly([(-38, 17), (38, 17), (38, 40), (-38, 40)]), -7.5, 6.0, .7)
-    rv.h -= rv.lines([[(-38, yy), (38, yy)] for yy in (22.5, 28, 33.5)], .35) * 1.0
-    for row, yy in enumerate((17, 22.5, 28, 33.5)):
-        for xx in np.arange(-38 + (row % 2) * 4.5, 38, 9):
-            rv.h -= rv.lines([[(xx, yy), (xx, yy + 5.5)]], .35) * .9 * ((x < -15) | (x > 15))
-    # лестница: широкие ступени, выступ щёк по бокам
-    for k in range(9):
-        y0 = 18 + k * 2.45
-        rv.raise_(rv.poly([(-14.5, y0), (14.5, y0), (14.5, y0 + 2.45), (-14.5, y0 + 2.45)], jit=.04), -3 + k * 1.0, .6, .2, .5)
-        rv.h -= rv.lines([[(-14.5, y0 + .15), (14.5, y0 + .15)]], .3) * .8
+    # «крылья»: листья, отходящие от перекрестья вниз-в стороны
+    wings = []
     for sgn in (-1, 1):
-        rv.raise_(rv.poly([(sgn * 14.5, 17), (sgn * 19.5, 17), (sgn * 19.5, 40), (sgn * 14.5, 40)]), -7.5, 7.4, .6)
-    # стилобат
-    rv.raise_(rv.poly([(-37, 13.4), (37, 13.4), (38, 17), (-38, 17)]), -7.5, 6.6, .5)
-    # целла в глубине и дверной проём
-    rv.carve(rv.poly([(-34, -19), (34, -19), (34, 13.4), (-34, 13.4)]), -1.5, -4.5, .6)
-    rv.h -= rv.lines([[(-34, yy), (34, yy)] for yy in np.arange(-15, 13, 3.2)], .3) * .6
-    rv.carve(rv.poly([(-4.6, -11), (4.6, -11), (4.6, 13.4), (-4.6, 13.4)]), -4.5, -7.5, .4)
-    rv.raise_(rv.lines([[(-5.6, 13.4), (-5.6, -12), (5.6, -12), (5.6, 13.4)]], .9), -4.5, 1.6, .3)
-    # колонны: цилиндры с каннелюрами, базы-валики и ионические капители с волютами
-    for cxc in (-30, -18, -6, 6, 18, 30):
-        r = 3.1
-        sh = (np.abs(x - cxc) < r) & (y > -16.5) & (y < 12)
-        dx = np.clip((x - cxc) / r, -1, 1)
-        cyl = np.sqrt(1 - dx ** 2)
-        flute = (np.cos(np.arcsin(dx) * 9) * .5 + .5) ** 3 * cyl
-        taper = 1 - np.clip((-y - 0) / 60, 0, .05)
-        rv.h = np.where(sh & (np.abs(x - cxc) < r * taper), 1.0 + cyl * 3.2 - flute * .55, rv.h)
-        base = (np.abs(x - cxc) < r + 1.2 - .5 * (y > 12.7)) & (y > 11.6) & (y < 13.4)
-        rv.h = np.where(base, 1.4 + np.sqrt(np.clip(1 - ((x - cxc) / (r + 1.2)) ** 2, 0, 1)) * 3.2, rv.h)
-        cap = (np.abs(x - cxc) < 4.9) & (y > -19.2) & (y < -16.5)
-        rv.h = np.where(cap, 3.4 + np.sqrt(np.clip(1 - ((y + 17.85) / 1.5) ** 2, 0, 1)) * .8, rv.h)
-        for sgn in (-1, 1):
-            vc = (cxc + sgn * 3.6, -17.2)
-            vol = rv.disc(*vc, 1.55)
-            rv.h = np.where(vol, 3.6 + .8 * np.sqrt(np.clip(1 - ((x - vc[0]) ** 2 + (y - vc[1]) ** 2) / 1.55 ** 2, 0, 1)), rv.h)
-            rv.h -= rv.lines([spiral(vc[0], vc[1], 1.35, 1.6, math.radians(-90), sgn)], .28) * .9
-    # антаблемент: архитрав в три полосы, фриз с розетками, карниз с зубчиками
-    rv.raise_(rv.poly([(-38, -24.5), (38, -24.5), (38, -19.2), (-38, -19.2)]), -7.5, 10.5, .5)
-    rv.h -= rv.lines([[(-38, -21), (38, -21)], [(-38, -22.8), (38, -22.8)]], .3) * .7
-    rv.raise_(rv.poly([(-39, -29.5), (39, -29.5), (39, -24.5), (-39, -24.5)]), -7.5, 10.0, .5)
-    for xx in np.arange(-35, 36, 5):
-        rv.h = np.where(rv.disc(xx, -27, 1.3), rv.h + .9, rv.h)
-        rv.h -= rv.lines([spiral(xx + 2.5, -27, .9, 1, 0, 1)], .25) * .5
-    rv.raise_(rv.poly([(-41, -32), (41, -32), (40, -29.5), (-40, -29.5)]), -7.5, 11.2, .4)
-    for xx in np.arange(-40, 40.5, 1.6):
-        rv.h = np.where((np.abs(x - xx) < .45) & (y > -31.2) & (y < -29.8), rv.h - .9, rv.h)
-    # фронтон: треугольник с выпуклым карнизом по скатам, тимпан чуть выбран
-    ped = [(-41, -32), (0, -48), (41, -32)]
-    rv.raise_(rv.poly(ped), -7.5, 10.4, .5)
-    rv.carve(rv.poly([(-33.5, -33.2), (0, -45.4), (33.5, -33.2)]), 2.9, 1.6, .5)
-    rv.raise_(rv.lines([[(-41.5, -31.8), (0, -48.3), (41.5, -31.8)]], 1.5), 2.9, 1.0, .5)
+        wings.append([(sgn * 2.2, cy + 3.5)] + [(sgn * (2.2 + 9 * t), cy + 3.5 + 6 * t ** 1.4 - 2.4 * math.sin(math.pi * t)) for t in np.linspace(0, 1, 14)]
+                     + [(sgn * (2.2 + 9 * t), cy + 3.5 + 6 * t ** 1.4 + .6 * math.sin(math.pi * t)) for t in np.linspace(1, 0, 14)])
+    rv.raise_(rv.poly(*wings, jit=.05), F, 2.4, .6, .5)
+    for sgn in (-1, 1):
+        rv.h -= rv.lines([[(sgn * (2.2 + 9 * t), cy + 3.5 + 6 * t ** 1.4 - .9 * math.sin(math.pi * t)) for t in np.linspace(.1, .9, 10)]], .3) * .7
+    # большие волюты под крестом: от подножия расходятся и закручиваются внутрь
+    for sgn in (-1, 1):
+        stem = [(sgn * 1.2, cy + 17.5), (sgn * 5, cy + 19.5), (sgn * 10.5, cy + 21), (sgn * 14.5, cy + 25), (sgn * 14.6, cy + 30.5)]
+        vol = spiral(sgn * 9.4, cy + 30.4, 5.2, 1.4, 0 if sgn > 0 else math.pi, cw=sgn)
+        rv.raise_(rv.lines([stem, vol], 2.3), F, 3.0, .9, .5)
+        rv.h -= rv.lines([vol[:60]], .4) * .9
+        # пальметта внутри волюты и бутон сверху
+        for k, (lx, ly) in enumerate(((5.2, cy + 25.5), (3.6, cy + 28.5))):
+            rv.raise_(rv.disc(sgn * lx, ly, 1.3, 2.2), F, 1.8, .6, .5)
+        rv.raise_(rv.lines(curls, 1.25), F, 2.6, .6, .5)
+    # узлы-розетки в верхних углах поля
+    for sgn in (-1, 1):
+        kx_, ky_ = sgn * 13.2, fy0 + 6.2
+        rv.carve(rv.disc(kx_, ky_, 4.6), F, F + 1.6, .6, .5)
+        rv.h = np.where(rv.disc(kx_, ky_, 4.0), F + .4 + weave(x - kx_, y - ky_, 2.0, .25, 45) * 1.6, rv.h)
+        rv.h -= (np.abs(np.hypot(x - kx_, y - ky_) - 4.2) < .25) * .6
+    # колесо-розетка под волютами
+    wcx, wcy = 0, cy + 38.5
+    rv.carve(rv.disc(wcx, wcy, 6.6), F, F + 2.4, .7, .5)
+    rv.h -= (np.abs(np.hypot(x - wcx, y - wcy) - 5.3) < .3) * .8
+    for k in range(8):
+        a = k * math.pi / 4
+        rv.h -= rv.lines([[(wcx + 1.6 * math.cos(a), wcy + 1.6 * math.sin(a)), (wcx + 4.9 * math.cos(a + .5), wcy + 4.9 * math.sin(a + .5))]], .35) * .8
+    rv.raise_(rv.disc(wcx, wcy, 1.5), F + 2.4, .8, .6, .5)
+    # сам крест поверх всего: выпуклый, с врезанной двойной линией по контуру
+    rv.raise_(cross, F, 4.4, .9, .55)
+    inner = ndi.binary_erosion(cross > .5, iterations=int(.9 * rv.k)) & ~ndi.binary_erosion(cross > .5, iterations=int(1.25 * rv.k))
+    rv.h -= inner * .9
+    rv.h = np.where(rv.disc(cx, cy, 2.2), rv.h + .6, rv.h)
+    # постамент: широкий блок с плетёнкой и профилированными полками
+    ped = rv.poly([(-35, Y1), (35, Y1), (35, Y1 + 11), (-35, Y1 + 11)])
+    rv.raise_(ped, -7.5, 6.4, .8, .5)
+    inn = (ped > .5) & (y > Y1 + 2) & (y < Y1 + 9.2) & (np.abs(x) < 33)
+    rv.h = np.where(inn, -3.6 + weave(x, y, 3.4, .22, 30) * 1.7, rv.h)
+    rv.h -= rv.lines([[(-35, Y1 + 1.2), (35, Y1 + 1.2)], [(-35, Y1 + 10), (35, Y1 + 10)]], .3) * .5
     return rv
+
+
+# ---------- Гарни в три четверти: 3D-модель → барельеф ----------
+def _hs_box(x0, x1, y0, y1, z0, z1):
+    """Выпуклое тело как набор полупространств n·p <= c."""
+    return [((1, 0, 0), x1), ((-1, 0, 0), -x0), ((0, 1, 0), y1), ((0, -1, 0), -y0), ((0, 0, 1), z1), ((0, 0, -1), -z0)]
+
+
+def garni_relief(wu, hu, sc=1.0, yaw=-38, pitch=-4, seed=12):
+    """Храм Гарни (6×8 ионических колонн на высоком подиуме, лестница с фасада) в ракурсе три четверти:
+    фасад слева, длинный бок уходит вправо. Глубина сжата в барельеф: ближний угол выше, дальний ниже.
+    Возвращает высоты (0 — поле) размером (hu*S, wu*S) — окно wu×hu единиц доски."""
+    ss = 2
+    Wp, Hp = int(wu * S * ss), int(hu * S * ss)
+    a, p = math.radians(yaw), math.radians(pitch)
+    cdir = np.array((math.sin(a) * math.cos(p), math.sin(p), -math.cos(a) * math.cos(p)))   # к камере: спереди-сбоку, чуть снизу, как с площадки перед храмом
+    d = -cdir
+    right = np.cross(d, (0, 1, 0)); right /= np.linalg.norm(right)
+    up = np.cross(right, d)
+    prims = []                                                # (тип, данные, метка)
+    W_, L_ = 14.0, 20.0
+    prims.append(('cvx', _hs_box(0, W_, 0, 2.8, 0, L_), 'podium'))
+    prims.append(('cvx', _hs_box(-.15, W_ + .15, 2.55, 2.8, -.15, L_ + .15), 'cap'))           # карниз подиума
+    for k in range(9):                                        # лестница во всю ширину между щеками
+        z0 = -4.6 + k * .5; prims.append(('cvx', _hs_box(1.7, W_ - 1.7, 0, (k + 1) * 2.8 / 9, z0, 0), 'step'))
+    for x0 in (0, W_ - 1.7):
+        prims.append(('cvx', _hs_box(x0, x0 + 1.7, 0, 2.1, -4.6, 0), 'cheek'))
+        prims.append(('cvx', _hs_box(x0 - .1, x0 + 1.8, 2.1, 2.45, -4.7, -3.0), 'cap'))
+    prims.append(('cvx', _hs_box(3.0, W_ - 3.0, 2.8, 9.4, 3.6, 17.0), 'cella'))
+    cols = []
+    xs = np.linspace(1.0, W_ - 1.0, 6); zs = np.linspace(1.0, L_ - 1.0, 8)
+    for x in xs: cols += [(x, 1.0), (x, L_ - 1.0)]
+    for z in zs[1:-1]: cols += [(1.0, z), (W_ - 1.0, z)]
+    for (cx, cz) in cols:
+        prims.append(('cyl', (cx, cz, .5, 3.15, 9.0), 'col'))
+        prims.append(('cyl', (cx, cz, .66, 2.8, 3.15), 'base'))
+        prims.append(('cvx', _hs_box(cx - .66, cx + .66, 9.0, 9.4, cz - .66, cz + .66), 'capital'))
+    prims.append(('cvx', _hs_box(.35, W_ - .35, 9.4, 11.0, .35, L_ - .35), 'ent'))
+    prims.append(('cvx', _hs_box(.1, W_ + -.1, 11.0, 11.45, .1, L_ - .1), 'corn'))
+    ridge = 2.6
+    roof = [((0, 0, 1), L_ - .1), ((0, 0, -1), -.1), ((0, -1, 0), -11.45),
+            ((ridge / (W_ / 2 - .1), 1, 0), 11.45 + ridge + ridge / (W_ / 2 - .1) * W_ / 2),
+            ((-ridge / (W_ / 2 - .1), 1, 0), 11.45 + ridge - ridge / (W_ / 2 - .1) * W_ / 2)]
+    prims.append(('cvx', roof, 'roof'))
+    # проекция: границы кадра по вершинам подиума, лестницы и кровли
+    pts = np.array([(x, y, z) for x in (-.2, W_ + .2) for y in (0, 11.45) for z in (-4.7, L_)] + [(W_ / 2, 11.45 + ridge, z) for z in (0, L_)])
+    px_, py_ = pts @ right, pts @ up
+    cx0, cy0 = (px_.min() + px_.max()) / 2, (py_.min() + py_.max()) / 2
+    scale = min(Wp / (px_.max() - px_.min()), Hp / (py_.max() - py_.min())) * .98
+    J, I = np.meshgrid(np.arange(Wp) + .5, np.arange(Hp) + .5)
+    sx_ = (J - Wp / 2) / scale + cx0; sy_ = -(I - Hp / 2) / scale + cy0
+    O = sx_[..., None] * right + sy_[..., None] * up - d * 200
+    T = np.full((Hp, Wp), np.inf); LAB = np.full((Hp, Wp), '', dtype=object); NRM = np.zeros((Hp, Wp, 3))
+    def bbox(corners):
+        c = np.array(corners); u_, v_ = c @ right, c @ up
+        j0 = int(max(0, (u_.min() - cx0) * scale + Wp / 2 - 2)); j1 = int(min(Wp, (u_.max() - cx0) * scale + Wp / 2 + 2))
+        i0 = int(max(0, -(v_.max() - cy0) * scale + Hp / 2 - 2)); i1 = int(min(Hp, -(v_.min() - cy0) * scale + Hp / 2 + 2))
+        return slice(i0, i1), slice(j0, j1)
+    for kind, g, lab in prims:
+        if kind == 'cvx':
+            # вершины для рамки — грубо по полупространствам осей
+            lim = {tuple(n): c for n, c in g}
+            xs_ = (-lim.get((-1, 0, 0), 1) if (-1, 0, 0) in lim else -1, lim.get((1, 0, 0), W_ + 1))
+            corners = [(x, y, z) for x in (-1 if lab == 'roof' else xs_[0], W_ + 1 if lab == 'roof' else xs_[1])
+                       for y in (-lim.get((0, -1, 0), 0), lim.get((0, 1, 0), 11.45 + ridge)) for z in (-lim[(0, 0, -1)], lim[(0, 0, 1)])]
+            sl = bbox(corners)
+            o = O[sl]; t0 = np.full(o.shape[:2], -np.inf); t1 = np.full(o.shape[:2], np.inf); n0 = np.zeros(o.shape)
+            for n, c in g:
+                n = np.array(n, float); dn = d @ n; on = o @ n
+                if abs(dn) < 1e-9:
+                    bad = on > c; t0[bad] = np.inf; continue
+                t = (c - on) / dn
+                if dn < 0:
+                    upd = t > t0; t0 = np.where(upd, t, t0); n0[upd] = n / np.linalg.norm(n)
+                else:
+                    t1 = np.minimum(t1, t)
+            hit = (t0 <= t1) & np.isfinite(t0)
+        else:
+            cx, cz, r, y0_, y1_ = g
+            sl = bbox([(cx + ox, y, cz + oz) for ox in (-r, r) for oz in (-r, r) for y in (y0_, y1_)])
+            o = O[sl]
+            ox_, oz_ = o[..., 0] - cx, o[..., 2] - cz
+            A = d[0] ** 2 + d[2] ** 2; B = 2 * (ox_ * d[0] + oz_ * d[2]); C = ox_ ** 2 + oz_ ** 2 - r * r
+            disc = B * B - 4 * A * C
+            t0 = (-B - np.sqrt(np.clip(disc, 0, None))) / (2 * A)
+            yy = o[..., 1] + t0 * d[1]
+            hit = (disc > 0) & (yy >= y0_) & (yy <= y1_)
+            P = o + t0[..., None] * d
+            n0 = np.dstack([P[..., 0] - cx, np.zeros_like(yy), P[..., 2] - cz]) / r
+        Ts = T[sl]; better = hit & (t0 < Ts)
+        Ts[better] = t0[better]; LAB[sl][better] = lab; NRM[sl][better] = n0[better]
+    hitm = np.isfinite(T)
+    P = O + np.where(hitm, T, 0)[..., None] * d
+    X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
+    det = np.zeros((Hp, Wp))                                  # резные детали: + выступ, − углубление (в метрах модели)
+    isl = lambda *ls: np.isin(LAB, ls)
+    nz, nx = NRM[..., 2], NRM[..., 0]
+    along = np.where(np.abs(nz) > .5, X, Z)
+    # кладка подиума и щёк: ряды и вертикальные швы вперевязку
+    m = isl('podium', 'cheek', 'cella') & (np.abs(NRM[..., 1]) < .5)
+    rowh = np.where(LAB == 'cella', .55, .7)
+    row = np.floor(Y / rowh)
+    joint = (np.abs((Y / rowh) % 1) < .07) | (np.abs(((along + (row % 2) * .7) / 1.4) % 1) < .035)
+    det -= m * joint * .07
+    # дверной проём в целле
+    door = (LAB == 'cella') & (nz < -.5) & (np.abs(X - W_ / 2) < 1.25) & (Y < 7.6)
+    det -= door * .9
+    # колонны: каннелюры и стыки барабанов
+    m = LAB == 'col'
+    th = np.arctan2(NRM[..., 2], NRM[..., 0])
+    det -= m * ((np.cos(th * 12) * .5 + .5) ** 4 * .045 + (np.abs((Y - 3.15) / 1.17 % 1) < .03) * .05)
+    # антаблемент: три полосы архитрава, фриз с розетками, зубчики
+    m = isl('ent') & (np.abs(NRM[..., 1]) < .5)
+    det += m * ((Y > 9.75) * .04 + (Y > 10.05) * .04)
+    det += m * (Y > 10.3) * (Y < 10.75) * (np.hypot((along % .9) - .45, Y - 10.52) < .16) * .05
+    det += m * (Y > 10.8) * ((along % .32) < .17) * .07
+    det -= m * (np.abs(Y - 10.27) < .03) * .05
+    # фронтон: тимпан утоплен, по скатам выпуклый карниз
+    m = (LAB == 'roof') & (nz < -.5)
+    inset = (Y > 11.75) & (Y < 11.45 + ridge * (1 - np.abs(X - W_ / 2) / (W_ / 2 - .1)) - .32)
+    det -= m * inset * .25
+    # кровля: ряды черепицы по скату
+    m = (LAB == 'roof') & (nz > -.5)
+    det -= m * (np.abs((Z / .55) % 1) < .12) * .05
+    det += isl('cap', 'capital') * .05
+    # барельеф по-скульпторски: берём наклоны глубины (в пикселях), скачки на контурах обрезаем до небольшой ступеньки,
+    # остальное слегка сжимаем и снова интегрируем (уравнение Пуассона через DCT) — грани сохраняют наклон к свету
+    t = np.where(hitm, T - det, np.nan) * scale
+    tb = np.where(hitm, t, np.nanmax(t) + 40)
+    gx = np.diff(tb, axis=1, append=tb[:, -1:]); gy = np.diff(tb, axis=0, append=tb[-1:, :])
+    edge = ~(hitm & np.roll(hitm, -1, 1)); gx = np.where(edge, 0, gx)
+    edge = ~(hitm & np.roll(hitm, -1, 0)); gy = np.where(edge, 0, gy)
+    cap = 1.6
+    cmp = lambda g: np.sign(g) * np.minimum(np.abs(g), cap) / (1 + .25 * np.minimum(np.abs(g), cap))
+    gx, gy = -cmp(gx), -cmp(gy)                               # ближе к зрителю — выше
+    div = np.diff(gx, axis=1, prepend=0) + np.diff(gy, axis=0, prepend=0)
+    from scipy.fft import dctn, idctn
+    Dv = dctn(div, norm='ortho')
+    ky = np.cos(np.pi * np.arange(Hp) / Hp)[:, None]; kx = np.cos(np.pi * np.arange(Wp) / Wp)[None, :]
+    den = 2 * kx + 2 * ky - 4; den[0, 0] = 1
+    Hs = Dv / den; Hs[0, 0] = 0
+    rel = idctn(Hs, norm='ortho')
+    # общий перепад (дальний угол против ближнего) сильно ужимаем, местные наклоны граней оставляем
+    mf = hitm.astype(float)
+    low = ndi.gaussian_filter(rel * mf, 30) / np.maximum(ndi.gaussian_filter(mf, 30), 1e-3)
+    rel = rel - .92 * low
+    rel = rel - np.percentile(rel[hitm], 2)
+    h = np.where(hitm, 2.0 + np.clip(rel, 0, None) * .45, 0) * sc
+    hh = h.reshape(Hp // ss, ss, Wp // ss, ss).mean((1, 3))
+    return hh
 
 
 def fleur(x, y, d):
@@ -639,7 +767,7 @@ def board_yerevan():
         cy = 84 if top else 616
         sp = [(x + (7 - t * 5) * math.cos(t * 9), cy + (7 - t * 5) * math.sin(t * 9)) for t in np.linspace(0, 1.2, 50)]
         swirls.append(sp)
-        if abs(x - 250) > 80 and abs(x - 750) > 80: dots.append((x, tip + 16 * d))   # у резьбы точек нет
+        if abs(x - 250) > 80 and abs(x - 750) > 170: dots.append((x, tip + 16 * d))   # у резьбы точек нет
         if i % 6 != 5: dots.append((x + (35 if top else -35), 66 if top else 634))
     dm = polys(drops)
     alb = put(alb, dm, btex)
@@ -651,11 +779,11 @@ def board_yerevan():
     dmask = np.zeros((H, W))
     for (x, y) in dots: dmask = np.maximum(dmask, circle(x, y, 4.5))
     alb = put(alb, dmask, btex)
-    # резьба прямо по полю, во всю высоту средней полосы: слева хачкар, справа храм Гарни
-    for cx, make in ((250, khachkar), (750, garni)):
-        hl = make(sc=1.75).result()
-        n = hl.shape[0]; y0, x0 = int(round(350 * S - n / 2)), int(round(cx * S - n / 2))
-        win = (slice(y0, y0 + n), slice(x0, x0 + n))
+    # резьба прямо по полю, во всю высоту средней полосы: слева хачкар, справа храм Гарни в три четверти
+    for cx, make in ((250, lambda: khachkar(sc=1.75).result()), (750, lambda: garni_relief(316, 168, 1.6))):
+        hl = make()
+        nh, nw = hl.shape; y0, x0 = int(round(350 * S - nh / 2)), int(round(cx * S - nw / 2))
+        win = (slice(y0, y0 + nh), slice(x0, x0 + nw))
         h[win] += hl
         # патина: в выборках и бороздах дерево темнее, как у морёной резьбы
         cav = np.clip((ndi.gaussian_filter(hl, 5) - hl) / 3.5, 0, 1) + np.clip(-hl / 6, 0, 1)

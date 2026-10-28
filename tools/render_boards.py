@@ -761,13 +761,15 @@ def board_yerevan():
     burn = np.array((.42, .22, .08))
     drops, inner, swirls, dots = [], [], [], []
     for i in range(24):
-        x, top = ptX(i), is_top(i); tip = 262 if top else 438; d = 1 if top else -1
+        # длинные только крайние пункты каждой шестёрки, средние короче — посередине место под крупную резьбу
+        x, top = ptX(i), is_top(i); edge_pt = i % 6 in (0, 5); d = 1 if top else -1
+        tip = (262 if top else 438) if edge_pt else (196 if top else 504)
         drops.append(teardrop(x, top, tip, 42))
         inner.append(teardrop(x, top, tip - 30 * d, 26, 12) + [teardrop(x, top, tip - 30 * d, 26, 12)[0]])
         cy = 84 if top else 616
         sp = [(x + (7 - t * 5) * math.cos(t * 9), cy + (7 - t * 5) * math.sin(t * 9)) for t in np.linspace(0, 1.2, 50)]
         swirls.append(sp)
-        if abs(x - 250) > 80 and abs(x - 750) > 170: dots.append((x, tip + 16 * d))   # у резьбы точек нет
+        if edge_pt and x < 500: dots.append((x, tip + 16 * d))   # у коротких пунктов и у Гарни точек нет: там резьба
         if i % 6 != 5: dots.append((x + (35 if top else -35), 66 if top else 634))
     dm = polys(drops)
     alb = put(alb, dm, btex)
@@ -780,10 +782,11 @@ def board_yerevan():
     for (x, y) in dots: dmask = np.maximum(dmask, circle(x, y, 4.5))
     alb = put(alb, dmask, btex)
     # резьба прямо по полю, во всю высоту средней полосы: слева хачкар, справа храм Гарни в три четверти
-    for cx, make in ((250, lambda: khachkar(sc=1.75).result()), (750, lambda: garni_relief(316, 168, 1.6))):
+    for cx, make in ((250, lambda: khachkar(sc=3.0).result()), (750, lambda: garni_relief(392, 214, 1.5))):
         hl = make()
         nh, nw = hl.shape; y0, x0 = int(round(350 * S - nh / 2)), int(round(cx * S - nw / 2))
         win = (slice(y0, y0 + nh), slice(x0, x0 + nw))
+        hl = hl * (1 - dm[win])                               # пункты-вставки лежат поверх резьбы
         h[win] += hl
         # патина: в выборках и бороздах дерево темнее, как у морёной резьбы
         cav = np.clip((ndi.gaussian_filter(hl, 5) - hl) / 3.5, 0, 1) + np.clip(-hl / 6, 0, 1)

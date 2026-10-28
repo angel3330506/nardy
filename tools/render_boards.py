@@ -714,19 +714,21 @@ def board_ararat():
     rim = np.clip(ndi.gaussian_filter(fields, 4 * S) - fields, 0, 1)
     alb = alb * (1 - rim[..., None] * .35)
     # пункты-капли из бука
-    drops = [teardrop(ptX(i), is_top(i), 270 if is_top(i) else 430, 48) for i in range(24)]
+    # длинные только крайние пункты каждой шестёрки, средние короче — посередине место под крупный аревахач
+    tip_of = lambda i: (270 if is_top(i) else 430) if i % 6 in (0, 5) else (200 if is_top(i) else 500)
+    drops = [teardrop(ptX(i), is_top(i), tip_of(i), 48) for i in range(24)]
     dm = polys(drops)
     btex = wood(H, W, *BEECH, rings=30, seed=8, vertical=True, contrast=.32, fiber=.12, warp=1.4)
     alb = put(alb, dm, btex)
     edge = np.clip(ndi.gaussian_filter(dm, .9 * S) - ndi.gaussian_filter(dm, .25 * S), 0, 1) + np.clip(dm - ndi.grey_erosion(dm, size=3), 0, 1)
     alb = alb * (1 - np.clip(edge, 0, 1)[..., None] * .55)
     h -= dm * .6
-    fl = polys(sum([fleur(ptX(i), (276 if is_top(i) else 424), 1 if is_top(i) else -1) for i in range(24)], []))
+    fl = polys(sum([fleur(ptX(i), tip_of(i) + (6 if is_top(i) else -6), 1 if is_top(i) else -1) for i in range(24)], []))
     alb = put(alb, fl, btex)
     # аревахач — маркетри: тёмный орех и бук, вокруг тонкий инкрустированный круг
     for cx in (250, 750):
-        arevakhach_inlay(alb, h, cx, 350, 64, BEECH, ((.30, .16, .07), (.12, .06, .02)), cx)
-        for r0, r1 in ((72, 70.4), (75.5, 74.7)):
+        arevakhach_inlay(alb, h, cx, 350, 112, BEECH, ((.30, .16, .07), (.12, .06, .02)), cx)
+        for r0, r1 in ((124, 121.4), (129.5, 128.2)):
             ring = np.clip(circle(cx, 350, r0) - circle(cx, 350, r1), 0, 1)
             alb = put(alb, ring, btex)
             h -= ring * .3

@@ -33,27 +33,39 @@ def fbm(h, w, cy, cx, seed, octaves=4):
 
 
 def wood(h, w, light, dark, rings=10, seed=1, vertical=False, contrast=.7, fiber=.14, warp=2.2):
-    """Альбедо дерева. Волокна идут вдоль x (или вдоль y при vertical)."""
+    """Альбедо дерева, как у настоящей доски тангенциального распила. Волокна вдоль x (или вдоль y при vertical).
+    Годовые кольца тонкие и частые: каждое светлеет в начале сезона, постепенно темнеет и резко обрывается
+    тёмной полоской поздней древесины; ширина и тон колец разные. Поверх — длинные волокна, редкие поры-чёрточки
+    и медленные перепады тона. Кольца бревна, срезанные плоскостью, дают «арки» и «пламя»."""
     if vertical:
         return wood(w, h, light, dark, rings, seed, False, contrast, fiber, warp).transpose(1, 0, 2)
-    # Доска тангенциального распила: годовые кольца бревна, срезанные плоскостью, дают «арки» и «пламя».
+    rng = np.random.default_rng(seed)
     y = np.linspace(-.5, .5, h)[:, None] * np.ones((1, w))
-    z = .09 + .3 * vnoise(h, w, 1, 2.5, seed + 9)          # глубина среза медленно меняется вдоль доски
-    yc = (vnoise(h, w, 1, 1.5, seed + 10) - .5) * .5        # смещение сердцевины
-    wp = fbm(h, w, 4, 2, seed, 3)
-    wp2 = fbm(h, w, 30, 4, seed + 1, 2)
-    rr = np.sqrt((y - yc) ** 2 + z ** 2)
-    t = rr * rings * 2.2 + wp * warp * .45 + wp2 * .12
+    z = .03 + .07 * vnoise(h, w, 1, 1.6, seed + 9)            # глубина среза медленно меняется вдоль доски
+    yc = (vnoise(h, w, 1, 1.2, seed + 10) - .5) * .16        # смещение сердцевины: кольца идут почти вдоль волокон
+    big = fbm(h, w, 3, 1.3, seed, 3) - .5                     # кольца плавно гуляют на длинной волне
+    small = fbm(h, w, 40, 6, seed + 1, 3) - .5               # мелкая волнистость колец
+    rr = np.sqrt((y - yc + big * .03 * warp) ** 2 + z ** 2)
+    t = rr * rings * 6.5 + small * .12
+    t = t + .45 * np.sin(t * 1.31 + seed) + .3 * np.sin(t * .37 + seed * 2.1)   # кольца разной ширины: годы были разные
     f = t - np.floor(t)
-    late = np.clip((f - .5) / .5, 0, 1) ** 2.2 + np.clip((.08 - f) / .08, 0, 1) * .6   # тёмная поздняя древесина с резкой границей
-    fib = vnoise(h, w, h / 1.6, 7, seed + 2)
-    fib2 = vnoise(h, w, h / 5, 20, seed + 4)
-    pores = np.clip((vnoise(h, w, h / 1.4, w / 9, seed + 5) - .72) / .28, 0, 1)
-    tone = fbm(h, w, 2, 3, seed + 3, 2)
-    v = late * contrast + (fib - .5) * fiber + (fib2 - .5) * fiber * .9 + pores * .35 + (tone - .5) * .22
+    k = np.floor(t).astype(np.int64)
+    rv = (np.sin(k * 12.9898 + seed * 78.233) * 43758.5453) % 1  # у каждого кольца свой тон
+    late = f ** 4 * (.3 + .7 * rv)                            # к концу кольца темнеет, поздняя древесина узкая
+    line = np.exp(-(1 - f) / .025) * (.25 + .75 * rv)         # и обрывается тонкой тёмной линией
+    # волокна: длинные тонкие штрихи вдоль доски на нескольких масштабах
+    st = (vnoise(h, w, h / 1.2, w / 260, seed + 2) - .5) * .6 + (vnoise(h, w, h / 2.5, w / 90, seed + 4) - .5) * .5 \
+        + (vnoise(h, w, h / 6, w / 40, seed + 5) - .5) * .35
+    # поры: редкие короткие чёрточки, больше в светлой ранней древесине
+    po = np.clip((vnoise(h, w, h / 1.1, w / 5, seed + 6) - .88) / .12, 0, 1) * (1.1 - f)
+    tone = fbm(h, w, 2, 3, seed + 3, 3) - .5
+    ring = ndi.gaussian_filter(late * .55 + line * .35, (.7, 1.5))   # граница кольца не идеально резкая
+    grit = ndi.gaussian_filter(rng.normal(0, 1, (h, w)), (.4, 4)) * .05   # мелкое зерно вдоль волокон
+    v = contrast * ring + st * fiber * 2.2 + po * .22 + tone * .22 + grit
     v = np.clip(v, 0, 1)[..., None]
     L, D = np.array(light)[None, None], np.array(dark)[None, None]
-    return L * (1 - v) + D * v
+    col = L * (1 - v) + D * v
+    return np.clip(col * (1 + (rng.random() - .5) * .04), 0, 1)
 
 
 def felt(h, w, base, seed):
@@ -526,7 +538,8 @@ def garni_relief(wu, hu, sc=1.0, yaw=-38, pitch=-4, seed=12):
             n0 = np.dstack([P[..., 0] - cx, np.zeros_like(yy), P[..., 2] - cz]) / r
         Ts = T[sl]; better = hit & (t0 < Ts)
         Ts[better] = t0[better]; LAB[sl][better] = lab; NRM[sl][better] = n0[better]
-    hitm = np.isfinite(T)
+    # днище подиума при взгляде снизу не показываем: храм стоит прямо на поле доски
+    hitm = np.isfinite(T) & (NRM[..., 1] > -.5)
     P = O + np.where(hitm, T, 0)[..., None] * d
     X, Y, Z = P[..., 0], P[..., 1], P[..., 2]
     det = np.zeros((Hp, Wp))                                  # резные детали: + выступ, − углубление (в метрах модели)
@@ -784,7 +797,7 @@ def board_yerevan():
     for (x, y) in dots: dmask = np.maximum(dmask, circle(x, y, 4.5))
     alb = put(alb, dmask, btex)
     # резьба прямо по полю, во всю высоту средней полосы: слева хачкар, справа храм Гарни в три четверти
-    for cx, make in ((250, lambda: khachkar(sc=3.0).result()), (750, lambda: garni_relief(392, 214, 1.5))):
+    for cx, make in ((250, lambda: khachkar(sc=3.0).result()), (750, lambda: garni_relief(400, 292, 1.5))):
         hl = make()
         nh, nw = hl.shape; y0, x0 = int(round(350 * S - nh / 2)), int(round(cx * S - nw / 2))
         win = (slice(y0, y0 + nh), slice(x0, x0 + nw))

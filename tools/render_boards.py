@@ -947,6 +947,72 @@ def board_night():
     save('night', rgb, allm)
 
 
+# ---------- стол под доской ----------
+def table_bg():
+    """Фон партии: старый стол во дворике в Ереване. Столешница из широких досок морёного ореха со швами,
+    потёртостями и бледными кругами от стаканов с чаем; сверху — тень виноградной лозы, тёплый свет на середине."""
+    TW, TH = 2400, 1500
+    rng = np.random.default_rng(101)
+    img = np.zeros((TH, TW, 3)); hgt = np.zeros((TH, TW))
+    edges = np.cumsum([0] + list(rng.uniform(250, 330, 7)))
+    edges = (edges / edges[-1] * TH).astype(int)
+    for k in range(len(edges) - 1):
+        y0, y1 = edges[k], edges[k + 1]
+        tone = rng.uniform(.88, 1.08)
+        pl = wood(y1 - y0, TW, (.40 * tone, .25 * tone, .13 * tone), (.17, .095, .045), rings=2.2, seed=300 + k, contrast=.8, fiber=.14, warp=3)
+        img[y0:y1] = pl
+        yy = np.arange(TH)
+        hgt -= np.exp(-((yy - y0) / 3.0) ** 2)[:, None] * 6                   # шов между досками
+    # потёртости: светлые царапины вдоль и поперёк, середина стола затёрта руками
+    scr = Image.new('L', (TW, TH), 0); d = ImageDraw.Draw(scr)
+    for _ in range(260):
+        x0, y0 = rng.uniform(0, TW), rng.uniform(0, TH); a = rng.normal(0, .25) + (math.pi / 2 if rng.random() < .2 else 0)
+        L = rng.uniform(15, 140)
+        d.line([(x0, y0), (x0 + L * math.cos(a), y0 + L * math.sin(a))], fill=int(rng.uniform(40, 120)), width=1)
+    scr = ndi.gaussian_filter(np.asarray(scr, float) / 255, .6)
+    img = img + scr[..., None] * np.array((.22, .16, .10))
+    # круги от стаканов армуды
+    for (cx, cy, r) in ((470, 1220, 46), (2050, 300, 42), (1980, 1260, 44)):
+        yy, xx = np.mgrid[0:TH, 0:TW]
+        ring = np.exp(-((np.hypot(xx - cx, yy - cy) - r) / 3.5) ** 2) * (.6 + .4 * vnoise(TH, TW, 30, 30, cx)) * .13
+        img = img * (1 - ring[..., None])
+    # лак местами стёрт, тон неровный
+    img = img * (.9 + .2 * fbm(TH, TW, 4, 6, 120, 3))[..., None]
+    gy, gx = np.gradient(ndi.gaussian_filter(hgt, 1.2))
+    img = img * (1 + (gy * .08))[..., None]
+    # тень виноградной лозы: листья с пятью лопастями, гуще у краёв, размыты — лоза высоко над столом
+    leaf = np.zeros((TH, TW))
+    lim = Image.new('L', (TW, TH), 0); d = ImageDraw.Draw(lim)
+    for _ in range(46):
+        side = rng.random() * .85
+        if side < .35: cx, cy = rng.uniform(0, TW), rng.uniform(-80, 260)
+        elif side < .6: cx, cy = rng.uniform(-80, 380), rng.uniform(0, TH)
+        elif side < .85: cx, cy = rng.uniform(TW - 380, TW + 80), rng.uniform(0, TH)
+        else: cx, cy = rng.uniform(0, TW), rng.uniform(TH - 240, TH + 80)
+        R = rng.uniform(45, 95); rot = rng.uniform(0, 2 * math.pi)
+        pts = []
+        for t in np.linspace(0, 2 * math.pi, 60):
+            rr = R * (.62 + .38 * abs(math.cos(2.5 * t)) ** .7) * (1 - .25 * max(0, math.cos(t)))
+            pts.append((cx + rr * math.cos(t + rot), cy + rr * math.sin(t + rot)))
+        d.polygon(pts, fill=255)
+    for _ in range(14):                                       # лоза и черешки
+        x0, y0 = rng.uniform(0, TW), rng.uniform(-50, 200) if rng.random() < .6 else rng.uniform(TH - 200, TH + 50)
+        d.line([(x0 + 80 * k + 30 * math.sin(k), y0 + 25 * math.sin(k * 1.3)) for k in range(12)], fill=255, width=9)
+    leaf = ndi.gaussian_filter(np.asarray(lim, float) / 255, 26)
+    img = img * (1 - leaf[..., None] * .32)
+    # солнечные блики сквозь листву у краёв
+    spots = np.clip((vnoise(TH, TW, 14, 22, 130) - .86) / .14, 0, 1) * .6 * (leaf < .25) * (1 - np.exp(-((np.mgrid[0:TH, 0:TW][1] - TW / 2) / 700.) ** 2 - ((np.mgrid[0:TH, 0:TW][0] - TH / 2) / 450.) ** 2))
+    img = img + ndi.gaussian_filter(spots, 14)[..., None] * np.array((.20, .15, .07))
+    # тёплый свет в середине стола и затемнение к краям
+    yy, xx = np.mgrid[0:TH, 0:TW]
+    rr = np.hypot((xx - TW / 2) / (TW * .55), (yy - TH * .5) / (TH * .62))
+    light = .55 + .55 * np.exp(-rr ** 2 * 1.6)
+    img = img * light[..., None] * np.array((1.05, 1.0, .92))
+    im = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8))
+    im.save(os.path.join(OUT, 'table.webp'), 'WEBP', quality=80, method=6)
+    print('saved table')
+
+
 # ---------- шашки ----------
 def checker_sprite(name, kind):
     N = 4 * 64  # рисуем с запасом и уменьшаем
@@ -995,9 +1061,10 @@ def checker_sprite(name, kind):
 
 
 if __name__ == '__main__':
-    which = sys.argv[1:] or ['ararat', 'yerevan', 'glass', 'night', 'checkers']
+    which = sys.argv[1:] or ['ararat', 'yerevan', 'glass', 'night', 'checkers', 'table']
     for w_ in which:
-        if w_ == 'checkers':
+        if w_ == 'table': table_bg()
+        elif w_ == 'checkers':
             for k in ('ivory', 'onyx', 'beech', 'walnut'): checker_sprite(k, k)
         else:
             globals()['board_' + w_]()

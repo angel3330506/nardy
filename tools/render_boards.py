@@ -980,29 +980,56 @@ def table_bg():
     img = img * (.9 + .2 * fbm(TH, TW, 4, 6, 120, 3))[..., None]
     gy, gx = np.gradient(ndi.gaussian_filter(hgt, 1.2))
     img = img * (1 + (gy * .08))[..., None]
-    # тень виноградной лозы: листья с пятью лопастями, гуще у краёв, размыты — лоза высоко над столом
-    leaf = np.zeros((TH, TW))
-    lim = Image.new('L', (TW, TH), 0); d = ImageDraw.Draw(lim)
-    for _ in range(46):
-        side = rng.random() * .85
-        if side < .35: cx, cy = rng.uniform(0, TW), rng.uniform(-80, 260)
-        elif side < .6: cx, cy = rng.uniform(-80, 380), rng.uniform(0, TH)
-        elif side < .85: cx, cy = rng.uniform(TW - 380, TW + 80), rng.uniform(0, TH)
-        else: cx, cy = rng.uniform(0, TW), rng.uniform(TH - 240, TH + 80)
-        R = rng.uniform(45, 95); rot = rng.uniform(0, 2 * math.pi)
+    # тень виноградного навеса: навес над верхним краем и углами стола, к середине редеет.
+    # Листья — настоящей формы (пять лопастей, зубчики, черенок), край тени с полутенью; в просветах — вытянутые
+    # солнечные зайчики (солнце под углом), в тени свет чуть холоднее.
+    yy, xx = np.mgrid[0:TH, 0:TW]
+    cover = np.clip(1.15 - yy / (TH * .55), 0, 1) ** 1.3 + np.clip(1 - xx / (TW * .22), 0, 1) ** 2 * .8 \
+        + np.clip(1 - (TW - xx) / (TW * .2), 0, 1) ** 2 * .7
+    cover = np.clip(cover * (.75 + .5 * fbm(TH, TW, 3, 5, 140, 3)), 0, 1)
+    lim = Image.new('L', (TW, TH), 0); lim2 = Image.new('L', (TW, TH), 0); d = ImageDraw.Draw(lim); d2 = ImageDraw.Draw(lim2)
+    def grape_leaf(cx, cy, R, rot, sq=1.0):
         pts = []
-        for t in np.linspace(0, 2 * math.pi, 60):
-            rr = R * (.62 + .38 * abs(math.cos(2.5 * t)) ** .7) * (1 - .25 * max(0, math.cos(t)))
-            pts.append((cx + rr * math.cos(t + rot), cy + rr * math.sin(t + rot)))
-        d.polygon(pts, fill=255)
-    for _ in range(14):                                       # лоза и черешки
-        x0, y0 = rng.uniform(0, TW), rng.uniform(-50, 200) if rng.random() < .6 else rng.uniform(TH - 200, TH + 50)
-        d.line([(x0 + 80 * k + 30 * math.sin(k), y0 + 25 * math.sin(k * 1.3)) for k in range(12)], fill=255, width=9)
-    leaf = ndi.gaussian_filter(np.asarray(lim, float) / 255, 26)
-    img = img * (1 - leaf[..., None] * .32)
-    # солнечные блики сквозь листву у краёв
-    spots = np.clip((vnoise(TH, TW, 14, 22, 130) - .86) / .14, 0, 1) * .6 * (leaf < .25) * (1 - np.exp(-((np.mgrid[0:TH, 0:TW][1] - TW / 2) / 700.) ** 2 - ((np.mgrid[0:TH, 0:TW][0] - TH / 2) / 450.) ** 2))
-    img = img + ndi.gaussian_filter(spots, 14)[..., None] * np.array((.20, .15, .07))
+        for t in np.linspace(0, 2 * math.pi, 140):
+            lobes = .74 + .26 * (1 - abs(math.sin(2.5 * (t - math.pi / 2)))) ** 2.2   # широкий лист, пять неглубоких заострённых лопастей
+            notch = 1 - .55 * math.exp(-((t - 3 * math.pi / 2) / .22) ** 2)       # выемка у черенка
+            teeth = 1 + .035 * abs(math.sin(t * 22))
+            r = R * lobes * notch * teeth
+            lx, ly = r * math.cos(t), r * math.sin(t) * sq      # лист наклонён — тень сплюснута
+            pts.append((cx + lx * math.cos(rot) - ly * math.sin(rot), cy + lx * math.sin(rot) + ly * math.cos(rot)))
+        return pts
+    placed = 0
+    while placed < 300:
+        cx, cy = rng.uniform(-100, TW + 100), rng.uniform(-100, TH + 100)
+        c = cover[int(np.clip(cy, 0, TH - 1)), int(np.clip(cx, 0, TW - 1))]
+        if rng.random() > c: continue
+        R = rng.uniform(60, 120); rot = rng.uniform(0, 2 * math.pi)
+        dd = d if rng.random() < .55 else d2
+        dd.polygon(grape_leaf(cx, cy, R, rot, rng.uniform(.6, 1)), fill=255)
+        dd.line([(cx, cy), (cx - R * 1.2 * math.cos(rot + math.pi / 2), cy - R * 1.2 * math.sin(rot + math.pi / 2))], fill=255, width=5)
+        placed += 1
+    for _ in range(9):                                        # лоза: изогнутые ветви с усиками
+        x0, y0 = rng.uniform(-200, TW), rng.uniform(-60, TH * .35)
+        a0 = rng.uniform(-.4, .4); pts = []
+        for k in range(40):
+            a0 += rng.normal(0, .12); x0 += 28 * math.cos(a0); y0 += 28 * math.sin(a0) * .6; pts.append((x0, y0))
+        d.line(pts, fill=255, width=int(rng.uniform(8, 14)))
+        for k in range(3, 38, 7):
+            sx, sy = pts[k]; d.line(spiral(sx, sy + 18, 16, 1.6, 0, 1, 30), fill=255, width=3)
+    shadow = np.clip(ndi.gaussian_filter(np.asarray(lim, float) / 255, 5) + ndi.gaussian_filter(np.asarray(lim2, float) / 255, 13) * .8, 0, 1)   # низкие листья чёткие, высокие размыты
+    # солнечные зайчики внутри густой тени: эллипсы, вытянутые по направлению солнца
+    fl = Image.new('L', (TW, TH), 0); d = ImageDraw.Draw(fl)
+    for _ in range(400):
+        cx, cy = rng.uniform(0, TW), rng.uniform(0, TH)
+        if shadow[int(cy), int(cx)] < .8 or rng.random() < .75: continue
+        r = rng.uniform(4, 13) * rng.uniform(.6, 1.4); ang = math.radians(28)
+        pts = [(cx + r * 1.7 * math.cos(t) * math.cos(ang) - r * math.sin(t) * math.sin(ang),
+                cy + r * 1.7 * math.cos(t) * math.sin(ang) + r * math.sin(t) * math.cos(ang)) for t in np.linspace(0, 2 * math.pi, 24)]
+        d.polygon(pts, fill=int(rng.uniform(150, 255)))
+    flecks = ndi.gaussian_filter(np.asarray(fl, float) / 255, 3.5) * .8
+    shadow = np.clip(shadow - flecks * .9, 0, 1)
+    img = img * (1 - shadow[..., None] * np.array((.46, .44, .38)))
+    img = img + flecks[..., None] * np.array((.10, .07, .03))
     # тёплый свет в середине стола и затемнение к краям
     yy, xx = np.mgrid[0:TH, 0:TW]
     rr = np.hypot((xx - TW / 2) / (TW * .55), (yy - TH * .5) / (TH * .62))

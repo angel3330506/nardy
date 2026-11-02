@@ -186,6 +186,8 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .seg button{border:0;border-radius:0;background:transparent;color:var(--muted);padding:10px 6px}
 .seg button.on{background:rgba(217,181,106,.16);color:var(--gold-hi)}
+.nettext{margin:0;color:var(--muted);font-size:14.5px}
+.netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
 @media (prefers-reduced-motion:reduce){.tgt,.d3.grab .cube,.d3.grab .shadow{animation:none}}
 </style>
@@ -254,7 +256,8 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div class="mbtns">
       <button class="primary" id="mContinue" hidden>Продолжить партию</button>
       <button class="primary" id="mAi">Играть с компьютером<span class="cap" id="lvlCap"></span></button>
-      <button id="mPvp">Играть вдвоём</button>
+      <button id="mPvp">Играть вдвоём<span class="cap">на одном телефоне</span></button>
+      <button id="mNet">Играть с другом по сети<span class="cap">по ссылке, где бы он ни был</span></button>
     </div>
     <div class="mrow">
       <button id="bSettings">Настройки</button>
@@ -288,6 +291,19 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
   </div>
 </div>
 
+<div class="sheet" id="netSheet" hidden>
+  <div class="sheet-in">
+    <h3>Игра по сети</h3>
+    <p class="nettext" id="netText"></p>
+    <div class="netlink" id="netLink" hidden></div>
+    <div class="mrow" id="netBtns" hidden>
+      <button class="primary" id="bShare">Отправить ссылку</button>
+      <button id="bCopy">Скопировать</button>
+    </div>
+    <button id="bNetClose">Закрыть</button>
+  </div>
+</div>
+
 <div class="sheet" id="rules" hidden>
   <div class="sheet-in">
     <h3>Правила длинных нард</h3>
@@ -300,6 +316,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       <li>Нельзя ставить <b>заграждение из 6 шашек подряд</b>, если впереди него нет ни одной шашки соперника.</li>
       <li>Выбрасывать можно, когда все 15 шашек в доме. Кто выбросил все первым — победил; если у соперника не вышло ни одной — <b>марс</b>, двойная победа.</li>
       <li>Чтобы бросить, <b>потяните кубики</b> с середины доски пальцем на свою половину и отпустите (на компьютере — пробел).</li>
+      <li><b>По сети:</b> «Играть с другом по сети» → отправьте ссылку другу. Каждый видит доску со своей стороны. Кубики честные: бросок складывается из случайных чисел обоих телефонов, подменить его нельзя.</li>
       <li>Как ходить: нажмите на шашку, затем на подсвеченный пункт. Цифра на пункте — на сколько вы идёте. Выброс — нажатие на лоток справа.</li>
     </ul>
     <button class="primary done" id="bRulesClose">Понятно</button>
@@ -310,7 +327,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='17';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='18';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -341,10 +358,10 @@ const isTop=i=>i>=12;
 const STACK_MAX=150, COUNT_FROM=5;
 function slotXY(i,k,n){
   const sp=n>3?STACK_MAX/(n-1):60;
-  const x=ptX(i);
-  return isTop(i)?[x,70+k*sp]:[x,630-k*sp];
+  const x=ptX(i), p=isTop(i)?[x,70+k*sp]:[x,630-k*sp];
+  return G&&G.flip?[1000-p[0],700-p[1]]:p;          // в сетевой партии чёрные видят доску повёрнутой
 }
-function traySlot(pl,k){ return pl===0?[1055,50+k*18+7]:[1055,650-k*18-7]; }
+function traySlot(pl,k){ const y=pl===0?50+k*18+7:650-k*18-7; return [1055,G&&G.flip?700-y:y]; }
 
 /* ---------- скины досок ---------- */
 // Фон каждой доски — готовая картинка (tools/render_boards.py): дерево, резьба, инкрустация, освещение.
@@ -572,9 +589,9 @@ let mode='ai', score=[0,0], G=null, busy=false, flyHide=null, timers=[];
 const later=(fn,ms)=>{const t=setTimeout(fn,ms);timers.push(t);return t;};
 const clearTimers=()=>{timers.forEach(clearTimeout);timers=[];};
 function loadScore(){try{const v=JSON.parse(localStorage.getItem('nardy-score-v1')||'null');score=(v&&v[mode])||[0,0];}catch(e){score=[0,0];}}
-function saveScore(){try{const v=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};v[mode]=score;localStorage.setItem('nardy-score-v1',JSON.stringify(v));}catch(e){}}
+function saveScore(){if(mode==='net')return;try{const v=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};v[mode]=score;localStorage.setItem('nardy-score-v1',JSON.stringify(v));}catch(e){}}
 function saveGame(){
-  if(!G) return;
+  if(!G||mode==='net') return;
   try{
     if(G.phase==='over'||G.phase==='start'){localStorage.removeItem('nardy-game-v1');return;}
     const phase=G.phase==='rolling'?'roll':G.phase;
@@ -583,7 +600,9 @@ function saveGame(){
 }
 function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')||'null');}catch(e){return null;}}
 
-const isHuman=pl=>mode==='pvp'||pl===0;
+const isHuman=pl=>mode==='pvp'||pl===(mode==='net'?G.me:0);
+const isAI=pl=>mode==='ai'&&pl===1;
+const who=pl=>mode==='net'?(pl===G.me?'Вы':'Друг'):NAME[pl];
 const NAME=['Белые','Чёрные'];
 const LEVELS={easy:['Лёгкий','лёгкий','Часто ошибается, подходит для знакомства с правилами.'],
               medium:['Средний','средний','Строит заборы и не копит шашки кучей.'],
@@ -597,7 +616,7 @@ function freshState(){
   return s;
 }
 function newGame(m){
-  clearTimers();
+  clearTimers(); netLeave();
   if(m) mode=m;
   loadScore();
   G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null};
@@ -673,7 +692,7 @@ function syncRest(){
     });
     diceBox.dataset.state='rest';
   }
-  const can=G.phase==='roll'&&isHuman(G.turn);
+  const can=G.phase==='roll'&&isHuman(G.turn)&&!(mode==='net'&&(G.netPend||NET.rv[1-NET.me].length<=NET.k));
   diceBox.querySelectorAll('.d3').forEach(e=>e.classList.toggle('grab',can));
 }
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -776,31 +795,41 @@ diceBox.addEventListener('pointercancel',dropDice);
 // касание кубиков после хода — завершить ход
 diceBox.addEventListener('click',e=>{
   if(!e.target.closest('.d3')||!G||busy||G.auto) return;
-  if(G.phase==='move'&&isHuman(G.turn)&&!G.steps.length) endTurn();
+  if(G.phase==='move'&&isHuman(G.turn)&&!G.steps.length) humanEnd();
 });
 
-function rollOff(){
-  let a,b; do{a=1+Math.random()*6|0;b=1+Math.random()*6|0;}while(a===b);
+// vals — заданный результат (в сетевой партии он общий для обоих)
+function rollOff(vals){
+  let a,b; if(vals)[a,b]=vals; else do{a=1+Math.random()*6|0;b=1+Math.random()*6|0;}while(a===b);
   setStatus('Разыгрываем первый ход…');
   busy=true;
-  const L=landing('r'), R=landing('l');
+  let L=landing('r'), R=landing('l'); if(G.flip)[L,R]=[R,L];
   throwDice([a,b],REST,[L[0],R[1]],()=>{
     busy=false;
     G.turn=a>b?0:1;
-    setStatus(`Белые — <b>${a}</b>, чёрные — <b>${b}</b>. Начинают ${NAME[G.turn].toLowerCase()}.`);
-    later(()=>{G.phase='roll';render();if(!isHuman(G.turn))aiTurn();else promptRoll();},1500);
+    setStatus(mode==='net'?`Вы — <b>${G.me?b:a}</b>, друг — <b>${G.me?a:b}</b>. Начинает ${G.turn===G.me?'ваш ход':'друг'}.`
+      :`Белые — <b>${a}</b>, чёрные — <b>${b}</b>. Начинают ${NAME[G.turn].toLowerCase()}.`);
+    if(mode==='net') NET.hold=true;
+    later(()=>{ if(NET) NET.hold=false; G.ro=false; G.phase='roll'; render(); if(isAI(G.turn))aiTurn(); else promptRoll(); netKick(); },1500);
   });
 }
-function promptRoll(){ setStatus(mode==='ai'?'Ваш ход — потяните кубики на доску.':`Ходят ${NAME[G.turn].toLowerCase()} — потяните кубики на доску.`); }
+function promptRoll(){
+  if(mode==='net') setStatus(!isHuman(G.turn)?'Ходит друг…':NET.rv[1-NET.me].length>NET.k?'Ваш ход — потяните кубики на доску.':'Ваш ход. Ждём, когда друг будет на связи…');
+  else setStatus(mode==='ai'?'Ваш ход — потяните кубики на доску.':`Ходят ${NAME[G.turn].toLowerCase()} — потяните кубики на доску.`);
+}
 
 // start/land — откуда летят и куда лягут; без них кубики бросаются со стыка на половину бросающего
-function doRoll(after,start=REST,land,lift=1){
+// vals — заданный результат (сетевая партия); без него кубики случайные
+function doRoll(after,start=REST,land,lift=1,vals){
   if(G.phase!=='roll'||busy) return;
-  const a=1+Math.random()*6|0, b=1+Math.random()*6|0;
+  if(mode==='net'&&!vals){ netThrow(start,land,lift); return; }
+  const [a,b]=vals||[1+Math.random()*6|0,1+Math.random()*6|0];
   land=land||landing(mode==='ai'&&G.turn===1?'l':'r');
   G.phase='rolling'; busy=true; render();
-  throwDice([a,b],start,land,()=>{
-    busy=false;
+  throwDice([a,b],start,land,()=>{ busy=false; rolled(a,b,land,after,false); },lift);
+}
+// результат броска; instant — без пауз (восстановление сетевой партии)
+function rolled(a,b,land,after,instant){
     G.dice=[a,b]; G.diceAt=land;
     G.rem=a===b?[a,a,a,a]:[a,b];
     G.headUsed=0;
@@ -809,15 +838,16 @@ function doRoll(after,start=REST,land,lift=1){
     G.phase='move'; G.hist=[]; G.sel=null;
     refreshSteps();
     if(!G.steps.length){
-      setStatus(`${NAME[G.turn]}: ${a}–${b}. Ходов нет, ход переходит.`);
+      setStatus(`${who(G.turn)}: ${a}–${b}. Ходов нет, ход переходит.`);
       render();
-      later(endTurn,1600);
+      if(instant) endTurn();
+      else { if(NET) NET.hold=true; later(()=>{ if(NET) NET.hold=false; endTurn(); },1600); }
       return;
     }
     if(isHuman(G.turn)) setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`);
+    else if(mode==='net') setStatus(`Друг: <b>${a}–${b}</b>. Ходит…`);
     render();
     after&&after();
-  },lift);
 }
 
 function applyStep(st,cb){
@@ -868,8 +898,10 @@ function fly(pl,[x0,y0],[x1,y1],toOff,done,fromOff){
   requestAnimationFrame(step);
   setTimeout(finish,D+150);   // если приложение свернули посреди анимации — ход всё равно завершится
 }
-function undo(){
-  if(busy||G.auto||!G.hist.length||!isHuman(G.turn)||G.phase!=='move') return;
+// force — отмена, пришедшая от друга по сети
+function undo(force){
+  if(busy||G.auto||!G.hist.length||(!force&&!isHuman(G.turn))||G.phase!=='move') return;
+  if(mode==='net'&&!force){ if(!G.netPend) netSend({t:'undo'}); return; }
   // отменяем весь ход одного касания (например 2+2) и плавно возвращаем шашку на место
   const pl=G.turn, last=G.hist[G.hist.length-1];
   let first=last;
@@ -883,7 +915,7 @@ function undo(){
   refreshSteps(); flyHide=src; render();
   fly(pl,from,to,false,()=>{
     flyHide=null; sClack(n>1);
-    setStatus(`Ход отменён. Осталось: <b>${G.rem.join(', ')}</b>.`); render();
+    setStatus(isHuman(G.turn)?`Ход отменён. Осталось: <b>${G.rem.join(', ')}</b>.`:'Друг отменил ход.'); render();
   },lst.to==='off');
 }
 // Почему выбранная шашка не может пойти на пункт t — понятным языком
@@ -925,8 +957,10 @@ function explainMove(src,t){
 function endTurn(){
   G.turn=1-G.turn; G.phase='roll'; G.rem=[]; G.hist=[]; G.sel=null; G.steps=[]; G.targets=null;
   clearDice(); render();
-  if(!isHuman(G.turn)) later(aiTurn,450); else promptRoll();
+  if(isAI(G.turn)) later(aiTurn,450); else promptRoll();
+  netKick();
 }
+function humanEnd(){ if(mode==='net'){ if(!G.netPend) netSend({t:'end'}); } else endTurn(); }
 function aiTurn(){
   setStatus('Компьютер бросает…');
   doRoll(()=>{
@@ -948,10 +982,311 @@ function gameOver(pl){
   G.phase='over'; G.auto=false;
   const mars=G.s.off[1-pl]===0, pts=mars?2:1;
   score[pl]+=pts; saveScore(); render();
-  $('wTitle').textContent=mode==='ai'?(pl===0?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
+  $('wTitle').textContent=mode!=='pvp'?(pl===(mode==='net'?G.me:0)?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
   $('wText').textContent=(mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
-  setStatus(`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
+  setStatus(mode==='net'?(pl===G.me?'Вы выбросили все шашки!':'Друг выбросил все шашки.'):`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
   $('over').hidden=false;
+}
+
+/* ---------- игра по сети ---------- */
+// Комната в Firebase Realtime Database: rooms/<код>/{players, commit, online, log}. Все действия — события в log/<n>,
+// оба телефона применяют их по порядку, поэтому партия у обоих одинаковая; после перезагрузки она восстанавливается из лога.
+// Честные кубики: у каждого игрока своя цепочка хешей seed → H(seed) → … → H^N(seed), вершина публикуется при входе.
+// Бросок k складывается из k-х значений обоих игроков (раскрываются от вершины вниз, каждое проверяется хешем) —
+// заранее его не знает никто, и подменить его нельзя.
+const FB_CFG={apiKey:'AIzaSyCth8f_piW1AWTqA6cmXXRfFO6nN2nnUHk',authDomain:'nardy-c0996.firebaseapp.com',
+  databaseURL:'https://nardy-c0996-default-rtdb.europe-west1.firebasedatabase.app',projectId:'nardy-c0996',
+  storageBucket:'nardy-c0996.firebasestorage.app',messagingSenderId:'35601586775',appId:'1:35601586775:web:19f96c4e493a8d609fe112'};
+const FBV='10.12.2', CHAIN=2000;
+const NETB_fb={
+  async init(){
+    if(this.db) return;
+    const g=m=>import(`https://www.gstatic.com/firebasejs/${FBV}/firebase-${m}.js`);
+    const [A,Au,D]=await Promise.all([g('app'),g('auth'),g('database')]);
+    this.D=D;
+    const app=A.initializeApp(FB_CFG), auth=Au.getAuth(app);
+    let u=await new Promise(r=>{const un=Au.onAuthStateChanged(auth,x=>{un();r(x);});});
+    if(!u) u=(await Au.signInAnonymously(auth)).user;
+    this.uid=u.uid; this.db=D.getDatabase(app);
+  },
+  r(p){return this.D.ref(this.db,p);},
+  async get(p){return (await this.D.get(this.r(p))).val();},
+  update(p,o){return this.D.update(this.r(p),o);},
+  // записать событие в свободную ячейку лога; занято — false
+  async claim(p,v){return (await this.D.runTransaction(this.r(p),cur=>cur===null?v:undefined,{applyLocally:false})).committed;},
+  onValue(p,cb){return this.D.onValue(this.r(p),s=>cb(s.val()));},
+  onChild(p,cb){return this.D.onChildAdded(this.r(p),s=>cb(s.key,s.val()));},
+  presence(p){
+    const D=this.D, ref=this.r(p);
+    return D.onValue(this.r('.info/connected'),s=>{ if(s.val()) D.onDisconnect(ref).remove().then(()=>D.set(ref,true)).catch(()=>{}); });
+  }
+};
+// Та же база в localStorage вкладок одного браузера — для автотестов без сети (?mock в адресе)
+const NETB_mock={
+  async init(){
+    if(this.bc) return;
+    let u=sessionStorage.getItem('mock-uid'); if(!u){u='u'+Math.random().toString(36).slice(2);sessionStorage.setItem('mock-uid',u);}
+    this.uid=u; this.ls=[]; this.bc=new BroadcastChannel('nardy-mock'); this.bc.onmessage=()=>this.fire();
+  },
+  data(){return JSON.parse(localStorage.getItem('nardy-mock-db')||'{}');},
+  at(d,p){return p.split('/').reduce((o,k)=>o==null?undefined:o[k],d);},
+  put(d,p,v){const ks=p.split('/');let o=d;for(const k of ks.slice(0,-1))o=o[k]=o[k]||{};o[ks[ks.length-1]]=v;},
+  save(d){localStorage.setItem('nardy-mock-db',JSON.stringify(d));this.bc.postMessage(1);setTimeout(()=>this.fire(),30);},
+  async get(p){const v=this.at(this.data(),p);return v===undefined?null:v;},
+  async update(p,o){const d=this.data();for(const [k,v] of Object.entries(o))this.put(d,p+'/'+k,v);this.save(d);},
+  claim(p,v){return navigator.locks.request('mockdb',async()=>{await new Promise(r=>setTimeout(r,40));const d=this.data();if(this.at(d,p)!=null)return false;this.put(d,p,v);this.save(d);return true;});},
+  listen(l){this.ls.push(l);l();return ()=>{this.ls=this.ls.filter(x=>x!==l);};},
+  onValue(p,cb){let last;return this.listen(()=>{const v=JSON.stringify(this.at(this.data(),p)??null);if(v!==last){last=v;cb(JSON.parse(v));}});},
+  onChild(p,cb){const seen=new Set();return this.listen(()=>{const o=this.at(this.data(),p)||{};Object.keys(o).sort((a,b)=>a-b).forEach(k=>{if(!seen.has(k)){seen.add(k);cb(k,o[k]);}});});},
+  presence(p){const i=p.lastIndexOf('/');this.update(p.slice(0,i),{[p.slice(i+1)]:true});return ()=>{};},
+  fire(){this.ls.slice().forEach(l=>l());}
+};
+const MOCK=new URLSearchParams(location.search).has('mock');
+const NETB=MOCK?NETB_mock:NETB_fb;
+let NET=null;
+if(MOCK) window.__t={                                   // ручки для автотестов
+  st:()=>({phase:G&&G.phase,turn:G&&G.turn,me:G&&G.me,rem:G&&G.rem,steps:G&&G.steps.length,hist:G&&G.hist.length,key:G&&key(G.s),k:NET&&NET.k,pend:G&&G.netPend,busy,auto:G&&G.auto,dead:NET&&NET.dead,hold:NET&&NET.hold,status:$('status').textContent}),
+  roll:()=>doRoll(),
+  move:()=>{const st=G.steps[0];netSend({t:'mv',s:[[st.from,st.d]]});},
+  undo:()=>undo(),
+  end:()=>humanEnd()
+};
+
+const hexOf=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+const bytesOf=h=>new Uint8Array(h.match(/../g).map(x=>parseInt(x,16)));
+const sha=async h=>hexOf(await crypto.subtle.digest('SHA-256',bytesOf(h)));
+async function makeChain(seed){const c=[seed];for(let j=0;j<CHAIN;j++)c.push(await sha(c[j]));return c;}
+async function diceFrom(a,b,distinct){
+  let h=await sha(a+b);
+  for(;;){
+    const out=[];
+    for(const x of bytesOf(h)){
+      if(x>=252) continue;                  // 252 = 6·42: без перекоса в пользу малых чисел
+      out.push(1+x%6);
+      if(out.length===2){ if(!distinct||out[0]!==out[1]) return out; out.length=0; }
+    }
+    h=await sha(h);
+  }
+}
+const flipP=p=>[1000-p[0],700-p[1]];                 // поворот поля на 180°: чёрные видят доску со своей стороны
+const netLink=code=>`${location.origin}${location.pathname}?room=${code}${MOCK?'&mock':''}`;
+const netKey=code=>`nardy-net-${code}-${NETB.uid}`;
+
+function netSheet(text,link){
+  $('netText').innerHTML=text;
+  $('netLink').hidden=!link; $('netBtns').hidden=!link;
+  if(link) $('netLink').textContent=link;
+  $('netSheet').hidden=false;
+}
+async function netCreate(){
+  netSheet('Создаём комнату…');
+  try{
+    await NETB.init();
+    const seed=hexOf(crypto.getRandomValues(new Uint8Array(32))), chain=await makeChain(seed);
+    const AB='abcdefghjkmnpqrstuvwxyz23456789';
+    for(let t=0;t<5;t++){
+      const code=[...crypto.getRandomValues(new Uint8Array(6))].map(x=>AB[x%AB.length]).join('');
+      try{
+        await NETB.update(`rooms/${code}`,{created:Date.now(),'players/w':NETB.uid,'commit/w':chain[CHAIN]});
+        localStorage.setItem(netKey(code),JSON.stringify({seed}));
+        return netStart(code,'w',chain);
+      }catch(e){}
+    }
+    throw new Error('no room');
+  }catch(e){ console.error(e); netSheet('Не удалось подключиться к серверу игры. Проверьте интернет и попробуйте ещё раз.'); }
+}
+async function netEnter(code){
+  netSheet('Подключаемся к партии…');
+  try{
+    await NETB.init();
+    const room=await NETB.get(`rooms/${code}`);
+    if(!room||!room.players) return netSheet('Такой партии нет. Попросите друга прислать новую ссылку.');
+    let slot=room.players.w===NETB.uid?'w':room.players.b===NETB.uid?'b':null, chain;
+    if(!slot){
+      if(room.players.b) return netSheet('В этой партии уже играют двое.');
+      const seed=hexOf(crypto.getRandomValues(new Uint8Array(32))); chain=await makeChain(seed);
+      await NETB.update(`rooms/${code}`,{'players/b':NETB.uid,'commit/b':chain[CHAIN]});
+      localStorage.setItem(netKey(code),JSON.stringify({seed})); slot='b';
+    }else{
+      let saved=null; try{saved=JSON.parse(localStorage.getItem(netKey(code)));}catch(e){}
+      if(!saved) return netSheet('Эту партию начали на другом устройстве или в другом браузере — продолжить её здесь нельзя.');
+      chain=await makeChain(saved.seed);
+    }
+    netStart(code,slot,chain);
+  }catch(e){ console.error(e); netSheet('Не удалось подключиться к серверу игры. Проверьте интернет и откройте ссылку ещё раз.'); }
+}
+function netLeave(){
+  if(!NET) return;
+  NET.unsub.forEach(f=>{try{f();}catch(e){}}); clearInterval(NET.timer);
+  NET=null; if(G){G.flip=false;G.me=0;} buildHit();
+  history.replaceState(null,'',location.pathname+(MOCK?'?mock':''));
+}
+function netFresh(){
+  return {s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,
+    me:NET.me,flip:NET.me===1,netPend:false,ro:false};
+}
+function netStart(code,slot,chain){
+  netLeave(); clearTimers();
+  mode='net'; score=[0,0];
+  NET={room:code,slot,me:slot==='w'?0:1,chain,commit:[null,null],rv:[[],[]],k:0,applied:0,q:new Map(),seen:0,
+       ready:false,started:false,send:Promise.resolve(),unsub:[],hold:false,opp:false,dead:false};
+  G=netFresh(); busy=false; flyHide=null; $('over').hidden=true; $('lFx').innerHTML=''; clearDice(); buildHit();
+  history.replaceState(null,'',`?room=${code}${MOCK?'&mock':''}`);
+  try{localStorage.setItem('nardy-net-last',code);}catch(e){}
+  const R=`rooms/${code}`;
+  NET.unsub.push(NETB.onValue(`${R}/commit`,v=>{
+    if(!NET||NET.started) return;
+    NET.commit=[v&&v.w,v&&v.b];
+    if(NET.commit[0]&&NET.commit[1]){ NET.started=true; netBegin(); }
+    else netSheet('Отправьте другу ссылку — партия начнётся, как только он её откроет.<br>Ждём друга…',netLink(code));
+  }));
+}
+async function netBegin(){
+  const R=`rooms/${NET.room}`, other=NET.slot==='w'?'b':'w';
+  $('netSheet').hidden=true; showGame(); render();
+  setStatus('Загружаем партию…');
+  const log=await NETB.get(`${R}/log`)||{};
+  for(const [k,v] of Object.entries(log)){ NET.q.set(+k,v); NET.seen=Math.max(NET.seen,+k+1); }
+  await netPump();                                  // восстановление без анимаций
+  if(!NET||NET.dead) return;
+  NET.ready=true;
+  if(G.phase==='move') placeDice(G.dice); else clearDice();
+  render(); netStatus();
+  NET.unsub.push(NETB.onChild(`${R}/log`,(k,v)=>{
+    if(!NET) return; k=+k; NET.seen=Math.max(NET.seen,k+1);
+    if(k>=NET.applied&&!NET.q.has(k)){ NET.q.set(k,v); netPump(); }
+  }));
+  NET.unsub.push(NETB.presence(`${R}/online/${NET.slot}`));
+  NET.unsub.push(NETB.onValue(`${R}/online/${other}`,v=>{ if(!NET) return; NET.opp=!!v; if(G) renderPanel(); }));
+  NET.timer=setInterval(netPump,150);
+  netAutoReveal();
+}
+function netStatus(){
+  if(G.phase==='start') setStatus('Ждём друга…');
+  else if(G.phase==='roll') promptRoll();
+  else if(G.phase==='move') setStatus(isHuman(G.turn)?(G.steps.length?`Ваш ход. Осталось: <b>${G.rem.join(', ')}</b>.`:'Ходов больше нет. Завершите ход.'):'Ходит друг…');
+}
+function netSend(ev){
+  ev.p=NET.me; if(ev.t!=='rv') G.netPend=true;
+  render();
+  const room=NET.room;
+  NET.send=NET.send.then(async()=>{
+    for(let t=0;t<30&&NET&&NET.room===room;t++){
+      const n=NET.seen;
+      if(await NETB.claim(`rooms/${room}/log/${n}`,ev)){ if(NET) NET.seen=Math.max(NET.seen,n+1); return; }
+      if(NET) NET.seen=Math.max(NET.seen,n+1);
+    }
+  }).catch(e=>{ console.error(e); if(NET&&G){ G.netPend=false; NET.revealing=false; NET.myThrow=null; clearDice(); render(); setStatus('Нет связи с сервером. Проверьте интернет и повторите.'); } });
+}
+// своё значение для очередного броска раскрываем, когда бросать будет соперник (или разыгрывается первый ход)
+function netAutoReveal(){
+  if(!NET||!NET.ready||NET.dead||NET.revealing) return;
+  const me=NET.me, k=NET.k;
+  if(NET.rv[me].length!==k) return;
+  if((G.phase==='start'&&!G.ro)||(G.phase==='roll'&&G.turn!==me)){
+    NET.revealing=true; netSend({t:'rv',v:NET.chain[CHAIN-1-k]});
+  }
+}
+function netKick(){ if(NET){ netPump(); } }
+async function netVerify(p,v){
+  const i=NET.rv[p].length, prev=i?NET.rv[p][i-1]:NET.commit[p];
+  if(typeof v!=='string'||await sha(v)!==prev) throw new Error('bad reveal');
+  NET.rv[p].push(v);
+}
+function netPath(s){
+  let ctx=curCtx(); const path=[];
+  for(const [from,d] of s||[]){
+    const st=legalSteps(ctx,new Map()).find(x=>x.from===from&&x.d===d);
+    if(!st) return null;
+    path.push(st); ctx=nextCtx(ctx,st);
+  }
+  return path.length?path:null;
+}
+function applyStepState(st){
+  G.hist.push({s:G.s,rem:G.rem.slice(),headUsed:G.headUsed,grp:G.grp,st});
+  G.s=st.ns; G.rem=removeOne(G.rem,st.d); if(st.from===0)G.headUsed++;
+  G.sel=null; refreshSteps();
+  if(G.s.off[G.turn]===15) gameOver(G.turn);
+}
+function undoState(){
+  const last=G.hist[G.hist.length-1]; if(!last) return;
+  let first=last;
+  while(G.hist.length&&G.hist[G.hist.length-1].grp===last.grp) first=G.hist.pop();
+  G.s=first.s; G.rem=first.rem; G.headUsed=first.headUsed; G.sel=null; refreshSteps();
+}
+async function netApply(ev,live){
+  const me=NET.me, p=ev.p, bad=()=>{throw new Error('bad '+ev.t);};
+  if(p!==0&&p!==1) bad();
+  if(p===me&&ev.t!=='rv') G.netPend=false;
+  switch(ev.t){
+    case 'rv':
+      await netVerify(p,ev.v);
+      if(p===me) NET.revealing=false;
+      else if(live&&G.phase==='roll'&&isHuman(G.turn)){ promptRoll(); render(); }
+      break;
+    case 'roll':{
+      if(G.phase!=='roll'||G.turn!==p) bad();
+      await netVerify(p,ev.v);
+      const k=NET.k;
+      if(NET.rv[0].length<=k||NET.rv[1].length<=k) bad();
+      const vals=await diceFrom(NET.rv[0][k],NET.rv[1][k],false); NET.k++;
+      const ok=Array.isArray(ev.l)&&ev.l.length===2&&ev.l.every(q=>Array.isArray(q)&&q.length===2&&q.every(Number.isFinite));
+      const land=!ok?landing(p===me?'r':'l'):NET.me===1?ev.l.map(flipP):ev.l;   // место падения — только для красоты
+      if(live){ const mt=p===me?NET.myThrow:null; NET.myThrow=null; doRoll(null,mt?mt.start:REST,land,mt?mt.lift:1,vals); }
+      else rolled(vals[0],vals[1],land,null,true);
+      break;
+    }
+    case 'mv':{
+      if(G.phase!=='move'||G.turn!==p) bad();
+      const path=netPath(ev.s); if(!path) bad();
+      if(live) applyPath(path); else { G.grp=(G.grp||0)+1; path.forEach(applyStepState); }
+      break;
+    }
+    case 'undo':
+      if(G.phase!=='move'||G.turn!==p||!G.hist.length) bad();
+      if(live) undo(true); else undoState();
+      break;
+    case 'end':
+      if(G.phase!=='move'||G.turn!==p||G.steps.length) bad();
+      endTurn();
+      break;
+    case 'new':
+      if(G.phase!=='over') break;               // оба нажали «Ещё партию» — вторая просьба лишняя
+      G=netFresh(); $('over').hidden=true; clearDice(); render(); setStatus('Новая партия!');
+      break;
+    default: bad();
+  }
+  // первый ход разыгрываем, как только оба раскрыли значения
+  if(G.phase==='start'&&!G.ro&&NET.rv[0].length>NET.k&&NET.rv[1].length>NET.k){
+    const vals=await diceFrom(NET.rv[0][NET.k],NET.rv[1][NET.k],true); NET.k++;
+    if(live){ G.ro=true; rollOff(vals); }
+    else { G.turn=vals[0]>vals[1]?0:1; G.phase='roll'; }
+  }
+}
+async function netPump(){
+  if(!NET||NET.pumping||NET.dead) return;
+  NET.pumping=true;
+  const net=NET;
+  try{
+    while(net===NET&&net.q.has(net.applied)){
+      if(net.ready&&(busy||G.auto||net.hold)) break;
+      const ev=net.q.get(net.applied); net.q.delete(net.applied);
+      await netApply(ev,net.ready); net.applied++;
+    }
+  }catch(e){
+    console.error(e); net.dead=true;
+    setStatus('Ход друга не сходится с правилами — партия остановлена.');
+  }
+  net.pumping=false;
+  if(net===NET) netAutoReveal();
+}
+// бросок своими руками: кубики из события у обоих полетят одинаково
+function netThrow(start,land,lift){
+  if(G.netPend) return;
+  if(NET.rv[1-NET.me].length<=NET.k){ setStatus('Ждём, когда друг будет на связи…'); clearDice(); render(); return; }
+  land=land||landing('r');
+  NET.myThrow={start,lift};
+  netSend({t:'roll',v:NET.chain[CHAIN-1-NET.k],l:(G.flip?land.map(flipP):land).map(q=>q.map(Math.round))});
 }
 
 /* ---------- отрисовка ---------- */
@@ -969,15 +1304,16 @@ function buildStatic(){
   $('lStatic').innerHTML=`<image href="boards/${k}.webp?v=${APP_VERSION}" x="0" y="0" width="1100" height="700"/>`;
   $('chip0').innerHTML=`<image href="boards/ck-${sk.ck.w.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
   $('chip1').innerHTML=`<image href="boards/ck-${sk.ck.b.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
-  if(!$('lHit').innerHTML){
-    let hit='';
-    for(let i=0;i<24;i++){
-      const x=ptX(i)-35, y=isTop(i)?40:350;
-      hit+=`<rect class="hit" data-pt="${i}" x="${x}" y="${y}" width="70" height="310" fill="transparent"/>`;
-    }
-    hit+=`<rect class="hit" data-pt="off" x="1010" y="0" width="90" height="700" fill="transparent"/>`;
-    $('lHit').innerHTML=hit;
+  if(!$('lHit').innerHTML) buildHit();
+}
+function buildHit(){
+  let hit='';
+  for(let i=0;i<24;i++){
+    const di=G&&G.flip?(i+12)%24:i, x=ptX(di)-35, y=isTop(di)?40:350;
+    hit+=`<rect class="hit" data-pt="${i}" x="${x}" y="${y}" width="70" height="310" fill="transparent"/>`;
   }
+  hit+=`<rect class="hit" data-pt="off" x="1010" y="0" width="90" height="700" fill="transparent"/>`;
+  $('lHit').innerHTML=hit;
 }
 function render(){
   const s=G.s; let h='';
@@ -1010,7 +1346,7 @@ function render(){
     for(const [to,path] of G.targets){
       const sum=path.reduce((a,st)=>a+st.d,0);
       if(to==='off'){
-        const y=G.turn===0?40:360;
+        const y=(G.turn===0)!==!!G.flip?40:360;
         h+=`<rect class="tgt" x="1018" y="${y}" width="66" height="300" rx="12" fill="rgba(243,217,147,.12)" stroke="${T}" stroke-width="2.5" pointer-events="none"/>`;
       }else{
         const n=s.n[to]; const [x,y]=slotXY(to,n,n+1);
@@ -1039,11 +1375,14 @@ function renderPanel(){
     $('m'+pl).textContent=`${pips(s,pl)} · вышло ${s.off[pl]}`;
     $('s'+pl).textContent=score[pl];
   }
-  $('n0').textContent=mode==='ai'?'Вы':'Белые';
-  $('n1').textContent=mode==='ai'?`Компьютер · ${LEVELS[settings.level][1]}`:'Чёрные';
+  if(mode==='net') for(const pl of [0,1]) $('n'+pl).textContent=pl===G.me?'Вы':'Друг'+(NET&&NET.ready&&!NET.opp?' · не в сети':'');
+  else{
+    $('n0').textContent=mode==='ai'?'Вы':'Белые';
+    $('n1').textContent=mode==='ai'?`Компьютер · ${LEVELS[settings.level][1]}`:'Чёрные';
+  }
   const human=isHuman(G.turn);
-  $('bMain').hidden=!(G.phase==='move'&&human&&!busy&&!G.auto&&!G.steps.length);
-  $('bUndo').disabled=!(G.phase==='move'&&human&&G.hist.length&&!busy&&!G.auto);
+  $('bMain').hidden=!(G.phase==='move'&&human&&!busy&&!G.auto&&!G.steps.length&&!G.netPend);
+  $('bUndo').disabled=!(G.phase==='move'&&human&&G.hist.length&&!busy&&!G.auto&&!G.netPend);
 }
 function setStatus(t){$('status').innerHTML=t;}
 
@@ -1067,7 +1406,7 @@ function showGame(){ document.body.classList.add('playing'); $('menu').hidden=tr
 function showMenu(){
   document.body.classList.remove('playing'); $('menu').hidden=false; unlockOrientation();
   const v=readSaved();
-  $('mContinue').hidden=!v;
+  $('mContinue').hidden=!(v||(NET&&NET.started));
   $('mAi').classList.toggle('primary',!v);
   $('lvlCap').textContent='Сложность: '+LEVELS[settings.level][1];
   let sc='';
@@ -1109,11 +1448,16 @@ $('settings').addEventListener('click',e=>{if(e.target===$('settings'))$('settin
 
 /* ---------- ввод ---------- */
 $('board').addEventListener('click',e=>{
-  const el=e.target.closest('[data-pt],[data-act]'); if(!el||busy||!G||G.auto) return;
+  const el=e.target.closest('[data-pt],[data-act]'); if(!el||busy||!G||G.auto||G.netPend) return;
   ac();
   if(G.phase!=='move'||!isHuman(G.turn)) return;
   const v=el.dataset.pt, t=v==='off'?'off':+v;
-  if(G.sel!=null&&G.targets&&G.targets.has(t)){ applyPath(G.targets.get(t)); return; }
+  if(G.sel!=null&&G.targets&&G.targets.has(t)){
+    const path=G.targets.get(t);
+    if(mode==='net'){ G.sel=null; G.targets=null; netSend({t:'mv',s:path.map(st=>[st.from,st.d])}); }
+    else applyPath(path);
+    return;
+  }
   if(t!=='off'&&G.steps.some(x=>x.src===t)){
     G.sel=G.sel===t?null:t; G.targets=null; render(); return;
   }
@@ -1123,15 +1467,26 @@ $('board').addEventListener('click',e=>{
 });
 $('bMain').addEventListener('click',()=>{
   ac();
-  if(G.phase==='move'&&!G.steps.length&&!G.auto&&!busy) endTurn();
+  if(G.phase==='move'&&!G.steps.length&&!G.auto&&!busy) humanEnd();
 });
 $('bUndo').addEventListener('click',undo);
 $('bMenu').addEventListener('click',()=>{ if(!busy&&!G.auto) showMenu(); });
-$('bAgain').addEventListener('click',()=>{ac();newGame(mode);});
+$('bAgain').addEventListener('click',()=>{ac(); if(mode==='net'){ if(NET) netSend({t:'new'}); } else newGame(mode);});
 $('bToMenu').addEventListener('click',showMenu);
 $('mAi').addEventListener('click',()=>{ac();newGame('ai');});
 $('mPvp').addEventListener('click',()=>{ac();newGame('pvp');});
-$('mContinue').addEventListener('click',()=>{ac(); if(G&&G.phase!=='over'&&readSaved()) showGame(); else resumeGame();});
+$('mContinue').addEventListener('click',()=>{ac(); if(NET&&NET.started) showGame(); else if(G&&G.phase!=='over'&&readSaved()&&mode!=='net') showGame(); else resumeGame();});
+$('mNet').addEventListener('click',()=>{ac(); netCreate();});
+$('bShare').addEventListener('click',async()=>{
+  const url=$('netLink').textContent;
+  try{ if(navigator.share){ await navigator.share({title:'Нарды',text:'Сыграем в нарды?',url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  $('bCopy').click();
+});
+$('bCopy').addEventListener('click',async()=>{
+  try{ await navigator.clipboard.writeText($('netLink').textContent); $('bCopy').textContent='Скопировано'; setTimeout(()=>$('bCopy').textContent='Скопировать',1500); }
+  catch(e){ const r=document.createRange(); r.selectNodeContents($('netLink')); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+});
+$('bNetClose').addEventListener('click',()=>{ $('netSheet').hidden=true; if(NET&&!NET.started) netLeave(); if(!NET||!NET.started) showMenu(); });
 $('bRules').addEventListener('click',()=>{$('rules').hidden=false;});
 $('bRulesClose').addEventListener('click',()=>{$('rules').hidden=true;});
 $('rules').addEventListener('click',e=>{if(e.target===$('rules'))$('rules').hidden=true;});
@@ -1152,6 +1507,7 @@ $('winStar').innerHTML=star(0,0,46,16,'#f1d48a','#1a120b',-90,'rgba(0,0,0,.4)');
 $('menuStar').innerHTML=`<circle r="96" fill="#5c181a" stroke="url(#gGold)" stroke-width="3"/><circle r="84" fill="none" stroke="rgba(217,181,106,.45)" stroke-width="1"/>`+star(0,0,78,27,'#f3d68c','#100b08',-90,'rgba(200,160,90,.6)');
 paintSettings();
 showMenu();
+{ const room=new URLSearchParams(location.search).get('room'); if(room&&/^[a-z0-9]{4,12}$/.test(room)) netEnter(room); }
 // при каждом запуске проверяем, нет ли новой версии; новая подхватывается со следующего открытия меню
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});
 $('appVer').textContent='Версия '+APP_VERSION;

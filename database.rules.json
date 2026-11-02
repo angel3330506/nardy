@@ -1,0 +1,34 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        ".read": "auth != null",
+        "created": {
+          ".write": "auth != null && !data.exists()",
+          ".validate": "newData.isNumber()"
+        },
+        "players": {
+          "$slot": {
+            ".write": "auth != null && !data.exists() && newData.val() === auth.uid && ($slot === 'w' || $slot === 'b')"
+          }
+        },
+        "commit": {
+          "$slot": {
+            ".write": "auth != null && !data.exists() && newData.isString() && newData.parent().parent().child('players').child($slot).val() === auth.uid"
+          }
+        },
+        "online": {
+          "$slot": {
+            ".write": "auth != null && (newData.parent().parent().child('players').child($slot).val() === auth.uid || data.parent().parent().child('players').child($slot).val() === auth.uid)"
+          }
+        },
+        "log": {
+          "$n": {
+            ".write": "auth != null && !data.exists() && ((newData.child('p').val() === 0 && root.child('rooms').child($room).child('players').child('w').val() === auth.uid) || (newData.child('p').val() === 1 && root.child('rooms').child($room).child('players').child('b').val() === auth.uid))",
+            ".validate": "newData.child('t').isString() && newData.child('p').isNumber()"
+          }
+        }
+      }
+    }
+  }
+}

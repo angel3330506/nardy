@@ -76,9 +76,9 @@ ld = tex(nt, os.path.join(TEX, 'white_maple_veneer.jpg')); Lk(mp2.outputs['Vecto
 CA, CB, CO = 6, 7, 2
 # морилка: орех темнее и теплее, светлый бук — тёплый кремовый
 st = N.new('ShaderNodeMix'); st.data_type = 'RGBA'; st.blend_type = 'MULTIPLY'; st.inputs['Factor'].default_value = 1
-Lk(wd.outputs['Color'], st.inputs[CA]); st.inputs[CB].default_value = (.34, .19, .075, 1)
+Lk(wd.outputs['Color'], st.inputs[CA]); st.inputs[CB].default_value = (.31, .20, .11, 1)
 lt = N.new('ShaderNodeMix'); lt.data_type = 'RGBA'; lt.blend_type = 'MULTIPLY'; lt.inputs['Factor'].default_value = 1
-Lk(ld.outputs['Color'], lt.inputs[CA]); lt.inputs[CB].default_value = (.80, .56, .36, 1)
+Lk(ld.outputs['Color'], lt.inputs[CA]); lt.inputs[CB].default_value = (.78, .58, .40, 1)
 # доли и затемнения из масок: цвет = орех·R + бук·G
 def mul(a, s):
     m = N.new('ShaderNodeMix'); m.data_type = 'RGBA'; m.blend_type = 'MULTIPLY'; m.inputs['Factor'].default_value = 1

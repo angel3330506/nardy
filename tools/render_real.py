@@ -77,41 +77,41 @@ def rope_ring(cx, cy, r0, r1, n=44):
 
 
 def hinge(alb, h, metal, x, y):
-    """Литая бронзовая петля как на настоящих нардах: две фигурные пластины с волнистым краем,
-    литой рельеф (завитки, листья, розетка), винты со шлицем, ось-трубка с колпачками.
-    Выпуклое натёрто до блеска, в углублениях тёмная патина."""
+    """Литая бронзовая петля как на настоящих нардах: ось вертикально вдоль стыка половин, по обе стороны —
+    фигурные пластины с волнистым краем, литой рельеф (завитки, листья, розетка), винты со шлицем,
+    ось-трубка с колпачками. Выпуклое натёрто до блеска, в углублениях тёмная патина."""
     yy, xx = np.mgrid[0:H, 0:W] / S
     plate = np.zeros((H, W)); rel = np.zeros((H, W))
     for s in (-1, 1):
-        cy = y + s * 21
-        u, v = (xx - x) / 27, (yy - cy) / 19
-        r = np.hypot(u, v); a = np.arctan2(v, u)
+        cx = x + s * 21
+        u, v = (xx - cx) / 19, (yy - y) / 27
+        r = np.hypot(u, v); a = np.arctan2(u, v)
         edge = 1 + .07 * np.cos(a * 10) + .12 * np.cos(a * 2) ** 2          # фигурный волнистый край
-        pm = np.clip((edge - r) * 30, 0, 1) * (s * (yy - y) > 2.5)
+        pm = np.clip((edge - r) * 30, 0, 1) * (s * (xx - x) > 2.5)
         plate = np.maximum(plate, pm)
-        # рельеф: бортик по краю, розетка в центре, по бокам завитки с листьями
+        # рельеф: бортик по краю, розетка в центре, сверху и снизу завитки с листьями
         border = np.exp(-((edge - r - .07) / .035) ** 2) * pm
         ros = np.zeros((H, W))
         for k in range(8):
             ang = k * math.pi / 4
-            ros = np.maximum(ros, np.clip(1 - np.hypot((xx - x - 3.6 * math.cos(ang)) / 2.2, (yy - cy - 3.6 * math.sin(ang)) / 2.2), 0, 1))
-        ros = np.maximum(ros, np.clip(1 - np.hypot(xx - x, yy - cy) / 1.8, 0, 1))
+            ros = np.maximum(ros, np.clip(1 - np.hypot((xx - cx - 3.6 * math.cos(ang)) / 2.2, (yy - y - 3.6 * math.sin(ang)) / 2.2), 0, 1))
+        ros = np.maximum(ros, np.clip(1 - np.hypot(xx - cx, yy - y) / 1.8, 0, 1))
         scroll = np.zeros((H, W))
-        for sx in (-1, 1):
-            sp = spiral(x + sx * 14, cy + s * 2, 6.5, 1.5, (0 if sx > 0 else math.pi) + s * .6, -sx * s)
+        for sy in (-1, 1):
+            sp = spiral(cx + s * 2, y + sy * 14, 6.5, 1.5, (math.pi / 2 if sy > 0 else -math.pi / 2) + s * .6, sy * s)
             scroll = np.maximum(scroll, lines([sp], 1.6, aa=.5))
-            leaf = [(x + sx * (5 + 7 * t), cy - s * (6 + 3 * math.sin(math.pi * t)) ) for t in np.linspace(0, 1, 10)]
+            leaf = [(cx - s * (6 + 3 * math.sin(math.pi * t)), y + sy * (5 + 7 * t)) for t in np.linspace(0, 1, 10)]
             scroll = np.maximum(scroll, lines([leaf], 1.3, aa=.5))
         screws = np.zeros((H, W))
-        for sx in (-9, 9):
-            sy = cy + s * 11
-            sc = circle(x + sx, sy, 2.6)
-            slot = lines([[(x + sx - 1.9, sy - 1.9), (x + sx + 1.9, sy + 1.9)], [(x + sx - 1.9, sy + 1.9), (x + sx + 1.9, sy - 1.9)]], .55, aa=.3)
+        for sy in (-9, 9):
+            sx = cx + s * 11
+            sc = circle(sx, y + sy, 2.6)
+            slot = lines([[(sx - 1.9, y + sy - 1.9), (sx + 1.9, y + sy + 1.9)], [(sx - 1.9, y + sy + 1.9), (sx + 1.9, y + sy - 1.9)]], .55, aa=.3)
             screws = np.maximum(screws, sc * (1 - slot * .8))
         rel += pm * (1.2 + border * 1.4 + ros * 1.6 + scroll * 1.4 + screws * 1.8)
-    knuckle = np.clip(1 - np.abs(yy - y) / 3.6, 0, 1) * (np.abs(xx - x) < 29)
-    seg = (np.abs(((xx - x) / 10.5) % 1 - .5) < .03) * knuckle
-    caps = (np.abs(np.abs(xx - x) - 30) < 1.6) * (np.abs(yy - y) < 2.6)
+    knuckle = np.clip(1 - np.abs(xx - x) / 3.6, 0, 1) * (np.abs(yy - y) < 29)
+    seg = (np.abs(((yy - y) / 10.5) % 1 - .5) < .03) * knuckle
+    caps = (np.abs(np.abs(yy - y) - 30) < 1.6) * (np.abs(xx - x) < 2.6)
     m = np.clip(np.maximum.reduce([plate, (knuckle > 0).astype(float), caps.astype(float)]), 0, 1)
     rel = rel + np.sqrt(knuckle) * 4.2 - seg * 1.2 + caps * 3.5
     rel = ndi.gaussian_filter(rel, .5)
@@ -186,7 +186,7 @@ def board_arevakhach(layers=False):
     # пункты: инкрустация из светлого бука, выжженный контур
     drops, strips, curls, ovals = [], [], [], np.zeros((H, W))
     for i in range(24):
-        dr, st, cu, ov = point_shapes(ptX(i), is_top(i))
+        dr, st, cu, ov = point_shapes(ptX(i), is_top(i), 218 if i % 6 in (0, 5) else 150)   # длинные только крайние
         drops.append(dr); strips += st; curls += cu
         ovals = np.maximum(ovals, oval_mask(ov[0], ov[1], 4.6, 7.2))
     dm = polys(drops)
@@ -198,7 +198,7 @@ def board_arevakhach(layers=False):
     alb = alb * (1 - burn[..., None] * .8)
     # аревахач в центре половины: лопасти — светлый бук, между ними тонкие тёмные линии; вокруг витой жгут
     for cx in (250, 750):
-        sl, union, petals, angles = arevakhach_masks(cx, 350, 62, n=12, band=.022)
+        sl, union, petals, angles = arevakhach_masks(cx, 350, 99, n=12, band=.02)
         a = alb[sl]
         for k, pm in enumerate(petals):
             tex = (light if k % 2 else light_h)[sl] * (.96 + .06 * (k % 2))
@@ -206,12 +206,12 @@ def board_arevakhach(layers=False):
         alb[sl] = a
         lit = np.max(petals, axis=0)
         h[sl] -= np.clip(union - lit, 0, 1) * .6
-        rope, rb = rope_ring(cx, 350, 70, 82)
+        rope, rb = rope_ring(cx, 350, 112, 131, n=64)
         alb = put(alb, rb * .85, light)
         groove = rb * (1 - np.clip(rope * 1.6, 0, 1))
         alb = alb * (1 - groove[..., None] * .75)
         h += rope * 1.2
-        for r0, r1 in ((66, 67.4), (85, 86.4)):
+        for r0, r1 in ((105.6, 107.8), (135.5, 137.8)):
             ring = np.clip(circle(cx, 350, r1) - circle(cx, 350, r0), 0, 1)
             alb = put(alb, ring, light); h -= ring * .2
     # латунные петли

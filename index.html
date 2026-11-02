@@ -158,11 +158,12 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .case{position:relative;height:min(52vh,calc(78vw * 700 / 550));aspect-ratio:550/700;flex:0 0 auto;transform-style:preserve-3d;
   filter:drop-shadow(0 22px 26px rgba(0,0,0,.6)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
 @media (orientation:landscape){.case{height:min(76vh,calc(42vw * 700 / 550))}}
-.case .half{position:absolute;inset:0;background:var(--inside) right/auto 100% no-repeat;border-radius:12px;opacity:0}
+.case .half{position:absolute;inset:0;background:var(--inside) left/auto 100% no-repeat;   /* крышка откидывается вправо: под ней левая половина доски, на её обороте — правая */
+border-radius:12px;opacity:0}
 .case .lid{position:absolute;inset:0;transform-origin:right center;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
 .case .lid .front,.case .lid .back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .case .lid .front{background:var(--lid) center/100% 100% no-repeat}
-.case .lid .back{background:var(--inside) left/auto 100% no-repeat;transform:rotateY(180deg);border-radius:12px}
+.case .lid .back{background:var(--inside) right/auto 100% no-repeat;transform:rotateY(180deg);border-radius:12px}
 .case.open .lid{transform:rotateY(180deg)}
 .case.open .half{opacity:1}
 .case .title{position:absolute;left:0;right:0;top:7%;text-align:center;pointer-events:none;transition:opacity .3s}
@@ -179,13 +180,20 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 @media (orientation:landscape){#menu.opening .case{transform:translateX(calc(-50% + 3vw + min(92vw,400px) / 2))}}
 .mbtns{display:grid;gap:10px}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.pl{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;border-radius:6px;padding:13px 14px;
+.micons{opacity:0;pointer-events:none}
+/* при раскрытии доска уезжает в центр: раскрытая она вдвое шире */
+.case{transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
+#menu.opening .case{transform:translateX(-50%)}
+@media (orientation:landscape){#menu.opening .case{transform:translateX(calc(-50% + 3vw + min(92vw,400px) / 2))}}
+.mbtns{display:grid;gap:10px}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.plq{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;border-radius:6px;padding:13px 14px;
   background:#c9a37a url(boards/maple.webp) center/cover;color:#3a200b;font-weight:700;font-size:17px;text-shadow:0 1px 0 rgba(255,240,215,.5);
   box-shadow:inset 0 2px 1px rgba(255,240,215,.55),inset 0 -3px 2px rgba(70,35,10,.45),inset 2px 0 1px rgba(255,240,215,.25),inset -2px 0 1px rgba(70,35,10,.3),0 6px 12px rgba(0,0,0,.5)}
-.pl:hover:not(:disabled){filter:brightness(1.06)}
-.pl:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 3px 4px rgba(70,35,10,.45),0 3px 6px rgba(0,0,0,.5)}
-.pl.main{font-size:20px;padding:17px 14px}
-.pl .cap{font-size:12px;font-weight:500;opacity:.75}
+.plq:hover:not(:disabled){filter:brightness(1.06)}
+.plq:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 3px 4px rgba(70,35,10,.45),0 3px 6px rgba(0,0,0,.5)}
+.plq.main{font-size:20px;padding:17px 14px}
+.plq .cap{font-size:12px;font-weight:500;opacity:.75}
 .micons{position:fixed;top:max(12px,var(--sat));right:max(14px,var(--sar));display:flex;gap:10px;z-index:2}
 .mic{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center;border:1px solid rgba(217,181,106,.35);
   background:rgba(20,12,6,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#ecd6a6}
@@ -370,14 +378,14 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
     </div>
     <div class="mside">
       <div class="mbtns">
-        <button class="pl main" id="mContinue" hidden>Продолжить партию<span class="cap" id="contCap"></span></button>
-        <button class="pl" id="mAi">Играть с компьютером<span class="cap" id="lvlCap"></span></button>
+        <button class="plq main" id="mContinue" hidden>Продолжить партию<span class="cap" id="contCap"></span></button>
+        <button class="plq" id="mAi">Играть с компьютером<span class="cap" id="lvlCap"></span></button>
         <div class="mrow">
-          <button class="pl" id="mPvp">Вдвоём<span class="cap">на одном телефоне</span></button>
-          <button class="pl" id="mNet">С другом<span class="cap">по ссылке</span></button>
+          <button class="plq" id="mPvp">Вдвоём<span class="cap">на одном телефоне</span></button>
+          <button class="plq" id="mNet">С другом<span class="cap">по ссылке</span></button>
         </div>
       </div>
-      <button class="pl" id="bInstall" hidden>Установить приложение</button>
+      <button class="plq" id="bInstall" hidden>Установить приложение</button>
       <div class="install" id="iosHint" hidden>Чтобы играть как в приложении: в Safari нажмите <b>«Поделиться»</b> → <b>«На экран „Домой“»</b>.</div>
       <div class="scoreline" id="scoreline"></div>
       <div class="scoreline" id="appVer" style="opacity:.6"></div>
@@ -477,7 +485,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='27';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='28';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -1750,7 +1758,7 @@ function showMenu(){
   document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false; unlockOrientation();
   const v=readSaved();
   $('mContinue').hidden=!(v||(NET&&NET.started));
-  $('mAi').classList.toggle('main',!v);
+  $('mAi').classList.toggle('main',!v);   // .main — крупная табличка
   const cm=NET&&NET.started?'net':v&&v.mode;
   $('contCap').textContent=cm==='ai'?`с компьютером · ${LEVELS[v.level||settings.level][1]}`:cm==='pvp'?'вдвоём':cm==='net'?'с другом по сети':'';
   $('case').classList.remove('open'); $('menu').classList.remove('opening');

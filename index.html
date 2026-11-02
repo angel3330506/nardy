@@ -257,6 +257,23 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 .review div{border-left:3px solid var(--gold);background:rgba(217,181,106,.06);padding:8px 10px;border-radius:0 8px 8px 0}
 .review .bad{border-color:#c0484a}.review small{color:var(--muted)}
 .hintmark{animation:pulse 1s ease-in-out infinite}
+/* интерактивный стол: стакан чая и сахар на фоновой картинке; горячие зоны ставит скрипт по положению фона */
+.tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ripple{position:absolute;border-radius:50%;border:2px solid rgba(255,225,180,.55);pointer-events:none;
+  animation:ripple 1.4s ease-out forwards}
+@keyframes ripple{from{transform:translate(-50%,-50%) scale(.15);opacity:.9}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.steam{position:absolute;width:26px;height:90px;pointer-events:none;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 60%,rgba(255,255,255,.55),rgba(255,255,255,0) 70%);filter:blur(6px);
+  animation:steam 3.2s ease-out forwards}
+@keyframes steam{0%{transform:translate(-50%,-30%) scaleY(.4);opacity:0}20%{opacity:.8}
+  100%{transform:translate(calc(-50% + var(--dx)),-170%) scaleY(1.4) rotate(var(--rot));opacity:0}}
+.cube{position:absolute;width:22px;height:22px;border-radius:3px;pointer-events:none;
+  background:linear-gradient(135deg,#fff 0%,#f1efe9 55%,#d8d4cb 100%);box-shadow:3px 5px 6px rgba(0,0,0,.45)}
+.swirl{position:absolute;border-radius:50%;pointer-events:none;border:3px solid transparent;border-top-color:rgba(255,220,170,.5);
+  animation:swirl 1.3s ease-in-out forwards}
+@keyframes swirl{from{transform:translate(-50%,-50%) rotate(0);opacity:.9}to{transform:translate(-50%,-50%) rotate(900deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.steam,.swirl{display:none}}
 .nettext{margin:0;color:var(--muted);font-size:14.5px}
 .netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
@@ -357,6 +374,10 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
     </div>
   </div>
   <div class="toasts" id="toasts"></div>
+  <div class="tablefx" id="tablefx" aria-hidden="true">
+    <div class="hot" id="hotTea" title="Чай"></div>
+    <div class="hot" id="hotSugar" title="Сахар"></div>
+  </div>
 </div>
 
 <div id="menu">
@@ -480,7 +501,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='32';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='33';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -1224,6 +1245,62 @@ function gameOver(pl){
   $('over').hidden=false;
 }
 
+/* ---------- интерактивный стол ---------- */
+// Положения в картинке стола (boards/table.webp, 2400×1500): стакан с блюдцем и два кусочка сахара (см. tools/blender_table.py)
+const TEA={x:2260,y:1120,r:105}, SUGAR=[{x:1890,y:1159},{x:1862,y:1058}];
+function tableMap(){
+  const app=$('app'), W=app.clientWidth, H=app.clientHeight, k=Math.max(W/2400,H/1500);
+  return {k,ox:(W-2400*k)/2,oy:(H-1500*k)/2,W,H};
+}
+function placeHot(){
+  const m=tableMap(), at=(p,r)=>({x:m.ox+p.x*m.k,y:m.oy+p.y*m.k,r:r*m.k});
+  const fr=$('frame').getBoundingClientRect(), ap=$('app').getBoundingClientRect();
+  const put=(el,c)=>{
+    // зона спрятана, если её закрывает доска или она за краем экрана
+    const inBoard=document.documentElement.classList.contains('rot')?false:(c.x+ap.left>fr.left&&c.x+ap.left<fr.right&&c.y+ap.top>fr.top&&c.y+ap.top<fr.bottom);
+    const off=c.x<0||c.y<0||c.x>m.W||c.y>m.H;
+    el.hidden=inBoard||off;
+    Object.assign(el.style,{left:c.x-c.r+'px',top:c.y-c.r+'px',width:c.r*2+'px',height:c.r*2+'px'});
+  };
+  put($('hotTea'),at(TEA,TEA.r*1.6));
+  const sx=(SUGAR[0].x+SUGAR[1].x)/2, sy=(SUGAR[0].y+SUGAR[1].y)/2; put($('hotSugar'),at({x:sx,y:sy},80));
+}
+new ResizeObserver(placeHot).observe($('app'));
+function fx(cls,x,y,style){ const el=document.createElement('div'); el.className=cls; Object.assign(el.style,{left:x+'px',top:y+'px'},style||{}); $('tablefx').appendChild(el); return el; }
+function teaPos(){ const m=tableMap(); return {x:m.ox+TEA.x*m.k,y:m.oy+TEA.y*m.k,r:TEA.r*m.k}; }
+function ripples(t,n=3){ for(let i=0;i<n;i++) setTimeout(()=>{ const d=t.r*1.7; const el=fx('ripple',t.x,t.y,{width:d+'px',height:d+'px'}); setTimeout(()=>el.remove(),1500); },i*220); }
+function steamUp(t,n=4){ for(let i=0;i<n;i++) setTimeout(()=>{ const el=fx('steam',t.x+(Math.random()-.5)*t.r*.8,t.y-t.r*.2,{'--dx':(Math.random()-.5)*40+'px','--rot':(Math.random()-.5)*30+'deg'}); setTimeout(()=>el.remove(),3300); },i*260); }
+function clink(times=3){
+  const a=settings.sound&&ac(); if(!a) return;
+  for(let i=0;i<times;i++){ const t=a.currentTime+i*.17+Math.random()*.03;
+    for(const m of [1,2.76,5.4]){ const o=a.createOscillator(), g=a.createGain(); o.frequency.value=(2500+Math.random()*250)*m;
+      g.gain.setValueAtTime(.06/m,t); g.gain.exponentialRampToValueAtTime(.0001,t+.5); o.connect(g).connect(a.destination); o.start(t); o.stop(t+.55); } }
+}
+function plop(delay){
+  const a=settings.sound&&ac(); if(!a) return; const t=a.currentTime+delay;
+  const o=a.createOscillator(), g=a.createGain(); o.type='sine';
+  o.frequency.setValueAtTime(380,t); o.frequency.exponentialRampToValueAtTime(900,t+.07);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.25,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+.12);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+.15);
+}
+// стакан: помешали ложечкой — звон, круги по чаю, пар
+$('hotTea').addEventListener('click',()=>{
+  const t=teaPos(); clink(3); buzz(8);
+  const sw=fx('swirl',t.x,t.y,{width:t.r*1.4+'px',height:t.r*1.4+'px'}); setTimeout(()=>sw.remove(),1400);
+  ripples(t,3); steamUp(t,5);
+});
+// сахар: кусочек летит в стакан и булькает
+$('hotSugar').addEventListener('click',e=>{
+  const t=teaPos(), m=tableMap(), s0=SUGAR[Math.random()*2|0], x0=m.ox+s0.x*m.k, y0=m.oy+s0.y*m.k;
+  const c=fx('cube',x0,y0,{width:22*m.k/.45+'px',height:22*m.k/.45+'px'});
+  const D=650, dx=t.x-x0, dy=t.y-y0;
+  c.animate([{transform:'translate(-50%,-50%) rotate(0) scale(1)'},
+             {transform:`translate(calc(-50% + ${dx*.5}px),calc(-50% + ${dy*.5-90}px)) rotate(200deg) scale(1.25)`,offset:.5},
+             {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) rotate(380deg) scale(.6)`,opacity:1,offset:.92},
+             {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) rotate(400deg) scale(.4)`,opacity:0}],{duration:D,easing:'ease-in'});
+  setTimeout(()=>{ c.remove(); ripples(t,4); buzz(12); },D); plop(D/1000);
+});
+
 /* ---------- статистика и достижения ---------- */
 const ACH=[
   ['first','🏆','Первая победа','Выиграть партию'],
@@ -1758,7 +1835,7 @@ function unlockOrientation(){
   try{screen.orientation.unlock();}catch(e){}
   try{if(document.fullscreenElement&&!isStandalone())document.exitFullscreen();}catch(e){}
 }
-function showGame(){ document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
+function showGame(){ setTimeout(placeHot,60); document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
 function showMenu(){
   document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false;
   const v=readSaved();

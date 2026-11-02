@@ -77,31 +77,52 @@ def rope_ring(cx, cy, r0, r1, n=44):
 
 
 def hinge(alb, h, metal, x, y):
-    """Узорная латунная петля: две фигурные пластины с завитками, ось посередине, винты."""
-    brass = np.array((.52, .40, .22))                         # старая бронза
-    plate = np.zeros((H, W))
+    """Литая бронзовая петля как на настоящих нардах: две фигурные пластины с волнистым краем,
+    литой рельеф (завитки, листья, розетка), винты со шлицем, ось-трубка с колпачками.
+    Выпуклое натёрто до блеска, в углублениях тёмная патина."""
+    yy, xx = np.mgrid[0:H, 0:W] / S
+    plate = np.zeros((H, W)); rel = np.zeros((H, W))
     for s in (-1, 1):
-        cy = y + s * 22
-        plate = np.maximum(plate, oval_mask(x, cy, 26, 20))
-        plate = np.maximum(plate, oval_mask(x - 15, cy + s * 4, 12, 16))
-        plate = np.maximum(plate, oval_mask(x + 15, cy + s * 4, 12, 16))
-    knuckle = rrect(x - 27, y - 3.5, x + 27, y + 3.5, 3.5)
-    m = np.maximum(plate, knuckle)
-    alb = put(alb, m, np.ones((H, W, 3)) * brass); metal = np.maximum(metal, m)
-    # рельеф: завитки и розетки, тёмная патина в углублениях
-    deco = lines([spiral(x + sx, y + sy, 6, 1.4, a, 1 if sx > 0 else -1) for sx in (-12, 12) for sy, a in ((-20, 0), (22, math.pi))], 1.2) * plate
-    ros = np.zeros((H, W))
-    for sy in (-24, 24):
-        for k in range(6):
-            a = k * math.pi / 3
-            ros = np.maximum(ros, oval_mask(x + 4 * math.cos(a), y + sy + 4 * math.sin(a), 2.2, 2.2))
-    screws = np.zeros((H, W))
-    for sx in (-14, 14):
-        for sy in (-26, 26): screws = np.maximum(screws, circle(x + sx, y + sy, 3.2))
-    rel = plate * 3 + knuckle * 4 + deco * 1.2 + ros * 1.0 + screws * 1.3 - ndi.gaussian_filter(screws, 1) * 0
-    pat = np.clip(ndi.gaussian_filter(rel, 2) - rel, 0, 2) * m
-    alb = alb * (1 - np.clip(pat * 1.6, 0, 1)[..., None] * .75)
-    h = h * (1 - m) + m * (25 + rel * 1.3)                    # петля лежит поверх стыка, а не проваливается в него
+        cy = y + s * 21
+        u, v = (xx - x) / 27, (yy - cy) / 19
+        r = np.hypot(u, v); a = np.arctan2(v, u)
+        edge = 1 + .07 * np.cos(a * 10) + .12 * np.cos(a * 2) ** 2          # фигурный волнистый край
+        pm = np.clip((edge - r) * 30, 0, 1) * (s * (yy - y) > 2.5)
+        plate = np.maximum(plate, pm)
+        # рельеф: бортик по краю, розетка в центре, по бокам завитки с листьями
+        border = np.exp(-((edge - r - .07) / .035) ** 2) * pm
+        ros = np.zeros((H, W))
+        for k in range(8):
+            ang = k * math.pi / 4
+            ros = np.maximum(ros, np.clip(1 - np.hypot((xx - x - 3.6 * math.cos(ang)) / 2.2, (yy - cy - 3.6 * math.sin(ang)) / 2.2), 0, 1))
+        ros = np.maximum(ros, np.clip(1 - np.hypot(xx - x, yy - cy) / 1.8, 0, 1))
+        scroll = np.zeros((H, W))
+        for sx in (-1, 1):
+            sp = spiral(x + sx * 14, cy + s * 2, 6.5, 1.5, (0 if sx > 0 else math.pi) + s * .6, -sx * s)
+            scroll = np.maximum(scroll, lines([sp], 1.6, aa=.5))
+            leaf = [(x + sx * (5 + 7 * t), cy - s * (6 + 3 * math.sin(math.pi * t)) ) for t in np.linspace(0, 1, 10)]
+            scroll = np.maximum(scroll, lines([leaf], 1.3, aa=.5))
+        screws = np.zeros((H, W))
+        for sx in (-9, 9):
+            sy = cy + s * 11
+            sc = circle(x + sx, sy, 2.6)
+            slot = lines([[(x + sx - 1.9, sy - 1.9), (x + sx + 1.9, sy + 1.9)], [(x + sx - 1.9, sy + 1.9), (x + sx + 1.9, sy - 1.9)]], .55, aa=.3)
+            screws = np.maximum(screws, sc * (1 - slot * .8))
+        rel += pm * (1.2 + border * 1.4 + ros * 1.6 + scroll * 1.4 + screws * 1.8)
+    knuckle = np.clip(1 - np.abs(yy - y) / 3.6, 0, 1) * (np.abs(xx - x) < 29)
+    seg = (np.abs(((xx - x) / 10.5) % 1 - .5) < .03) * knuckle
+    caps = (np.abs(np.abs(xx - x) - 30) < 1.6) * (np.abs(yy - y) < 2.6)
+    m = np.clip(np.maximum.reduce([plate, (knuckle > 0).astype(float), caps.astype(float)]), 0, 1)
+    rel = rel + np.sqrt(knuckle) * 4.2 - seg * 1.2 + caps * 3.5
+    rel = ndi.gaussian_filter(rel, .5)
+    # фон пластины в тёмной патине, литой узор и края натёрты до блеска
+    orn = np.clip((rel - 1.2 * plate) / 1.6, 0, 1)
+    dark, bright = np.array((.30, .22, .11)), np.array((.86, .70, .40))
+    col = dark[None, None] * (1 - orn[..., None]) + bright[None, None] * orn[..., None]
+    col = np.where((knuckle > 0)[..., None] | caps[..., None], bright * .9, col)
+    col = col * (.82 + .3 * fbm(H, W, 40, 40, 9, 2))[..., None]
+    alb = put(alb, m, col); metal = np.maximum(metal, m)
+    h = h * (1 - m) + m * (25 + rel * 1.1)
     return alb, h, metal
 
 
@@ -196,5 +217,41 @@ def board_arevakhach():
     save('ararat', rgb, body)
 
 
+
+def checker_real(name, texname, color, k):
+    """Точёная шашка: фото шпона, тонированное морилкой, концентрические бороздки, лак."""
+    N = 4 * 64; R = N * 30 / 64
+    y, x = np.mgrid[0:N, 0:N] - (N - 1) / 2
+    r = np.hypot(x, y) / R
+    inside = np.clip((1 - r) * R / 1.2, 0, 1)
+    im = np.asarray(Image.open(os.path.join(TEX, texname + '.jpg')).convert('RGB').resize((N * 2, N * 2)), float) / 255
+    o = {'beech': 150, 'walnut': 230}.get(name, 0)   # разные места шпона — у шашек разный рисунок
+    tex = im[o // 2:o // 2 + N, o:o + N]
+    alb = stain(tex, color, k)
+    dome = np.sqrt(np.clip(1 - r ** 2, 0, 1)) * R * .10
+    bevel = np.clip((1 - r) / .1, 0, 1) ** .5 * R * .12
+    h = np.minimum(dome + R * .07, bevel + R * .02)
+    def groove(rad, depth, wdt): return -np.exp(-((r - rad) / wdt) ** 2) * depth * R
+    h = h + groove(.82, .03, .018) + groove(.62, .025, .015) + groove(.38, .02, .013) + groove(.16, .015, .012)
+    # в бороздках лак темнее
+    g = np.exp(-((r - .82) / .02) ** 2) + np.exp(-((r - .62) / .017) ** 2) + np.exp(-((r - .38) / .015) ** 2)
+    alb = alb * (1 - np.clip(g, 0, 1)[..., None] * .35)
+    LIGHT = np.array([-.42, -.62, .66]); LIGHT /= np.linalg.norm(LIGHT)
+    HALF = LIGHT + np.array([0, 0, 1.0]); HALF /= np.linalg.norm(HALF)
+    gy, gx = np.gradient(h)
+    n = np.dstack([-gx, -gy, np.ones_like(h)]); n /= np.linalg.norm(n, axis=2, keepdims=True)
+    diff = np.clip((n @ LIGHT) / LIGHT[2], 0, 1.6)
+    spec = np.clip(n @ HALF, 0, 1) ** 50
+    rgb = np.clip(alb * (.32 + .68 * diff[..., None]) + spec[..., None] * .5, 0, 1)
+    out = Image.fromarray((rgb * 255).astype(np.uint8), 'RGB')
+    out.putalpha(Image.fromarray((inside * 255).astype(np.uint8), 'L'))
+    out.resize((128, 128), Image.LANCZOS).save(os.path.join(OUT, f'ck-{name}.png'), optimize=True)
+    print('saved ck', name)
+
+
 if __name__ == '__main__':
-    board_arevakhach()
+    which = sys.argv[1:] or ['arevakhach', 'checkers']
+    if 'arevakhach' in which: board_arevakhach()
+    if 'checkers' in which:
+        checker_real('beech', 'cherry_veneer', (.86, .68, .47), 1.2)
+        checker_real('walnut', 'cherry_veneer', (.30, .165, .075), 1.6)

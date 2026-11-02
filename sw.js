@@ -1,5 +1,5 @@
 // Офлайн-кэш: страница, доски, звуки и шрифты кэшируются при установке.
-const V = '18';                 // = APP_VERSION в index.html
+const V = '19';                 // = APP_VERSION в index.html
 const VERSION = 'nardy-v' + V;
 const SHELL = [
   './',

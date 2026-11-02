@@ -126,7 +126,9 @@ def hinge(alb, h, metal, x, y):
     return alb, h, metal
 
 
-def board_arevakhach():
+def board_arevakhach(layers=False):
+    """layers=True — вместо картинки вернуть слои для 3D-рендера (tools/blender_board.py): высоты, маски дерева и металла.
+    Тогда «основное дерево» = (1,0,0), «светлый бук» = (0,1,0): после всех затемнений R и G — доли и тон каждого."""
     STAIN = (.30, .165, .075)                                 # «орех» на буке, как на фото
     base = phototex('cherry_veneer', vertical=True)
     alb = stain(base, STAIN, 1.6)
@@ -137,6 +139,10 @@ def board_arevakhach():
     alb = alb * (.88 + .24 * fbm(H, W, 2, 3, 5, 3))[..., None]      # морилка легла неровно, как на настоящей доске
     light = stain(phototex('cherry_veneer', vertical=True, off=(400, 900)), (.86, .66, .45), 1.1)   # натуральный бук
     light_h = stain(phototex('cherry_veneer', off=(300, 200)), (.86, .66, .45), 1.1)
+    if layers:
+        alb = np.zeros((H, W, 3)); alb[..., 0] = 1
+        alb = alb * (.80 + .20 * np.clip(edge / 70, 0, 1))[..., None]
+        light = np.zeros((H, W, 3)); light[..., 1] = 1; light_h = light
     # корпус: прямой, скруглённые углы, профилированный край
     body = rrect(0, 0, 1100, 700, 18, aa=.8)
     d = ndi.distance_transform_edt(body > .5) / S
@@ -212,6 +218,8 @@ def board_arevakhach():
     metal = np.zeros((H, W))
     for y in (110, 590):
         alb, h, metal = hinge(alb, h, metal, 500, y)
+    if layers:
+        return dict(h=h, body=body, metal=metal, alb=alb)
     rgb = shade(alb, h, gloss, metal, exp=70)
     rgb = rgb + sheen(H, W, .06, .4, .2, .35) * body[..., None]
     save('ararat', rgb, body)
@@ -250,6 +258,11 @@ def checker_real(name, texname, color, k):
 
 
 if __name__ == '__main__':
+    if sys.argv[1:] == ['layers']:
+        L = board_arevakhach(layers=True)
+        np.savez_compressed(os.path.join(os.path.dirname(__file__), '..', '.preview', 'layers-ararat.npz'),
+                            **{k: v.astype(np.float32) for k, v in L.items()})
+        sys.exit(print('saved layers'))
     which = sys.argv[1:] or ['arevakhach', 'checkers']
     if 'arevakhach' in which: board_arevakhach()
     if 'checkers' in which:

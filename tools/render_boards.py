@@ -802,6 +802,7 @@ def board_yerevan():
         nh, nw = hl.shape; y0, x0 = int(round(350 * S - nh / 2)), int(round(cx * S - nw / 2))
         win = (slice(y0, y0 + nh), slice(x0, x0 + nw))
         hl = hl * (1 - dm[win])                               # пункты-вставки лежат поверх резьбы
+        hl = hl * 1.3                                        # рельеф чуть выразительнее
         h[win] += hl
         # патина: в выборках и бороздах дерево темнее, как у морёной резьбы
         cav = np.clip((ndi.gaussian_filter(hl, 5) - hl) / 3.5, 0, 1) + np.clip(-hl / 6, 0, 1)

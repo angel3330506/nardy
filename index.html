@@ -116,12 +116,12 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 .d3 .cube{position:absolute;inset:0;transform-style:preserve-3d}
 .d3 .face{
   position:absolute;inset:0;border-radius:18%;backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  background:radial-gradient(circle at 32% 28%,#fffdf6 0%,#efe5cf 55%,#d4c4a0 100%);
-  box-shadow:inset 0 0 0 1px rgba(176,138,62,.55),inset 0 calc(var(--ds,50px) * -.06) calc(var(--ds,50px) * .12) rgba(90,60,20,.25);
+  background:center/100% 100% no-repeat;   /* грань — рендер из Blender (boards/die-N.png), точки уже на ней */
   display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:16%;
 }
 /* внутренний сердечник: закрывает щели между скруглёнными гранями, когда кубик повёрнут ребром */
-.d3 .core{position:absolute;inset:3%;border-radius:16%;background:#d9cba8}
+.d3 .core{position:absolute;inset:3%;border-radius:16%;background:#d8cdb0}
+.d3 .face i{visibility:hidden}
 /* лежащий кубик: боковые грани и сердечник скрыты, иначе при повороте на 90° их рёбра просвечивают тонкими линиями */
 .d3.still .face:not(.top),.d3.still .core{visibility:hidden}
 .d3 .pip{width:68%;height:68%;margin:auto;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a2a1a,#0f0904);box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}
@@ -186,6 +186,26 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .seg button{border:0;border-radius:0;background:transparent;color:var(--muted);padding:10px 6px}
 .seg button.on{background:rgba(217,181,106,.16);color:var(--gold-hi)}
+.drawer-back{position:absolute;inset:0;z-index:6;background:rgba(0,0,0,.18);animation:fadeIn .2s ease-out}
+.drawer{position:absolute;top:0;bottom:0;left:0;width:min(340px,86%);overflow:auto;
+  background:rgba(18,13,9,.42);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);   /* прозрачная шторка: сквозь неё видна доска */
+  border-right:1px solid rgba(217,181,106,.25);box-shadow:20px 0 50px rgba(0,0,0,.35);text-shadow:0 1px 2px rgba(0,0,0,.6);
+  padding:max(16px,var(--sat)) 18px max(16px,var(--sab)) max(18px,var(--sal));display:flex;flex-direction:column;gap:10px;
+  animation:slideIn .25s cubic-bezier(.2,.8,.2,1)}
+.drawer h3{font-family:var(--display);font-weight:400;font-size:28px;color:var(--gold-hi);margin:0 0 4px}
+.drawer h4{margin:8px 0 0;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.dclose{position:absolute;top:max(10px,var(--sat));right:10px;width:36px;height:36px;padding:0;border-radius:50%;border-color:transparent;background:transparent;color:var(--muted)}
+.dskins{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.drawer button:not(.primary):not(.skin){background:rgba(31,25,18,.45)}
+.drawer .seg{background:rgba(31,25,18,.35)}
+.dskins .skin{padding:4px;gap:4px;background:rgba(31,25,18,.45)}.dskins .skin span{font-size:12px}
+.dlevel{margin:0;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
+.dlevel b{color:var(--fg);font-weight:500;font-size:14.5px}
+.dlevel span::before{content:"🔒 "}
+.dfoot{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:8px}
+@keyframes slideIn{from{transform:translateX(-100%)}}
+@keyframes fadeIn{from{opacity:0}}
+@media (prefers-reduced-motion:reduce){.drawer,.drawer-back{animation:none}}
 .nettext{margin:0;color:var(--muted);font-size:14.5px}
 .netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
@@ -231,6 +251,30 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       </svg>
       <div class="dice3d" id="dice3d"></div>
     </div>
+  </div>
+
+  <div class="drawer-back" id="drawer" hidden>
+    <aside class="drawer" role="dialog" aria-label="Меню партии">
+      <button class="dclose" id="dClose" aria-label="Закрыть">✕</button>
+      <h3>Партия</h3>
+      <button class="primary" id="dResume">Продолжить игру</button>
+      <button id="dNew">Начать заново</button>
+      <h4>Доска</h4>
+      <div class="dskins" id="dSkins"></div>
+      <h4>Звук</h4>
+      <div class="seg" id="dSounds" style="grid-template-columns:1fr 1fr">
+        <button data-snd="on">Включён</button>
+        <button data-snd="off">Выключен</button>
+      </div>
+      <div id="dLevelBox">
+        <h4>Сложность компьютера</h4>
+        <p class="dlevel"><b id="dLevel"></b><span>Во время партии не меняется — выберите в настройках главного меню перед новой игрой.</span></p>
+      </div>
+      <div class="dfoot">
+        <button id="dRules">Правила</button>
+        <button id="dMain">Главное меню</button>
+      </div>
+    </aside>
   </div>
 
   <div class="win" id="over" hidden>
@@ -327,7 +371,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='21';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='22';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -379,6 +423,7 @@ const SKINS={
 };
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
 $('app').style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
+for(let f=1;f<=6;f++){const im=new Image();im.src=`boards/die-${f}.png?v=${APP_VERSION}`;}
 for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}?v=${APP_VERSION}`;}
 
 /* ---------- правила ---------- */
@@ -595,7 +640,7 @@ function saveGame(){
   try{
     if(G.phase==='over'||G.phase==='start'){localStorage.removeItem('nardy-game-v1');return;}
     const phase=G.phase==='rolling'?'roll':G.phase;
-    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first}));
+    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first,level:G.level}));
   }catch(e){}
 }
 function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')||'null');}catch(e){return null;}}
@@ -619,7 +664,7 @@ function newGame(m){
   clearTimers(); netLeave();
   if(m) mode=m;
   loadScore();
-  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null};
+  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:settings.level};   // сложность закреплена за партией
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
   showGame();
   render();
@@ -629,7 +674,7 @@ function resumeGame(){
   const v=readSaved(); if(!v){newGame(mode);return;}
   clearTimers();
   mode=v.mode; loadScore();
-  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null};
+  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level};
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML='';
   showGame();
   if(G.phase==='move') placeDice(G.dice); else clearDice();
@@ -659,7 +704,7 @@ function dieEl(v){
   for(const f of [1,2,3,4,5,6]){
     const [a,b]=FACE[f]; let pips='';
     for(let k=0;k<9;k++) pips+=PIPIDX[f].includes(k)?`<i class="pip${f===1?' red':''}"></i>`:'<i></i>';
-    faces+=`<div class="face${f===v?' top':''}" style="transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) / 2))">${pips}</div>`;
+    faces+=`<div class="face${f===v?' top':''}" style="background-image:url(boards/die-${f}.png?v=${APP_VERSION});transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) / 2))">${pips}</div>`;
     faces+=`<div class="core" style="transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) * .47))"></div>`;
   }
   el.innerHTML=`<div class="shadow"></div><div class="mover"><div class="cube">${faces}</div></div>`;
@@ -970,7 +1015,7 @@ function aiTurn(){
   });
 }
 function aiPlay(){
-  const path=aiChoose(settings.level); let k=0;
+  const path=aiChoose(G.level||settings.level); let k=0;
   const next=()=>{
     if(G.phase!=='move') return;
     if(k>=path.length){later(endTurn,450);return;}
@@ -1378,7 +1423,7 @@ function renderPanel(){
   if(mode==='net') for(const pl of [0,1]) $('n'+pl).textContent=pl===G.me?'Вы':'Друг'+(NET&&NET.ready&&!NET.opp?' · не в сети':'');
   else{
     $('n0').textContent=mode==='ai'?'Вы':'Белые';
-    $('n1').textContent=mode==='ai'?`Компьютер · ${LEVELS[settings.level][1]}`:'Чёрные';
+    $('n1').textContent=mode==='ai'?`Компьютер · ${LEVELS[G.level||settings.level][1]}`:'Чёрные';
   }
   const human=isHuman(G.turn);
   $('bMain').hidden=!(G.phase==='move'&&human&&!busy&&!G.auto&&!G.steps.length&&!G.netPend);
@@ -1430,17 +1475,21 @@ function buildSkinPicker(){
     for(let n=0;n<5;n++){const [x,y]=slotXY(12,n,5);pv+=checker(x,y,1,0,sk.ck);}
     h+=`<button class="skin" data-skin="${k}"><svg viewBox="0 0 1100 700"><image href="boards/${k}-thumb.webp?v=${APP_VERSION}" x="0" y="0" width="1100" height="700"/>${pv}</svg><span>${sk.name}</span></button>`;
   }
-  $('skins').innerHTML=h;
+  $('skins').innerHTML=h; $('dSkins').innerHTML=h;
 }
 function paintSettings(){
+  document.querySelectorAll('#dSkins .skin').forEach(b=>b.classList.toggle('on',b.dataset.skin===settings.skin));
+  document.querySelectorAll('#dSounds button').forEach(b=>b.classList.toggle('on',(b.dataset.snd==='on')===settings.sound));
   document.querySelectorAll('#skins .skin').forEach(b=>b.classList.toggle('on',b.dataset.skin===settings.skin));
   document.querySelectorAll('#levels button').forEach(b=>b.classList.toggle('on',b.dataset.lvl===settings.level));
   document.querySelectorAll('#sounds button').forEach(b=>b.classList.toggle('on',(b.dataset.snd==='on')===settings.sound));
-  $('lvlHint').textContent=LEVELS[settings.level][2];
+  const playing=mode==='ai'&&G&&G.phase!=='over'&&(G.level||settings.level)!==settings.level;
+  $('lvlHint').textContent=LEVELS[settings.level][2]+(playing?` Начатая партия доигрывается на уровне «${LEVELS[G.level][1]}», новый — со следующей.`:'');
   $('lvlCap').textContent='Сложность: '+LEVELS[settings.level][1];
 }
-$('skins').addEventListener('click',e=>{const b=e.target.closest('.skin'); if(!b) return; settings.skin=b.dataset.skin; saveSettings(); buildStatic(); if(G) render(); paintSettings();});
+for(const id of ['skins','dSkins']) $(id).addEventListener('click',e=>{const b=e.target.closest('.skin'); if(!b) return; settings.skin=b.dataset.skin; saveSettings(); buildStatic(); if(G) render(); paintSettings();});
 $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.level=b.dataset.lvl; saveSettings(); paintSettings(); if(G) renderPanel();});
+$('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);}});
 $('sounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);}});
 $('bSettings').addEventListener('click',()=>{ if(!$('skins').innerHTML) buildSkinPicker(); paintSettings(); $('settings').hidden=false; });
 $('bSettingsClose').addEventListener('click',()=>{$('settings').hidden=true;});
@@ -1470,7 +1519,23 @@ $('bMain').addEventListener('click',()=>{
   if(G.phase==='move'&&!G.steps.length&&!G.auto&&!busy) humanEnd();
 });
 $('bUndo').addEventListener('click',undo);
-$('bMenu').addEventListener('click',()=>{ if(!busy&&!G.auto) showMenu(); });
+// ☰ во время партии — боковая шторка: доска, звук, правила, выход в меню. Сложность видна, но не меняется до новой партии.
+function openDrawer(){
+  if(!$('dSkins').innerHTML) buildSkinPicker();
+  paintSettings();
+  $('dNew').hidden=mode==='net';
+  $('dLevelBox').hidden=mode!=='ai';
+  $('dLevel').textContent=LEVELS[G.level||settings.level][0];
+  $('drawer').hidden=false;
+}
+const closeDrawer=()=>{ $('drawer').hidden=true; };
+$('bMenu').addEventListener('click',openDrawer);
+$('dClose').addEventListener('click',closeDrawer);
+$('dResume').addEventListener('click',closeDrawer);
+$('drawer').addEventListener('click',e=>{ if(e.target===$('drawer')) closeDrawer(); });
+$('dNew').addEventListener('click',()=>{ if(busy||G.auto) return; if(!confirm('Начать партию заново? Текущая позиция пропадёт.')) return; closeDrawer(); ac(); newGame(mode); });
+$('dRules').addEventListener('click',()=>{ closeDrawer(); $('rules').hidden=false; });
+$('dMain').addEventListener('click',()=>{ if(busy||G.auto) return; closeDrawer(); showMenu(); });
 $('bAgain').addEventListener('click',()=>{ac(); if(mode==='net'){ if(NET) netSend({t:'new'}); } else newGame(mode);});
 $('bToMenu').addEventListener('click',showMenu);
 $('mAi').addEventListener('click',()=>{ac();newGame('ai');});
@@ -1491,7 +1556,8 @@ $('bRules').addEventListener('click',()=>{$('rules').hidden=false;});
 $('bRulesClose').addEventListener('click',()=>{$('rules').hidden=true;});
 $('rules').addEventListener('click',e=>{if(e.target===$('rules'))$('rules').hidden=true;});
 document.addEventListener('keydown',e=>{
-  if(!G||!$('menu').hidden) return;
+  if(e.key==='Escape'&&!$('drawer').hidden){ closeDrawer(); return; }
+  if(!G||!$('menu').hidden||!$('drawer').hidden) return;
   if(e.target.closest('button')) return;
   if(e.code==='Space'){
     e.preventDefault(); ac();

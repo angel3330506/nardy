@@ -947,6 +947,58 @@ def board_night():
     save('night', rgb, allm)
 
 
+# ---------- закрытая доска для меню ----------
+def board_lid():
+    """Крышка закрытых нард сверху: орех, резной край, большой аревахач маркетри, тонкая инкрустация бука,
+    латунные петли по корешку справа и застёжка слева. Рисуется в левой части холста (550×700) и обрезается."""
+    alb = wood(H, W, *WALNUT, rings=22, seed=13, contrast=.55)
+    outline = wavy_rect(12, 12, 538, 688, 10, 4, 6)
+    fm, h = carved_frame(outline, 24)
+    gloss = np.full((H, W), .6)
+    btex = wood(H, W, *BEECH, rings=30, seed=18, vertical=True, contrast=.3, fiber=.1, warp=1.2)
+    # тонкая рамка-инкрустация из бука и угловые лилии
+    for (a0, a1) in ((44, 47), (54, 55.5)):
+        ring = np.clip(rrect(a0, a0, 550 - a0, 700 - a0, 14) - rrect(a1, a1, 550 - a1, 700 - a1, 12), 0, 1)
+        alb = put(alb, ring, btex); h -= ring * .3
+    fl = polys(sum([fleur(x, y, d) for (x, y, d) in ((275, 630, -1),)], []))
+    alb = put(alb, fl, btex)
+    for (x, y) in ((80, 80), (470, 80), (80, 620), (470, 620)):
+        alb = put(alb, circle(x, y, 5), btex)
+    # аревахач с двойным кольцом
+    arevakhach_inlay(alb, h, 275, 410, 118, BEECH, ((.30, .16, .07), (.12, .06, .02)), 77)
+    for r0, r1 in ((132, 129.5), (138, 136.6)):
+        ring = np.clip(circle(275, 410, r0) - circle(275, 410, r1), 0, 1)
+        alb = put(alb, ring, btex); h -= ring * .3
+    # латунь: две петли на корешке слева (вокруг него крышка откидывается) и застёжка справа
+    metal = np.zeros((H, W)); brass = np.array((.80, .62, .30))
+    for y in (120, 520):
+        m = rrect(2, y, 28, y + 60, 4)
+        alb = put(alb, m, np.ones((H, W, 3)) * brass); metal = np.maximum(metal, m); h += m * 7
+        for yy in (y + 14, y + 46): h -= circle(15, yy, 3) * 2.5
+    m = rrect(520, 322, 548, 378, 5)
+    alb = put(alb, m, np.ones((H, W, 3)) * brass); metal = np.maximum(metal, m); h += m * 8
+    h -= circle(534, 350, 5) * 3
+    rgb = shade(alb, h, gloss, metal)
+    rgb = rgb + sheen(H, W, .06) * fm[..., None]
+    a = (np.clip(fm, 0, 1) * 255).astype(np.uint8)
+    im = Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8), 'RGB'); im.putalpha(Image.fromarray(a, 'L'))
+    im.crop((0, 0, 550 * S, 700 * S)).resize((825, 1050), Image.LANCZOS).save(os.path.join(OUT, 'lid.webp'), 'WEBP', quality=88, method=6)
+    print('saved lid')
+
+
+def plaque():
+    """Табличка-кнопка меню: светлый бук с фаской по краю."""
+    h_, w_ = 150, 640
+    alb = wood(h_, w_, *BEECH, rings=18, seed=19, contrast=.35, fiber=.12, warp=1.5)
+    m = np.zeros((h_, w_)); m[6:-6, 6:-6] = 1; m = ndi.gaussian_filter(m, 3)
+    d = ndi.distance_transform_edt(m > .5)
+    hh = 10 * np.clip(d / 14, 0, 1) ** .6
+    rgb = shade(alb, hh, np.full((h_, w_), .5))
+    im = Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8)); im.putalpha(Image.fromarray((m * 255).astype(np.uint8)))
+    im.save(os.path.join(OUT, 'plaque.webp'), 'WEBP', quality=86, method=6)
+    print('saved plaque')
+
+
 # ---------- стол под доской ----------
 def table_bg():
     """Фон партии: старый стол во дворике в Ереване. Столешница из широких досок морёного ореха со швами,
@@ -1088,9 +1140,11 @@ def checker_sprite(name, kind):
 
 
 if __name__ == '__main__':
-    which = sys.argv[1:] or ['ararat', 'yerevan', 'glass', 'night', 'checkers', 'table']
+    which = sys.argv[1:] or ['ararat', 'yerevan', 'glass', 'night', 'checkers', 'table', 'lid', 'plaque']
     for w_ in which:
         if w_ == 'table': table_bg()
+        elif w_ == 'lid': board_lid()
+        elif w_ == 'plaque': plaque()
         elif w_ == 'checkers':
             for k in ('ivory', 'onyx', 'beech', 'walnut'): checker_sprite(k, k)
         else:

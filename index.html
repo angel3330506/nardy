@@ -145,31 +145,55 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 @media (max-width:620px) and (pointer:fine){ .pl .meta{display:none} }
 
 /* ---------- меню ---------- */
+/* Главное меню — тот же стол во дворике; на нём закрытые нарды (крышка — рендер Blender, boards/lid.webp).
+   При старте партии крышка откидывается на петлях, под ней — выбранная доска. */
 #menu{
   position:fixed;inset:0;z-index:10;overflow:auto;
-  background:
-    radial-gradient(800px 500px at 50% 0%, #2a1e13 0%, transparent 65%),
-    var(--bg);
-  padding:max(20px,var(--sat)) max(16px,var(--sar)) max(20px,var(--sab)) max(16px,var(--sal));
+  background:radial-gradient(ellipse at 50% 45%,transparent 30%,rgba(0,0,0,.55)),#1c120a var(--table,none) center/cover no-repeat;
+  padding:max(16px,var(--sat)) max(16px,var(--sar)) max(16px,var(--sab)) max(16px,var(--sal));
   display:flex;align-items:center;justify-content:center;
 }
-.menu-in{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
-.menu-in .emblem{width:min(46vw,190px);height:auto;filter:drop-shadow(0 10px 30px rgba(0,0,0,.7))}
-.menu-in h1{font-family:var(--display);font-weight:400;font-size:clamp(44px,13vw,64px);letter-spacing:.05em;margin:0;line-height:1;color:var(--gold-hi)}
-.menu-in .sub{color:var(--muted);letter-spacing:.2em;text-transform:uppercase;font-size:12px;margin-top:6px}
-.mbtns{display:grid;gap:10px;width:100%}
-.mbtns button{padding:13px 15px;font-size:17px;display:flex;flex-direction:column;align-items:center;gap:2px}
-.mbtns .cap{font-size:12px;font-weight:500;opacity:.7}
-.mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
-.install{font-size:13.5px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.menu-in{width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;gap:clamp(16px,3vh,28px);perspective:1800px}
+@media (orientation:landscape){.menu-in{flex-direction:row;justify-content:center;gap:6vw}}
+.case{position:relative;height:min(52vh,calc(78vw * 700 / 550));aspect-ratio:550/700;flex:0 0 auto;transform-style:preserve-3d;
+  filter:drop-shadow(0 22px 26px rgba(0,0,0,.6)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+@media (orientation:landscape){.case{height:min(76vh,calc(42vw * 700 / 550))}}
+.case .half{position:absolute;inset:0;background:var(--inside) right/auto 100% no-repeat;border-radius:12px;opacity:0}
+.case .lid{position:absolute;inset:0;transform-origin:right center;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
+.case .lid .front,.case .lid .back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.case .lid .front{background:var(--lid) center/100% 100% no-repeat}
+.case .lid .back{background:var(--inside) left/auto 100% no-repeat;transform:rotateY(180deg);border-radius:12px}
+.case.open .lid{transform:rotateY(180deg)}
+.case.open .half{opacity:1}
+.case .title{position:absolute;left:0;right:0;top:7%;text-align:center;pointer-events:none;transition:opacity .3s}
+.case.open .title{opacity:0}
+.case h1{margin:0;font-family:var(--display);font-weight:400;font-size:calc(min(52vh,78vw * 700 / 550) * .115);letter-spacing:.06em;line-height:1;
+  color:#f1dcb1;text-shadow:0 1px 0 rgba(255,255,255,.22),0 -1px 1px rgba(0,0,0,.75)}
+@media (orientation:landscape){.case h1{font-size:calc(min(76vh,42vw * 700 / 550) * .115)}}
+.case .sub{margin-top:.5em;font-size:min(1.7vh,2.8vw);letter-spacing:.3em;text-transform:uppercase;color:#e6cd9c;opacity:.85;text-shadow:0 -1px 1px rgba(0,0,0,.7)}
+.mside{display:flex;flex-direction:column;gap:12px;width:min(92vw,400px);transition:opacity .3s}
+#menu.opening .mside,#menu.opening .micons{opacity:0;pointer-events:none}
+/* при раскрытии доска уезжает в центр: раскрытая она вдвое шире */
+.case{transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
+#menu.opening .case{transform:translateX(-50%)}
+@media (orientation:landscape){#menu.opening .case{transform:translateX(calc(-50% + 3vw + min(92vw,400px) / 2))}}
+.mbtns{display:grid;gap:10px}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pl{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;border-radius:6px;padding:13px 14px;
+  background:#c9a37a url(boards/maple.webp) center/cover;color:#3a200b;font-weight:700;font-size:17px;text-shadow:0 1px 0 rgba(255,240,215,.5);
+  box-shadow:inset 0 2px 1px rgba(255,240,215,.55),inset 0 -3px 2px rgba(70,35,10,.45),inset 2px 0 1px rgba(255,240,215,.25),inset -2px 0 1px rgba(70,35,10,.3),0 6px 12px rgba(0,0,0,.5)}
+.pl:hover:not(:disabled){filter:brightness(1.06)}
+.pl:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 3px 4px rgba(70,35,10,.45),0 3px 6px rgba(0,0,0,.5)}
+.pl.main{font-size:20px;padding:17px 14px}
+.pl .cap{font-size:12px;font-weight:500;opacity:.75}
+.micons{position:fixed;top:max(12px,var(--sat));right:max(14px,var(--sar));display:flex;gap:10px;z-index:2}
+.mic{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center;border:1px solid rgba(217,181,106,.35);
+  background:rgba(20,12,6,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#ecd6a6}
+.mic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.install{font-size:13.5px;color:#e6d7bd;border:1px dashed rgba(217,181,106,.4);border-radius:10px;padding:10px 12px;background:rgba(20,12,6,.5)}
 .install b{color:var(--fg);font-weight:500}
-.scoreline{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
-@media (orientation:landscape) and (max-height:520px){
-  .menu-in{max-width:760px;display:grid;grid-template-columns:auto 1fr;gap:10px 28px;text-align:left;align-items:center}
-  .menu-in .emblem{grid-row:span 5;width:min(34vh,170px)}
-  .menu-in h1{font-size:46px}
-}
-
+.scoreline{font-size:13px;color:#e6d7bd;text-align:center;font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000}
+@media (prefers-reduced-motion:reduce){.case .lid{transition:none}}
 .sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:0 max(0px,var(--sar)) 0 max(0px,var(--sal))}
 .sheet-in{width:100%;max-width:620px;max-height:90%;overflow:auto;background:linear-gradient(180deg,#1d1710,#120e0a);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;padding:20px 20px max(20px,var(--sab));display:flex;flex-direction:column;gap:14px}
 .sheet h3{font-family:var(--display);font-weight:400;font-size:28px;color:var(--gold-hi);margin:0}
@@ -328,27 +352,31 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 </div>
 
 <div id="menu">
+  <div class="micons">
+    <button class="mic" id="bStats" aria-label="Статистика и достижения" title="Статистика"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></button>
+    <button class="mic" id="bRules" aria-label="Правила" title="Правила"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13M9 7h6"/></svg></button>
+    <button class="mic" id="bSettings" aria-label="Настройки" title="Настройки"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
   <div class="menu-in">
-    <svg class="emblem" viewBox="-100 -100 200 200" aria-hidden="true"><g id="menuStar"></g></svg>
-    <div>
-      <h1>Нарды</h1>
-      <div class="sub">длинные · армянские</div>
+    <div class="case" id="case">
+      <div class="half" id="caseIn"></div>
+      <div class="lid"><div class="front"></div><div class="back" id="caseBack"></div></div>
+      <div class="title"><h1>Нарды</h1><div class="sub">длинные · армянские</div></div>
     </div>
-    <div class="mbtns">
-      <button class="primary" id="mContinue" hidden>Продолжить партию</button>
-      <button class="primary" id="mAi">Играть с компьютером<span class="cap" id="lvlCap"></span></button>
-      <button id="mPvp">Играть вдвоём<span class="cap">на одном телефоне</span></button>
-      <button id="mNet">Играть с другом по сети<span class="cap">по ссылке, где бы он ни был</span></button>
+    <div class="mside">
+      <div class="mbtns">
+        <button class="pl main" id="mContinue" hidden>Продолжить партию<span class="cap" id="contCap"></span></button>
+        <button class="pl" id="mAi">Играть с компьютером<span class="cap" id="lvlCap"></span></button>
+        <div class="mrow">
+          <button class="pl" id="mPvp">Вдвоём<span class="cap">на одном телефоне</span></button>
+          <button class="pl" id="mNet">С другом<span class="cap">по ссылке</span></button>
+        </div>
+      </div>
+      <button class="pl" id="bInstall" hidden>Установить приложение</button>
+      <div class="install" id="iosHint" hidden>Чтобы играть как в приложении: в Safari нажмите <b>«Поделиться»</b> → <b>«На экран „Домой“»</b>.</div>
+      <div class="scoreline" id="scoreline"></div>
+      <div class="scoreline" id="appVer" style="opacity:.6"></div>
     </div>
-    <div class="mrow">
-      <button id="bSettings">Настройки</button>
-      <button id="bRules">Правила</button>
-    </div>
-    <button id="bStats" style="width:100%">Статистика и достижения</button>
-    <button id="bInstall" hidden style="width:100%">Установить приложение</button>
-    <div class="install" id="iosHint" hidden>Чтобы играть как в приложении: в Safari нажмите <b>«Поделиться»</b> → <b>«На экран „Домой“»</b>.</div>
-    <div class="scoreline" id="scoreline"></div>
-    <div class="scoreline" id="appVer" style="opacity:.6"></div>
   </div>
 </div>
 
@@ -438,7 +466,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='23';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='24';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -489,7 +517,8 @@ const SKINS={
   yerevan:{name:'Армения',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'}
 };
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
-$('app').style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
+for(const id of ['app','menu']) $(id).style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
+$('case').style.setProperty('--lid',`url(boards/lid.webp?v=${APP_VERSION})`);
 for(let f=1;f<=6;f++){const im=new Image();im.src=`boards/die-${f}.png?v=${APP_VERSION}`;}
 for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}?v=${APP_VERSION}`;}
 
@@ -1587,6 +1616,7 @@ function checker(x,y,pl,cnt,ck=skin().ck){
 }
 function buildStatic(){
   const k=settings.skin, sk=SKINS[k];
+  $('case').style.setProperty('--inside',`url(boards/${k}.webp?v=${APP_VERSION})`);   // под крышкой в меню — выбранная доска
   $('lStatic').innerHTML=`<image href="boards/${k}.webp?v=${APP_VERSION}" x="0" y="0" width="1100" height="700"/>`;
   $('chip0').innerHTML=`<image href="boards/ck-${sk.ck.w.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
   $('chip1').innerHTML=`<image href="boards/ck-${sk.ck.b.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
@@ -1704,7 +1734,10 @@ function showMenu(){
   document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false; unlockOrientation();
   const v=readSaved();
   $('mContinue').hidden=!(v||(NET&&NET.started));
-  $('mAi').classList.toggle('primary',!v);
+  $('mAi').classList.toggle('main',!v);
+  const cm=NET&&NET.started?'net':v&&v.mode;
+  $('contCap').textContent=cm==='ai'?`с компьютером · ${LEVELS[v.level||settings.level][1]}`:cm==='pvp'?'вдвоём':cm==='net'?'с другом по сети':'';
+  $('case').classList.remove('open'); $('menu').classList.remove('opening');
   $('lvlCap').textContent='Сложность: '+LEVELS[settings.level][1];
   let sc='';
   try{const all=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};
@@ -1847,9 +1880,17 @@ $('dRules').addEventListener('click',()=>{ closeDrawer(); $('rules').hidden=fals
 $('dMain').addEventListener('click',()=>{ if(busy||G.auto) return; closeDrawer(); showMenu(); });
 $('bAgain').addEventListener('click',()=>{ac(); if(mode==='net'){ if(NET) netSend({t:'new'}); } else newGame(mode);});
 $('bToMenu').addEventListener('click',showMenu);
-$('mAi').addEventListener('click',()=>{ac();newGame('ai');});
-$('mPvp').addEventListener('click',()=>{ac();newGame('pvp');});
-$('mContinue').addEventListener('click',()=>{ac(); if(NET&&NET.started) showGame(); else if(G&&G.phase!=='over'&&readSaved()&&mode!=='net') showGame(); else resumeGame();});
+// крышка откидывается, под ней доска — и начинается партия
+let opening=false;
+function openCase(fn){
+  if(opening) return;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches||$('menu').hidden) return fn();
+  opening=true; ac(); $('case').classList.add('open'); $('menu').classList.add('opening'); synthKnock(.35,0); synthKnock(.3,.07);
+  setTimeout(()=>{ opening=false; fn(); },1150);
+}
+$('mAi').addEventListener('click',()=>openCase(()=>newGame('ai')));
+$('mPvp').addEventListener('click',()=>openCase(()=>newGame('pvp')));
+$('mContinue').addEventListener('click',()=>openCase(()=>{ if(NET&&NET.started) showGame(); else if(G&&G.phase!=='over'&&readSaved()&&mode!=='net') showGame(); else resumeGame(); }));
 $('mNet').addEventListener('click',()=>{ac(); netCreate();});
 $('bShare').addEventListener('click',async()=>{
   const url=$('netLink').textContent;
@@ -1879,7 +1920,6 @@ document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 
 buildStatic();
 $('winStar').innerHTML=star(0,0,46,16,'#f1d48a','#1a120b',-90,'rgba(0,0,0,.4)');
-$('menuStar').innerHTML=`<circle r="96" fill="#5c181a" stroke="url(#gGold)" stroke-width="3"/><circle r="84" fill="none" stroke="rgba(217,181,106,.45)" stroke-width="1"/>`+star(0,0,78,27,'#f3d68c','#100b08',-90,'rgba(200,160,90,.6)');
 paintSettings();
 showMenu();
 { const room=new URLSearchParams(location.search).get('room'); if(room&&/^[a-z0-9]{4,12}$/.test(room)) netEnter(room); }

@@ -8,7 +8,8 @@ import bpy
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 TEX = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'tools', 'tex')
-L = np.load(os.path.join(ROOT, '.preview', 'layers-ararat.npz'))
+NAME = os.environ.get('BOARD', 'ararat')                     # ararat — доска, lid — крышка для меню
+L = np.load(os.path.join(ROOT, '.preview', f'layers-{NAME}.npz'))
 h, body, metal, alb = L['h'], L['body'], L['metal'], L['alb']
 HH, WW = h.shape                                             # 1400 × 2200, 2 пикселя на единицу доски
 U = 100.0                                                     # единиц доски на метр сцены: доска 11 × 7 м
@@ -120,6 +121,6 @@ sc.render.resolution_x, sc.render.resolution_y = WW, HH
 sc.render.film_transparent = True
 sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'Medium High Contrast'
 sc.render.image_settings.file_format = 'PNG'; sc.render.image_settings.color_mode = 'RGBA'
-sc.render.filepath = os.path.join(ROOT, '.preview', 'blender-ararat.png')
+sc.render.filepath = os.path.join(ROOT, '.preview', f'blender-{NAME}.png')
 bpy.ops.render.render(write_still=True)
 print('rendered', sc.render.filepath)

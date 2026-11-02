@@ -298,9 +298,87 @@ def dump_layers(name):
                         **{k: np.asarray(v, np.float32) for k, v in got.items()})
     print('saved layers', name)
 
+
+def board_lid_layers():
+    """Крышка закрытых нард (левая половина холста, 550×700): тот же морёный бук, что у «Аревахача»,
+    резной бордюр-жгут по краю, крупный аревахач в центре, светлые лилии по углам, бронзовые петли на корешке справа
+    и застёжка слева. Слои — как у board_arevakhach(layers=True)."""
+    alb = np.zeros((H, W, 3)); alb[..., 0] = 1
+    light = np.zeros((H, W, 3)); light[..., 1] = 1
+    yy, xx = np.mgrid[0:H, 0:W] / S
+    body = rrect(0, 0, 550, 700, 18, aa=.8)
+    edge = np.minimum.reduce([xx, 550 - xx, yy, 700 - yy])
+    alb = alb * (.80 + .20 * np.clip(edge / 70, 0, 1))[..., None]
+    d = ndi.distance_transform_edt(body > .5) / S
+    h = 26 * np.clip(d / 12, 0, 1) ** .55 - 4 * np.exp(-((d - 16) / 2) ** 2)
+    # резной бордюр: полоса-жгут вдоль края, косые валики
+    inner = rrect(52, 52, 498, 648, 10); outer = rrect(30, 30, 520, 670, 14)
+    band = np.clip(outer - inner, 0, 1)
+    along = np.where((xx > 40) & (xx < 510) & ((yy < 52) | (yy > 648)), xx, yy)
+    across = np.minimum.reduce([np.abs(xx - 41), np.abs(xx - 509), np.abs(yy - 41), np.abs(yy - 659)])
+    ph = ((along + across * 1.3) / 9) % 1
+    roll = np.sqrt(np.clip(1 - ((ph - .5) * 2.1) ** 2, 0, 1)) * np.sqrt(np.clip(1 - (across / 11) ** 2, 0, 1))
+    h = h - band * 3 + band * roll * 4.5
+    alb = alb * (1 - band[..., None] * (1 - np.clip(roll * 1.8, 0, 1))[..., None] * .55)
+    # поле крышки чуть утоплено, тонкая светлая рамка-инкрустация
+    h -= ndi.gaussian_filter(inner, 1.2 * S) * 3
+    for r0, r1 in ((58, 59.6),):
+        ring = np.clip(rrect(r0, r0, 550 - r0, 700 - r0, 8) - rrect(r1, r1, 550 - r1, 700 - r1, 7), 0, 1)
+        alb = put(alb, ring, light)
+    # аревахач с жгутом
+    cx, cy = 275, 395
+    sl, union, petals, angles = arevakhach_masks(cx, cy, 128, n=12, band=.02)
+    a_ = alb[sl]
+    for k, pm in enumerate(petals): a_ = a_ * (1 - pm[..., None]) + light[sl] * pm[..., None]
+    alb[sl] = a_
+    h[sl] -= np.clip(union - np.max(petals, axis=0), 0, 1) * .6
+    rope, rb = rope_ring(cx, cy, 145, 168, n=80)
+    alb = put(alb, rb * .85, light)
+    alb = alb * (1 - (rb * (1 - np.clip(rope * 1.6, 0, 1)))[..., None] * .75)
+    h += rope * 1.4
+    for r0, r1 in ((137, 139.5), (173, 175.5)):
+        ring = np.clip(circle(cx, cy, r1) - circle(cx, cy, r0), 0, 1); alb = put(alb, ring, light)
+    # лилии по углам поля и над аревахачем
+    from render_boards import fleur
+    fl = polys(sum([fleur(x, y, d_) for (x, y, d_) in ((95, 90, 1), (455, 90, 1), (95, 610, -1), (455, 610, -1))], []))
+    alb = put(alb, fl, light); alb = alb * (1 - outline(fl, .8)[..., None] * .8)
+    # бронза: петли на корешке справа, застёжка слева
+    metal = np.zeros((H, W))
+    for y in (150, 550): alb, h, metal = hinge(alb, h, metal, 550, y)
+    alb, h, metal = hinge(alb, h, metal, -8, 350)
+    body = body * (xx < 550)
+    return dict(h=h, body=body, metal=metal * (xx < 550), alb=alb)
+
+
+# Дерево как на «Армении»: фото шпона ореха с сильным рисунком волокон. Тон у каждой доски свой.
+WOOD_TONE = {'ararat': ((.52, .33, .15), (.30, .17, .07)), 'lid': ((.52, .33, .15), (.30, .17, .07))}
+INLAY = ((.97, .90, .74), (.88, .76, .56))                    # светлый клён/бук инкрустации
+
+
+def to_generic(name, L):
+    """Слои board_arevakhach/board_lid_layers (R — тёмное дерево, G — инкрустация) → цветные слои для blender_generic.py."""
+    h_, w_ = L['h'].shape
+    dark = photo_wood(h_, w_, *WOOD_TONE[name], seed=11, vertical=True, contrast=.85)
+    light = photo_wood(h_, w_, *INLAY, seed=12, vertical=True, contrast=.3)
+    a = L['alb']; R, G_ = a[..., :1], a[..., 1:2]
+    metal = L['metal'][..., None]
+    alb = dark * R + light * G_
+    alb = alb * (1 - metal) + a * metal
+    out = dict(h=L['h'], alb=alb, gloss=np.ones_like(L['h']), metal=L['metal'], alpha=L['body'])
+    np.savez_compressed(os.path.join(os.path.dirname(__file__), '..', '.preview', f'layers-{name}.npz'),
+                        **{k: np.asarray(v, np.float32) for k, v in out.items()})
+    print('saved generic layers', name)
+
 if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == 'layers':
         sys.exit(dump_layers(sys.argv[2]))
+    if sys.argv[1:] == ['generic']:
+        to_generic('ararat', board_arevakhach(layers=True)); to_generic('lid', board_lid_layers()); sys.exit()
+    if sys.argv[1:] == ['lid']:
+        L = board_lid_layers()
+        np.savez_compressed(os.path.join(os.path.dirname(__file__), '..', '.preview', 'layers-lid.npz'),
+                            **{k: v.astype(np.float32) for k, v in L.items()})
+        sys.exit(print('saved lid layers'))
     if sys.argv[1:] == ['layers']:
         L = board_arevakhach(layers=True)
         np.savez_compressed(os.path.join(os.path.dirname(__file__), '..', '.preview', 'layers-ararat.npz'),

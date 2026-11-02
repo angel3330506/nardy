@@ -824,7 +824,7 @@ def board_yerevan():
 
 
 def board_glass():
-    alb = wood(H, W, (.30, .20, .14), (.13, .085, .055), rings=14, seed=41, contrast=.55, fiber=.16)   # тёмный орех
+    alb = wood(H, W, (.46, .28, .12), (.24, .13, .05), rings=14, seed=41, contrast=.85, fiber=.16)   # орех с ярким рисунком
     outline = wavy_rect(10, 10, 1090, 690, 12, 7, 3)
     fm, h = carved_frame(outline, 22)
     gloss = np.full((H, W), .25)
@@ -874,7 +874,7 @@ def board_glass():
 
 def board_night():
     # рамка — тёмный лакированный орех
-    alb = wood(H, W, (.25, .14, .08), (.09, .05, .025), rings=18, seed=61, contrast=.6, fiber=.1)
+    alb = wood(H, W, (.46, .28, .12), (.24, .13, .05), rings=18, seed=61, contrast=.85, fiber=.1)   # орех с ярким рисунком
     fm = rrect(0, 0, 1000, 700, 24, aa=.8)
     tray = rrect(1010, 0, 1100, 700, 20, aa=.8)
     allm = np.maximum(fm, tray)

@@ -98,6 +98,55 @@ for _ in range(8):                                            # лоза — и�
     for p, c in zip(sp.points, pts): p.co = (*c, 1)
     v = bpy.data.objects.new('vine', cu); leaves.objects.link(v); v.visible_camera = False; v.visible_glossy = False
 
+# ---------- стакан армуды с чаем на блюдце, рядом ложечка и сахар ----------
+CM = .39                                                      # сантиметр в единицах сцены (доска 50 см ≈ 19 единиц)
+def lathe(name, prof, mat, loc, seg=96, solid=0.0):
+    """Тело вращения по профилю [(радиус, высота)] в сантиметрах."""
+    import bmesh
+    me = bpy.data.meshes.new(name); bm = bmesh.new()
+    rings = []
+    for r, z in prof:
+        rings.append([bm.verts.new((r * CM * math.cos(a), r * CM * math.sin(a), z * CM)) for a in np.linspace(0, 2 * math.pi, seg, endpoint=False)])
+    for r0, r1 in zip(rings, rings[1:]):
+        for k in range(seg): bm.faces.new((r0[k], r0[(k + 1) % seg], r1[(k + 1) % seg], r1[k]))
+    if prof[0][0] > 0: bm.faces.new(list(reversed(rings[0])))
+    bm.to_mesh(me); bm.free()
+    for p_ in me.polygons: p_.use_smooth = True
+    o = bpy.data.objects.new(name, me); sc.collection.objects.link(o); o.location = loc
+    if solid: m = o.modifiers.new('s', 'SOLIDIFY'); m.thickness = solid * CM
+    o.modifiers.new('sub', 'SUBSURF').levels = 1
+    o.data.materials.append(mat); return o
+def pmat(name, **kw):
+    m = bpy.data.materials.new(name); m.use_nodes = True; b = m.node_tree.nodes['Principled BSDF']
+    for k, v in kw.items(): b.inputs[k].default_value = v
+    return m
+glass = pmat('glass', **{'Base Color': (1, 1, 1, 1), 'Transmission Weight': 1.0, 'Roughness': .02, 'IOR': 1.5})
+tea = pmat('tea', **{'Base Color': (.55, .16, .03, 1), 'Transmission Weight': .85, 'Roughness': .05, 'IOR': 1.33})
+porcelain = pmat('porc', **{'Base Color': (.86, .88, .93, 1), 'Roughness': .18, 'Coat Weight': .6})
+gold = pmat('gold', **{'Base Color': (.9, .66, .3, 1), 'Metallic': 1.0, 'Roughness': .25})
+silver = pmat('silver', **{'Base Color': (.88, .88, .86, 1), 'Metallic': 1.0, 'Roughness': .18})
+sugar = pmat('sugar', **{'Base Color': (.97, .96, .93, 1), 'Roughness': .7, 'Subsurface Weight': .3})
+X0, Y0 = 22.6, -11.2                                         # правый нижний угол стола, у края доски
+lathe('saucer', [(0, 0), (4.0, 0), (5.6, .6), (6.3, 1.2), (6.4, 1.35)], porcelain, (X0, Y0, 0), solid=.25)
+lathe('rim', [(6.25, 1.36), (6.45, 1.36), (6.45, 1.46), (6.25, 1.46)], gold, (X0, Y0, 0))
+lathe('glass', [(1.9, .05), (2.5, 1.6), (2.7, 3.0), (2.2, 5.4), (2.0, 6.4), (2.3, 8.0), (2.55, 9.3)], glass, (X0, Y0, 1.0 * CM), solid=.15)
+lathe('tea', [(0, .2), (1.8, .25), (2.4, 1.6), (2.55, 3.0), (2.1, 5.4), (1.95, 6.4), (2.05, 7.0), (0, 7.0)], tea, (X0, Y0, 1.0 * CM))
+# чайная ложечка: вытянутая чаша и тонкая ручка с утолщением на конце
+ang = math.radians(35); ux, uy = math.cos(ang), math.sin(ang)
+bx, by = X0 - 4.0 * CM * ux, Y0 - 4.0 * CM * uy               # чаша ложки на блюдце, ручка лежит на краю и уходит наружу
+bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(bx, by, 1.55 * CM)); bowl = bpy.context.object
+bowl.scale = (1.5 * CM, .95 * CM, .32 * CM); bowl.rotation_euler = (0, 0, ang); bowl.data.materials.append(silver)
+for p_ in bowl.data.polygons: p_.use_smooth = True
+hl = 9.5 * CM
+bpy.ops.mesh.primitive_cylinder_add(radius=.17 * CM, depth=hl, location=(bx - ux * (1.4 * CM + hl / 2), by - uy * (1.4 * CM + hl / 2), 1.95 * CM))
+hd = bpy.context.object; hd.rotation_euler = (math.radians(90), math.radians(-1.5), ang + math.radians(90)); hd.data.materials.append(silver)
+hd.rotation_mode = 'XYZ'
+bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(bx - ux * (1.4 * CM + hl), by - uy * (1.4 * CM + hl), 2.1 * CM)); tip = bpy.context.object
+tip.scale = (.9 * CM, .45 * CM, .14 * CM); tip.rotation_euler = (0, 0, ang); tip.data.materials.append(silver)
+for k, (dx, dy, rz) in enumerate(((-9.5, -1.0, .3), (-10.2, 1.6, -.4))):
+    bpy.ops.mesh.primitive_cube_add(size=1.6 * CM, location=(X0 + dx * CM, Y0 + dy * CM, .8 * CM)); c = bpy.context.object
+    c.rotation_euler = (0, 0, rz); c.data.materials.append(sugar); bv = c.modifiers.new('b', 'BEVEL'); bv.width = .12 * CM; bv.segments = 2
+
 # ---------- свет и камера ----------
 sun = bpy.data.lights.new('sun', 'SUN'); sun.energy = 4.6; sun.angle = math.radians(1.4); sun.color = (1, .93, .8)
 so = bpy.data.objects.new('sun', sun); sc.collection.objects.link(so); so.rotation_euler = (SUN[0], SUN[1], 0)
@@ -106,7 +155,7 @@ world.node_tree.nodes['Background'].inputs['Color'].default_value = (.5, .62, .7
 world.node_tree.nodes['Background'].inputs['Strength'].default_value = .9
 cam = bpy.data.cameras.new('cam'); cam.type = 'ORTHO'; cam.ortho_scale = TW
 co = bpy.data.objects.new('cam', cam); sc.collection.objects.link(co); sc.camera = co; co.location = (TW / 2, -TH / 2, 30)
-sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = int(os.environ.get('SAMPLES', 96)); sc.cycles.use_denoising = True
+sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = int(os.environ.get('SAMPLES', 128)); sc.cycles.max_bounces = 10; sc.cycles.transmission_bounces = 10; sc.cycles.use_denoising = True
 sc.render.resolution_x, sc.render.resolution_y = 2400, 1500
 sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'Medium Contrast'
 sc.render.image_settings.file_format = 'PNG'

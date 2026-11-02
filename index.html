@@ -485,7 +485,7 @@ border-radius:12px;opacity:0}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='28';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='29';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -1912,8 +1912,22 @@ function openCase(fn){
   if(opening) return;
   if(matchMedia('(prefers-reduced-motion: reduce)').matches||$('menu').hidden) return fn();
   opening=true; ac(); $('case').classList.add('open'); $('menu').classList.add('opening'); synthKnock(.35,0); synthKnock(.3,.07);
-  setTimeout(()=>{ opening=false; fn(); },1150);
+  setTimeout(()=>{
+    // раскрытая доска на столе: от левого края основания до правого края откинутой крышки
+    const r=$('case').getBoundingClientRect(), from={x:r.left,y:r.top,w:r.width*2,h:r.height};
+    opening=false; fn(); zoomIn(from);
+  },1150);
 }
+// доска плавно «приближается» с места на столе в меню к игровому размеру (FLIP)
+function zoomIn(from){
+  const fr=$('frame'), to=fr.getBoundingClientRect();
+  if(!to.width||getComputedStyle($('app')).transform!=='none'){ fadeChrome(); return; }   // повёрнутая вёрстка на телефоне — без приближения
+  const k=from.w/to.width;
+  fr.animate([{transformOrigin:'0 0',transform:`translate(${from.x-to.left}px,${from.y-to.top}px) scale(${k})`},{transformOrigin:'0 0',transform:'none'}],
+    {duration:850,easing:'cubic-bezier(.45,0,.2,1)'});
+  fadeChrome();
+}
+function fadeChrome(){ for(const el of [document.querySelector('.bar')]) el.animate([{opacity:0},{opacity:0,offset:.5},{opacity:1}],{duration:900}); }
 $('mAi').addEventListener('click',()=>openCase(()=>newGame('ai')));
 $('mPvp').addEventListener('click',()=>openCase(()=>newGame('pvp')));
 $('mContinue').addEventListener('click',()=>openCase(()=>{ if(NET&&NET.started) showGame(); else if(G&&G.phase!=='over'&&readSaved()&&mode!=='net') showGame(); else resumeGame(); }));

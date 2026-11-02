@@ -326,7 +326,7 @@ def board_lid_layers():
         ring = np.clip(rrect(r0, r0, 550 - r0, 700 - r0, 8) - rrect(r1, r1, 550 - r1, 700 - r1, 7), 0, 1)
         alb = put(alb, ring, light)
     # аревахач с жгутом
-    cx, cy = 275, 395
+    cx, cy = 275, 350                                         # аревахач по центру крышки; название — в меню рядом
     sl, union, petals, angles = arevakhach_masks(cx, cy, 128, n=12, band=.02)
     a_ = alb[sl]
     for k, pm in enumerate(petals): a_ = a_ * (1 - pm[..., None]) + light[sl] * pm[..., None]

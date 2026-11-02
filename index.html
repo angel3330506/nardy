@@ -169,12 +169,8 @@ border-radius:12px;opacity:0}
 .case::after{content:"";position:absolute;inset:0;z-index:5}
 .case,#frame,#board{-webkit-user-drag:none;-webkit-touch-callout:none}
 .case.open .half{opacity:1}
-.case .title{position:absolute;left:0;right:0;top:7%;text-align:center;pointer-events:none;transition:opacity .3s}
-.case.open .title{opacity:0}
-.case h1{margin:0;font-family:var(--display);font-weight:400;font-size:calc(min(52vh,78vw * 700 / 550) * .115);letter-spacing:.06em;line-height:1;
-  color:#f1dcb1;text-shadow:0 1px 0 rgba(255,255,255,.22),0 -1px 1px rgba(0,0,0,.75)}
-@media (orientation:landscape){.case h1{font-size:calc(min(76vh,42vw * 700 / 550) * .115)}}
-.case .sub{margin-top:.5em;font-size:min(1.7vh,2.8vw);letter-spacing:.3em;text-transform:uppercase;color:#e6cd9c;opacity:.85;text-shadow:0 -1px 1px rgba(0,0,0,.7)}
+.mtitle{margin:0 0 4px;text-align:center;font-family:var(--display);font-weight:400;font-size:clamp(48px,8vh,84px);letter-spacing:.06em;line-height:1;
+  color:#f3dfb4;text-shadow:0 2px 0 rgba(60,30,8,.6),0 4px 18px rgba(0,0,0,.7)}
 .mside{display:flex;flex-direction:column;gap:12px;width:min(92vw,400px);transition:opacity .3s}
 #menu.opening .mside,#menu.opening .micons{opacity:0;pointer-events:none}
 /* при раскрытии доска уезжает в центр: раскрытая она вдвое шире */
@@ -377,9 +373,9 @@ border-radius:12px;opacity:0}
     <div class="case" id="case">
       <div class="half" id="caseIn"></div>
       <div class="lid"><div class="front"></div><div class="back" id="caseBack"></div></div>
-      <div class="title"><h1>Нарды</h1><div class="sub">длинные · армянские</div></div>
     </div>
     <div class="mside">
+      <h1 class="mtitle">Нарды</h1>
       <div class="mbtns">
         <button class="plq main" id="mContinue" hidden>Продолжить партию<span class="cap" id="contCap"></span></button>
         <button class="plq" id="mAi">Играть с компьютером<span class="cap" id="lvlCap"></span></button>
@@ -488,7 +484,7 @@ border-radius:12px;opacity:0}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='30';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='31';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 

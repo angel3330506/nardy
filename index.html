@@ -520,6 +520,7 @@ const SKINS={
 for(const id of ['app','menu']) $(id).style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
 $('case').style.setProperty('--lid',`url(boards/lid.webp?v=${APP_VERSION})`);
 for(let f=1;f<=6;f++){const im=new Image();im.src=`boards/die-${f}.png?v=${APP_VERSION}`;}
+for(const c of Object.keys(CK)){const im=new Image();im.src=`boards/ckside-${c}.png?v=${APP_VERSION}`;}
 for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}?v=${APP_VERSION}`;}
 
 /* ---------- правила ---------- */
@@ -1654,7 +1655,7 @@ function render(){
     const c=s.off[pl]-(flyHide==='off'&&G.turn===pl?1:0), cc=pl?ck.b:ck.w;
     for(let k=0;k<c;k++){
       const [x,y]=traySlot(pl,k);
-      h+=`<rect x="${x-27}" y="${y-7}" width="54" height="14" rx="5" fill="${cc.slab}" stroke="${cc.edge}" stroke-width="1.2"/>`;
+      h+=`<image href="boards/ckside-${cc.img}.png?v=${APP_VERSION}" x="${x-30}" y="${y-8.5}" width="60" height="17"/>`;   // шашка стоит на ребре — рендер Blender
     }
   }
   if(human&&G.sel!=null){

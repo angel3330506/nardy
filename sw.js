@@ -1,5 +1,5 @@
 // Офлайн-кэш: страница, доски, звуки и шрифты кэшируются при установке.
-const V = '26';                 // = APP_VERSION в index.html
+const V = '27';                 // = APP_VERSION в index.html
 const VERSION = 'nardy-v' + V;
 const SHELL = [
   './',
@@ -15,7 +15,7 @@ const SHELL = [
   `boards/lid.webp?v=${V}`, `boards/maple.webp?v=${V}`,
   ...[1, 2, 3, 4, 5, 6].map(f => `boards/die-${f}.png?v=${V}`),
 ];
-const SOUNDS = ['duduk.m4a','duduk-intro.m4a',...[11,21,22,31,32,33,41,42,43,44,51,52,53,54,55,61,62,63,64,65,66].map(k => `calls/${k}.m4a`),'dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a','chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a','chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a','chips-stack-1.m4a','chips-stack-2.m4a']; // те же файлы, что SOUND_FILES в index.html
+const SOUNDS = ['duduk.m4a','duduk-intro.m4a','dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a','chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a','chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a','chips-stack-1.m4a','chips-stack-2.m4a']; // те же файлы, что SOUND_FILES в index.html
 
 // Стили Google Fonts — те же адреса, что в <link> в index.html. Файлы шрифтов из них кэшируются при установке.
 const FONT_CSS = [

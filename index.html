@@ -326,9 +326,8 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
         <button data-vib="off">Выключена</button>
       </div>
 
-      <h4>Голос и музыка</h4>
-      <div class="seg vox" style="grid-template-columns:1fr 1fr">
-        <button data-vox="voice">Названия бросков</button>
+      <h4>Музыка</h4>
+      <div class="seg vox" style="grid-template-columns:1fr">
         <button data-vox="music">Дудук при старте</button>
       </div>
       <div id="dLevelBox">
@@ -413,12 +412,11 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
       <button data-vib="on">Включена</button>
       <button data-vib="off">Выключена</button>
     </div>
-    <h4>Голос и музыка</h4>
-    <div class="seg vox" style="grid-template-columns:1fr 1fr">
-      <button data-vox="voice">Названия бросков</button>
+    <h4>Музыка</h4>
+    <div class="seg vox" style="grid-template-columns:1fr">
       <button data-vox="music">Дудук при старте</button>
     </div>
-    <p class="hint">Дудук: запись «Sound of Armenian Duduk», автор איליה מעזיה, Wikimedia Commons, CC BY-SA 4.0. Голос — синтез Piper.</p>
+    <p class="hint">Дудук: запись «Sound of Armenian Duduk», автор איליה מעזיה, Wikimedia Commons, CC BY-SA 4.0.</p>
     <button class="primary done" id="bSettingsClose">Готово</button>
   </div>
 </div>
@@ -467,7 +465,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
       <li>Нельзя ставить <b>заграждение из 6 шашек подряд</b>, если впереди него нет ни одной шашки соперника.</li>
       <li>Выбрасывать можно, когда все 15 шашек в доме. Кто выбросил все первым — победил; если у соперника не вышло ни одной — <b>марс</b>, двойная победа.</li>
       <li>Чтобы бросить, <b>потяните кубики</b> с середины доски пальцем на свою половину и отпустите (на компьютере — пробел).</li>
-      <li>Броски называются по-старинному: ек, ду, се, джахар, беш, шеш — 1…6. «Шеш-беш» — 6 и 5, «Ду-шеш» — две шестёрки. Названия можно выключить в настройках.</li>
+      <li>Броски называются по-старинному: ек, ду, се, джахар, беш, шеш — 1…6. «Шеш-беш» — 6 и 5, «Ду-шеш» — две шестёрки.</li>
       <li><b>По сети:</b> «Играть с другом по сети» → отправьте ссылку другу. Каждый видит доску со своей стороны. Кубики честные: бросок складывается из случайных чисел обоих телефонов, подменить его нельзя.</li>
       <li>Как ходить: нажмите на шашку, затем на подсвеченный пункт. Цифра на пункте — на сколько вы идёте. Выброс — нажатие на лоток справа.</li>
     </ul>
@@ -479,7 +477,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='26';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='27';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -685,8 +683,6 @@ const SOUND_FILES={
   off:['chips-stack-1.m4a','chips-stack-2.m4a'],
   duduk:['duduk.m4a'], intro:['duduk-intro.m4a']
 };
-// голос: название броска (sounds/calls/<больший><меньший>.m4a, синтез Piper)
-for(let h=1;h<=6;h++) for(let l=1;l<=h;l++) SOUND_FILES['call'+h+l]=[`calls/${h}${l}.m4a`];
 const buffers={};
 let AC=null, soundsLoading=false;
 const settings={skin:'night',level:'medium',sound:true};
@@ -1058,7 +1054,7 @@ function showCall(text,at){
   frame.appendChild(el); setTimeout(()=>el.remove(),1700);
 }
 function rolled(a,b,land,after,instant){
-    if(!instant){ showCall(rollName(a,b)+(a===b?'!':''),land); if(settings.voice!==false) play('call'+Math.max(a,b)+Math.min(a,b),.9,0,true); }   // land — уже в координатах экрана
+    if(!instant){ showCall(rollName(a,b)+(a===b?'!':''),land); }   // land — уже в координатах экрана
     G.dice=[a,b]; G.diceAt=land;
     G.rem=a===b?[a,a,a,a]:[a,b];
     G.headUsed=0;

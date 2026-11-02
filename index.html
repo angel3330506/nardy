@@ -69,7 +69,7 @@ button.primary:hover:not(:disabled){background:linear-gradient(180deg,#f0d38f,#c
 }
 .board-box{flex:1 1 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
 .board-frame{position:relative;width:min(100cqw,calc(100cqh * 1100 / 700));aspect-ratio:1100/700;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6))}
-svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
+svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 /* строка партии: игроки по краям, подсказка посередине, снизу золотая волосяная линия */
 .bar{
   flex:0 0 auto;position:relative;text-shadow:0 1px 3px rgba(0,0,0,.8);display:flex;align-items:center;gap:clamp(6px,1.4cqw,16px);
@@ -206,6 +206,30 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
 @keyframes slideIn{from{transform:translateX(-100%)}}
 @keyframes fadeIn{from{opacity:0}}
 @media (prefers-reduced-motion:reduce){.drawer,.drawer-back{animation:none}}
+.call{position:absolute;transform:translate(-50%,-50%);pointer-events:none;z-index:3;white-space:nowrap;
+  font-family:var(--display);font-size:clamp(20px,4.2cqw,40px);color:#fff4d6;letter-spacing:.04em;
+  text-shadow:0 2px 8px rgba(0,0,0,.85),0 0 18px rgba(243,217,147,.55);animation:call 1.7s ease-out forwards}
+@keyframes call{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}
+  70%{opacity:1;transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+@media (prefers-reduced-motion:reduce){.call{animation-duration:1.2s}}
+.toasts{position:absolute;top:calc(clamp(32px,8.5cqh,46px) + 14px);left:50%;transform:translateX(-50%);z-index:8;display:grid;gap:8px;pointer-events:none}
+.toast{background:linear-gradient(180deg,#2a2013,#17110b);border:1px solid var(--gold);border-radius:12px;padding:9px 16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);display:flex;gap:10px;align-items:center;animation:toast 4s ease forwards;white-space:nowrap}
+.toast b{color:var(--gold-hi);font-weight:500}.toast small{display:block;color:var(--muted);font-size:12px}
+.toast i{font-style:normal;font-size:22px}
+@keyframes toast{0%{opacity:0;transform:translateY(-10px)}8%,85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-10px)}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stats b{display:block;font-family:var(--display);font-weight:400;font-size:24px;color:var(--gold-hi);line-height:1.1}
+.stats span{font-size:12px;color:var(--muted)}
+.achs{display:grid;gap:6px}
+.ach{display:flex;gap:10px;align-items:center;padding:7px 10px;border-radius:10px;border:1px solid var(--line);font-size:13.5px}
+.ach i{font-style:normal;font-size:20px;width:26px;text-align:center}.ach small{display:block;color:var(--muted);font-size:12px}
+.ach.off{opacity:.42;filter:grayscale(1)}
+.review{display:grid;gap:8px;font-size:14px}
+.review div{border-left:3px solid var(--gold);background:rgba(217,181,106,.06);padding:8px 10px;border-radius:0 8px 8px 0}
+.review .bad{border-color:#c0484a}.review small{color:var(--muted)}
+.hintmark{animation:pulse 1s ease-in-out infinite}
 .nettext{margin:0;color:var(--muted);font-size:14.5px}
 .netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
@@ -229,6 +253,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       <b class="score" id="s1">0</b>
     </div>
     <button class="primary go" id="bMain" hidden>Завершить ход</button>
+    <button class="ib" id="bHint" aria-label="Подсказка" title="Подсказка"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg></button>
     <button class="ib" id="bUndo" aria-label="Отменить ход"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
   </header>
 
@@ -266,6 +291,16 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
         <button data-snd="on">Включён</button>
         <button data-snd="off">Выключен</button>
       </div>
+      <h4>Атмосфера дворика</h4>
+      <div class="seg amb" style="grid-template-columns:1fr 1fr">
+        <button data-amb="on">Листва и птицы</button>
+        <button data-amb="off">Тишина</button>
+      </div>
+      <h4>Вибрация</h4>
+      <div class="seg vib" style="grid-template-columns:1fr 1fr">
+        <button data-vib="on">Включена</button>
+        <button data-vib="off">Выключена</button>
+      </div>
       <div id="dLevelBox">
         <h4>Сложность компьютера</h4>
         <p class="dlevel"><b id="dLevel"></b><span>Во время партии не меняется — выберите в настройках главного меню перед новой игрой.</span></p>
@@ -284,10 +319,12 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       <p id="wText"></p>
       <div class="row">
         <button class="primary" id="bAgain">Ещё партию</button>
+        <button id="bReview" hidden>Разбор</button>
         <button id="bToMenu">Меню</button>
       </div>
     </div>
   </div>
+  <div class="toasts" id="toasts"></div>
 </div>
 
 <div id="menu">
@@ -307,6 +344,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       <button id="bSettings">Настройки</button>
       <button id="bRules">Правила</button>
     </div>
+    <button id="bStats" style="width:100%">Статистика и достижения</button>
     <button id="bInstall" hidden style="width:100%">Установить приложение</button>
     <div class="install" id="iosHint" hidden>Чтобы играть как в приложении: в Safari нажмите <b>«Поделиться»</b> → <b>«На экран „Домой“»</b>.</div>
     <div class="scoreline" id="scoreline"></div>
@@ -331,6 +369,16 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       <button data-snd="on">Включён</button>
       <button data-snd="off">Выключен</button>
     </div>
+    <h4>Атмосфера дворика</h4>
+    <div class="seg amb" style="grid-template-columns:1fr 1fr">
+      <button data-amb="on">Листва и птицы</button>
+      <button data-amb="off">Тишина</button>
+    </div>
+    <h4>Вибрация</h4>
+    <div class="seg vib" style="grid-template-columns:1fr 1fr">
+      <button data-vib="on">Включена</button>
+      <button data-vib="off">Выключена</button>
+    </div>
     <button class="primary done" id="bSettingsClose">Готово</button>
   </div>
 </div>
@@ -345,6 +393,25 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block}
       <button id="bCopy">Скопировать</button>
     </div>
     <button id="bNetClose">Закрыть</button>
+  </div>
+</div>
+
+<div class="sheet" id="statsSheet" hidden>
+  <div class="sheet-in">
+    <h3>Статистика</h3>
+    <div class="stats" id="statsGrid"></div>
+    <h4>Достижения</h4>
+    <div class="achs" id="achList"></div>
+    <button class="primary done" id="bStatsClose">Закрыть</button>
+  </div>
+</div>
+
+<div class="sheet" id="reviewSheet" hidden>
+  <div class="sheet-in">
+    <h3>Разбор партии</h3>
+    <p class="hint" style="margin:0">Пункты считаются от вашей головы: 1 — голова, 19–24 — дом. «Выброс» — шашка ушла с доски.</p>
+    <div class="review" id="reviewList"></div>
+    <button class="primary done" id="bReviewClose">Понятно</button>
   </div>
 </div>
 
@@ -597,16 +664,67 @@ function loadSounds(){
     }
   }
 }
+// Шашка по сукну («Ночь») звучит глуше, по лакированному дереву — звонче и чуть ниже.
+const SKIN_SOUND={night:{lp:1600,rate:.9},glass:{lp:5200,rate:1.04},ararat:{lp:9000,rate:.97},yerevan:{lp:7000,rate:.94}};
 function play(k,vol=1,delay=0){
   const a=settings.sound&&ac(); const l=buffers[k];
   if(!a||!l||!l.length) return false;
-  const src=a.createBufferSource(), g=a.createGain();
+  const src=a.createBufferSource(), g=a.createGain(), f=a.createBiquadFilter();
+  const ss=(k==='place'||k==='stack')&&SKIN_SOUND[settings.skin]||{lp:12000,rate:1};
   src.buffer=l[Math.random()*l.length|0];
-  src.playbackRate.value=0.94+Math.random()*0.12;
-  g.gain.value=vol;
-  src.connect(g).connect(a.destination); src.start(a.currentTime+delay);
+  src.playbackRate.value=ss.rate*(0.94+Math.random()*0.12);
+  f.type='lowpass'; f.frequency.value=ss.lp; g.gain.value=vol;
+  src.connect(f).connect(g).connect(a.destination); src.start(a.currentTime+delay);
   return true;
 }
+// глухой деревянный стук: кубик ударился о доску
+function synthKnock(vol=.5,delay=0){
+  const a=settings.sound&&ac(); if(!a) return; const t=a.currentTime+delay;
+  const buf=a.createBuffer(1,a.sampleRate*.05,a.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(a.sampleRate*.006));
+  const src=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain();
+  f.type='bandpass'; f.frequency.value=900+Math.random()*500; f.Q.value=2.5;
+  src.buffer=buf; g.gain.value=vol; src.connect(f).connect(g).connect(a.destination); src.start(t);
+}
+// раскрыли доску: щелчок застёжки и мягкий удар крышки о стол
+function sOpen(){
+  const a=settings.sound&&ac(); if(!a) return;
+  synthKnock(.35,0); synthKnock(.3,.07);
+  const t=a.currentTime+.32, o=a.createOscillator(), g=a.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(55,t+.25);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.5,t+.01); g.gain.exponentialRampToValueAtTime(.001,t+.3);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+.35); synthKnock(.6,.32);
+}
+/* атмосфера дворика: шелест листвы, птицы, изредка ложечка о стакан — всё синтезируется, без файлов */
+const AMB={on:false,nodes:[],timers:[]};
+function ambientStop(){ AMB.on=false; AMB.timers.forEach(clearTimeout); AMB.timers=[]; AMB.nodes.forEach(n=>{try{n.stop();}catch(e){}}); AMB.nodes=[]; }
+function ambientSync(){
+  const want=settings.sound&&settings.ambient!==false&&document.body.classList.contains('playing')&&!document.hidden;
+  if(want===AMB.on) return; ambientStop(); if(!want) return;
+  const a=ac(); if(!a) return; AMB.on=true;
+  const sr=a.sampleRate, buf=a.createBuffer(1,sr*4,sr), d=buf.getChannelData(0);
+  let b0=0,b1=0,b2=0; for(let i=0;i<d.length;i++){ const w=Math.random()*2-1; b0=.997*b0+w*.03; b1=.985*b1+w*.03; b2=.95*b2+w*.05; d[i]=(b0+b1+b2)*.6; }
+  const src=a.createBufferSource(); src.buffer=buf; src.loop=true;
+  const f=a.createBiquadFilter(); f.type='bandpass'; f.frequency.value=2600; f.Q.value=.5;
+  const g=a.createGain(); g.gain.value=.02;
+  src.connect(f).connect(g).connect(a.destination); src.start(); AMB.nodes.push(src);
+  const gust=()=>{ if(!AMB.on) return; g.gain.setTargetAtTime(.008+Math.random()*.035,a.currentTime,.8); AMB.timers.push(setTimeout(gust,1200+Math.random()*2500)); };
+  const bird=()=>{ if(!AMB.on) return;
+    const t0=a.currentTime, n=2+Math.random()*4|0, base=2600+Math.random()*1600;
+    for(let k=0;k<n;k++){ const o=a.createOscillator(), gg=a.createGain(), t=t0+k*(.09+Math.random()*.05);
+      o.frequency.setValueAtTime(base,t); o.frequency.exponentialRampToValueAtTime(base*(1.25+Math.random()*.3),t+.06);
+      gg.gain.setValueAtTime(.0001,t); gg.gain.exponentialRampToValueAtTime(.025,t+.01); gg.gain.exponentialRampToValueAtTime(.0001,t+.08);
+      o.connect(gg).connect(a.destination); o.start(t); o.stop(t+.1); }
+    AMB.timers.push(setTimeout(bird,5000+Math.random()*12000)); };
+  const spoon=()=>{ if(!AMB.on) return;
+    for(const [fr,dl] of [[2650,0],[2650,.14]]){ const t=a.currentTime+dl;
+      for(const m of [1,2.76]){ const o=a.createOscillator(), gg=a.createGain(); o.frequency.value=fr*m;
+        gg.gain.setValueAtTime(.012/m,t); gg.gain.exponentialRampToValueAtTime(.0001,t+.45); o.connect(gg).connect(a.destination); o.start(t); o.stop(t+.5); } }
+    AMB.timers.push(setTimeout(spoon,45000+Math.random()*75000)); };
+  gust(); AMB.timers.push(setTimeout(bird,2500)); AMB.timers.push(setTimeout(spoon,20000+Math.random()*30000));
+}
+document.addEventListener('visibilitychange',()=>ambientSync());
+const buzz=ms=>{ try{ if(settings.vibro!==false&&navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
 function synthClack(){
   const a=settings.sound&&ac(); if(!a) return; const t=a.currentTime;
   const o=a.createOscillator(), g=a.createGain();
@@ -631,7 +749,9 @@ const sRoll=()=>{ if(!play('roll',1,.28)) setTimeout(synthRattle,280); };
 
 /* ---------- состояние ---------- */
 let mode='ai', score=[0,0], G=null, busy=false, flyHide=null, timers=[];
-const later=(fn,ms)=>{const t=setTimeout(fn,ms);timers.push(t);return t;};
+// пока открыто меню партии, компьютер ждёт: отложенные шаги переносятся
+const paused=()=>mode==='ai'&&!$('drawer').hidden;
+const later=(fn,ms)=>{const run=()=>{ if(paused()){timers.push(setTimeout(run,250));return;} fn(); }; const t=setTimeout(run,ms);timers.push(t);return t;};
 const clearTimers=()=>{timers.forEach(clearTimeout);timers=[];};
 function loadScore(){try{const v=JSON.parse(localStorage.getItem('nardy-score-v1')||'null');score=(v&&v[mode])||[0,0];}catch(e){score=[0,0];}}
 function saveScore(){if(mode==='net')return;try{const v=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};v[mode]=score;localStorage.setItem('nardy-score-v1',JSON.stringify(v));}catch(e){}}
@@ -640,7 +760,7 @@ function saveGame(){
   try{
     if(G.phase==='over'||G.phase==='start'){localStorage.removeItem('nardy-game-v1');return;}
     const phase=G.phase==='rolling'?'roll':G.phase;
-    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first,level:G.level}));
+    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first,level:G.level,turns:G.turns,undos:G.undos}));
   }catch(e){}
 }
 function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')||'null');}catch(e){return null;}}
@@ -664,17 +784,17 @@ function newGame(m){
   clearTimers(); netLeave();
   if(m) mode=m;
   loadScore();
-  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:settings.level};   // сложность закреплена за партией
+  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:settings.level,turns:[0,0],undos:0,mistakes:[]};   // сложность закреплена за партией
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
   showGame();
-  render();
-  later(rollOff,450);
+  render(); sOpen();
+  later(rollOff,650);
 }
 function resumeGame(){
   const v=readSaved(); if(!v){newGame(mode);return;}
   clearTimers();
   mode=v.mode; loadScore();
-  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level};
+  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level,turns:v.turns||[0,0],undos:v.undos||0,mistakes:[]};
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML='';
   showGame();
   if(G.phase==='move') placeDice(G.dice); else clearDice();
@@ -778,6 +898,7 @@ function throwDice(vals,start,land,done,lift=1){
     ],{duration:D*.9,easing:'cubic-bezier(.12,.55,.25,1)',fill:'forwards'});
   });
   sRoll();
+  if(D>1){ later(()=>buzz(18),D*.4); for(const [f,v] of [[.4,.55],[.7,.3],[.9,.15]]) synthKnock(v,D*f/1000); }
   later(()=>diceBox.querySelectorAll('.d3').forEach(e=>e.classList.add('still')),D);   // кувырки кончились — остаётся только верхняя грань
   later(done,D+60);
 }
@@ -874,14 +995,30 @@ function doRoll(after,start=REST,land,lift=1,vals){
   throwDice([a,b],start,land,()=>{ busy=false; rolled(a,b,land,after,false); },lift);
 }
 // результат броска; instant — без пауз (восстановление сетевой партии)
+// Традиционные названия бросков: ек, ду, се, джахар, беш, шеш — 1…6; пара одинаковых — «ду-…»
+const NUMN=['','ек','ду','се','джахар','беш','шеш'];
+function rollName(a,b){
+  const [h,l]=a>b?[a,b]:[b,a];
+  if(h===l) return h===1?'Ек-ек':'Ду-'+NUMN[h];
+  const t=NUMN[h]+'-'+NUMN[l]; return t[0].toUpperCase()+t.slice(1);
+}
+function showCall(text,at){
+  const el=document.createElement('div'); el.className='call'; el.textContent=text;
+  const x=at?(at[0][0]+at[1][0])/2:500, y=at?Math.min(at[0][1],at[1][1])-60:300;
+  el.style.left=(x/11)+'%'; el.style.top=(y/7)+'%';
+  frame.appendChild(el); setTimeout(()=>el.remove(),1700);
+}
 function rolled(a,b,land,after,instant){
+    if(!instant) showCall(rollName(a,b)+(a===b?'!':''),land);   // land — уже в координатах экрана
     G.dice=[a,b]; G.diceAt=land;
     G.rem=a===b?[a,a,a,a]:[a,b];
     G.headUsed=0;
     G.headLimit=(G.first[G.turn]&&a===b&&(a===3||a===4||a===6))?2:1;
     G.first[G.turn]=false;
-    G.phase='move'; G.hist=[]; G.sel=null;
+    G.phase='move'; G.hist=[]; G.sel=null; G.hint=null; G.usedHint=false;
+    G.turns[G.turn]=(G.turns[G.turn]||0)+1; noteDouble(G.turn,a,b);
     refreshSteps();
+    if(!instant&&mode==='ai'&&G.turn===0) G.turnStart={ctx:curCtx(),pl:0,dice:[a,b],played:[]};
     if(!G.steps.length){
       setStatus(`${who(G.turn)}: ${a}–${b}. Ходов нет, ход переходит.`);
       render();
@@ -901,14 +1038,14 @@ function applyStep(st,cb){
   G.s=st.ns; G.rem=removeOne(G.rem,st.d); if(st.from===0)G.headUsed++;
   G.sel=null;
   const n0=prev.n[st.src];
-  const from=slotXY(st.src,n0-1,n0);
+  const from=G.dragFrom||slotXY(st.src,n0-1,n0); G.dragFrom=null;   // после перетаскивания шашка летит с того места, где её отпустили
   let to, onStack=false;
   if(st.to==='off') to=traySlot(pl,G.s.off[pl]-1);
   else{const n=G.s.n[st.to]; to=slotXY(st.to,n-1,n); onStack=n>1;}
   refreshSteps();
   flyHide=st.to; render();
   fly(pl,from,to,st.to==='off',()=>{
-    flyHide=null; st.to==='off'?sOff():sClack(onStack); render();
+    flyHide=null; st.to==='off'?sOff():sClack(onStack); buzz(st.to==='off'?[10,40,10]:10); render();
     if(G.s.off[pl]===15){gameOver(pl);return;}
     afterStep(); cb&&cb();
   });
@@ -920,6 +1057,7 @@ function applyPath(path){
 }
 function afterStep(){
   if(!isHuman(G.turn)) return;
+  if(G.hint){ G.hint=null; if(G.steps.length&&G.usedHint) return showHint(); }
   if(!G.steps.length) setStatus(G.rem.length?'Остальные кубики сыграть нельзя. Завершите ход.':'Ход сделан. Завершите ход или отмените.');
   else setStatus(`Осталось: <b>${G.rem.join(', ')}</b>.`);
   render();
@@ -947,6 +1085,7 @@ function fly(pl,[x0,y0],[x1,y1],toOff,done,fromOff){
 function undo(force){
   if(busy||G.auto||!G.hist.length||(!force&&!isHuman(G.turn))||G.phase!=='move') return;
   if(mode==='net'&&!force){ if(!G.netPend) netSend({t:'undo'}); return; }
+  G.undos=(G.undos||0)+1;
   // отменяем весь ход одного касания (например 2+2) и плавно возвращаем шашку на место
   const pl=G.turn, last=G.hist[G.hist.length-1];
   let first=last;
@@ -1000,6 +1139,7 @@ function explainMove(src,t){
   return 'Нельзя ставить заграждение из 6 шашек подряд, если впереди него нет ни одной шашки соперника.';
 }
 function endTurn(){
+  if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
   G.turn=1-G.turn; G.phase='roll'; G.rem=[]; G.hist=[]; G.sel=null; G.steps=[]; G.targets=null;
   clearDice(); render();
   if(isAI(G.turn)) later(aiTurn,450); else promptRoll();
@@ -1027,10 +1167,109 @@ function gameOver(pl){
   G.phase='over'; G.auto=false;
   const mars=G.s.off[1-pl]===0, pts=mars?2:1;
   score[pl]+=pts; saveScore(); render();
+  if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
+  recordGame(pl,mars);
+  $('bReview').hidden=!(mode==='ai');
   $('wTitle').textContent=mode!=='pvp'?(pl===(mode==='net'?G.me:0)?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
   $('wText').textContent=(mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
   setStatus(mode==='net'?(pl===G.me?'Вы выбросили все шашки!':'Друг выбросил все шашки.'):`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
   $('over').hidden=false;
+}
+
+/* ---------- статистика и достижения ---------- */
+const ACH=[
+  ['first','🏆','Первая победа','Выиграть партию'],
+  ['mars','🔥','Марс!','Выиграть, пока у соперника ни одной шашки не выброшено'],
+  ['medium','🎯','Уверенная игра','Победить компьютер на среднем уровне'],
+  ['hard','🧠','Гроссмейстер','Победить сильный компьютер'],
+  ['streak3','✨','Три подряд','Три победы подряд'],
+  ['streak10','👑','Непобедимый','Десять побед подряд'],
+  ['fast','⚡','Блиц','Победить меньше чем за 22 своих хода'],
+  ['clean','🪶','Без сомнений','Победить, ни разу не отменив ход'],
+  ['games10','🎲','Завсегдатай','Сыграть 10 партий'],
+  ['games50','🍵','Свой человек во дворе','Сыграть 50 партий'],
+  ['net','🤝','По ту сторону экрана','Победить друга по сети'],
+  ['doubles','🎰','Везунчик','Выбросить три дубля подряд за партию']
+];
+function loadStats(){ try{return Object.assign({games:0,wins:0,losses:0,mars:0,streak:0,best:0,fastest:0,ach:{}},JSON.parse(localStorage.getItem('nardy-stats-v1')||'{}'));}catch(e){return {games:0,wins:0,losses:0,mars:0,streak:0,best:0,fastest:0,ach:{}};} }
+const saveStats=st=>{try{localStorage.setItem('nardy-stats-v1',JSON.stringify(st));}catch(e){}};
+function toast(icon,title,sub){
+  const el=document.createElement('div'); el.className='toast';
+  el.innerHTML=`<i>${icon}</i><div><b>${title}</b><small>${sub}</small></div>`;
+  $('toasts').appendChild(el); setTimeout(()=>el.remove(),4100);
+}
+function unlock(st,id){
+  if(st.ach[id]) return; st.ach[id]=Date.now();
+  const a=ACH.find(x=>x[0]===id); if(a) setTimeout(()=>toast(a[1],'Достижение: '+a[2],a[3]),600);
+}
+// после партии: только за человека (против компьютера — за вас, по сети — за себя); игра вдвоём на одном телефоне считается только в «сыграно»
+function recordGame(winner,mars){
+  const st=loadStats(); st.games++;
+  const me=mode==='net'?G.me:mode==='ai'?0:null;
+  if(me!=null){
+    if(winner===me){
+      st.wins++; st.streak++; st.best=Math.max(st.best,st.streak); if(mars) st.mars++;
+      const t=G.turns[me]; if(!st.fastest||t<st.fastest) st.fastest=t;
+      unlock(st,'first'); if(mars) unlock(st,'mars');
+      if(mode==='ai'&&G.level==='medium') unlock(st,'medium');
+      if(mode==='ai'&&G.level==='hard'){ unlock(st,'medium'); unlock(st,'hard'); }
+      if(st.streak>=3) unlock(st,'streak3'); if(st.streak>=10) unlock(st,'streak10');
+      if(t<22) unlock(st,'fast'); if(!G.undos) unlock(st,'clean'); if(mode==='net') unlock(st,'net');
+    }else{ st.losses++; st.streak=0; }
+  }
+  if(st.games>=10) unlock(st,'games10'); if(st.games>=50) unlock(st,'games50');
+  saveStats(st);
+}
+function noteDouble(pl,a,b){
+  if(!isHuman(pl)||mode==='pvp') return;
+  G.dblRun=a===b?(G.dblRun||0)+1:0;
+  if(G.dblRun===3){ const st=loadStats(); unlock(st,'doubles'); saveStats(st); }
+}
+function showStats(){
+  const st=loadStats();
+  const pct=st.wins+st.losses?Math.round(st.wins*100/(st.wins+st.losses))+'%':'—';
+  $('statsGrid').innerHTML=[[st.games,'партий'],[st.wins,'побед'],[pct,'побед из всех'],[st.mars,'марсов'],[st.best,'лучшая серия'],[st.fastest||'—','самая быстрая победа, ходов']]
+    .map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
+  $('achList').innerHTML=ACH.map(([id,ic,t,d])=>`<div class="ach${st.ach[id]?'':' off'}"><i>${ic}</i><div>${t}<small>${d}</small></div></div>`).join('');
+  $('statsSheet').hidden=false;
+}
+
+/* ---------- подсказка и разбор партии ---------- */
+// Лучший ход по оценке позиции (как у среднего компьютера, без случайности)
+function bestEnd(ctx){
+  let best=null,bv=-1e9;
+  for(const e of enumerate(ctx)){ const v=V(e.s,ctx.pl); if(v>bv){bv=v;best=e;} }
+  return best&&{...best,v:bv};
+}
+const ptName=(pl,rel)=>rel>=24?'выброс':String(rel+1);
+function pathText(steps){
+  // «1→7→10»: шаги одной шашки подряд склеиваются
+  const out=[]; let cur=null;
+  for(const st of steps){
+    const to=st.from+st.d;
+    if(cur&&cur.to===st.from){ cur.chain.push(ptName(0,to)); cur.to=to; }
+    else{ cur={to,chain:[ptName(0,st.from),ptName(0,to)]}; out.push(cur); }
+  }
+  return out.map(c=>c.chain.join('→')).join(', ');
+}
+function showHint(){
+  if(!G||G.phase!=='move'||!isHuman(G.turn)||busy||G.auto||mode==='net') return;
+  const b=bestEnd(curCtx()); if(!b||!b.path.length) return;
+  G.hint=b.path; G.usedHint=true; render();
+  setStatus(`Подсказка: <b>${pathText(b.path)}</b>`);
+}
+function analyzeTurn(){
+  const t=G.turnStart; G.turnStart=null;
+  if(!t||mode!=='ai'||t.pl!==0) return;
+  const b=bestEnd(t.ctx); if(!b) return;
+  const loss=b.v-V(G.s,0);
+  if(loss>4) G.mistakes.push({n:G.turns[0],dice:t.dice,loss,played:pathText(t.played),best:pathText(b.path)});
+}
+function showReview(){
+  const m=G.mistakes.slice().sort((a,b)=>b.loss-a.loss).slice(0,6).sort((a,b)=>a.n-b.n);
+  $('reviewList').innerHTML=m.length?m.map(x=>`<div class="${x.loss>25?'bad':''}"><b>Ход ${x.n}, выпало ${x.dice.join('–')}</b> — ${x.loss>25?'грубая ошибка':x.loss>10?'ошибка':'неточность'}<br>
+    Вы сыграли: ${x.played||'—'}<br>Сильнее: <b>${x.best}</b></div>`).join(''):'<div>Ошибок не найдено — отличная партия!</div>';
+  $('reviewSheet').hidden=false;
 }
 
 /* ---------- игра по сети ---------- */
@@ -1090,11 +1329,13 @@ const MOCK=new URLSearchParams(location.search).has('mock');
 const NETB=MOCK?NETB_mock:NETB_fb;
 let NET=null;
 if(MOCK) window.__t={                                   // ручки для автотестов
-  st:()=>({phase:G&&G.phase,turn:G&&G.turn,me:G&&G.me,rem:G&&G.rem,steps:G&&G.steps.length,hist:G&&G.hist.length,key:G&&key(G.s),k:NET&&NET.k,pend:G&&G.netPend,busy,auto:G&&G.auto,dead:NET&&NET.dead,hold:NET&&NET.hold,status:$('status').textContent}),
+  st:()=>({over:!$('over').hidden,mist:G&&G.mistakes&&G.mistakes.map(m=>m.loss|0).join(','),phase:G&&G.phase,turn:G&&G.turn,me:G&&G.me,rem:G&&G.rem,steps:G&&G.steps.length,hist:G&&G.hist.length,key:G&&key(G.s),k:NET&&NET.k,pend:G&&G.netPend,busy,auto:G&&G.auto,dead:NET&&NET.dead,hold:NET&&NET.hold,status:$('status').textContent}),
   roll:()=>doRoll(),
   move:()=>{const st=G.steps[0];netSend({t:'mv',s:[[st.from,st.d]]});},
   undo:()=>undo(),
-  end:()=>humanEnd()
+  end:()=>humanEnd(),
+  best:()=>{const b=bestEnd(curCtx()); b&&b.path.length&&applyPath(b.path.slice(0,1));},
+  bad:()=>{const st=G.steps[G.steps.length-1]; applyPath([st]);}
 };
 
 const hexOf=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -1167,7 +1408,7 @@ function netLeave(){
   history.replaceState(null,'',location.pathname+(MOCK?'?mock':''));
 }
 function netFresh(){
-  return {s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,
+  return {s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,turns:[0,0],undos:0,mistakes:[],
     me:NET.me,flip:NET.me===1,netPend:false,ro:false};
 }
 function netStart(code,slot,chain){
@@ -1400,6 +1641,16 @@ function render(){
       }
     }
   }
+  if(human&&G.hint){
+    for(const st of G.hint){
+      const n0=s.n[st.src], [x0,y0]=slotXY(st.src,Math.max(0,n0-1),Math.max(1,n0));
+      let x1,y1; if(st.to==='off'){[x1,y1]=[1050,G.turn===0?190:510];} else { const n=s.n[st.to]; [x1,y1]=slotXY(st.to,n,n+1); }
+      h+=`<g class="hintmark" pointer-events="none"><circle cx="${x0}" cy="${y0}" r="31" fill="none" stroke="#9fe0a0" stroke-width="3"/>
+        <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#9fe0a0" stroke-width="3" stroke-dasharray="7 6"/>
+        <circle cx="${x1}" cy="${y1}" r="9" fill="#9fe0a0"/></g>`;
+      break;   // показываем первый шаг: после него подсказка пересчитается
+    }
+  }
   $('lDyn').innerHTML=h;
   renderButtons(); syncRest(); renderDiceState(); renderPanel(); saveGame();
 }
@@ -1428,6 +1679,7 @@ function renderPanel(){
   const human=isHuman(G.turn);
   $('bMain').hidden=!(G.phase==='move'&&human&&!busy&&!G.auto&&!G.steps.length&&!G.netPend);
   $('bUndo').disabled=!(G.phase==='move'&&human&&G.hist.length&&!busy&&!G.auto&&!G.netPend);
+  $('bHint').hidden=mode==='net'; $('bHint').disabled=!(G.phase==='move'&&human&&G.steps.length&&!busy&&!G.auto);
 }
 function setStatus(t){$('status').innerHTML=t;}
 
@@ -1447,9 +1699,9 @@ function unlockOrientation(){
   try{screen.orientation.unlock();}catch(e){}
   try{if(document.fullscreenElement&&!isStandalone())document.exitFullscreen();}catch(e){}
 }
-function showGame(){ document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); }
+function showGame(){ document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
 function showMenu(){
-  document.body.classList.remove('playing'); $('menu').hidden=false; unlockOrientation();
+  document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false; unlockOrientation();
   const v=readSaved();
   $('mContinue').hidden=!(v||(NET&&NET.started));
   $('mAi').classList.toggle('primary',!v);
@@ -1478,6 +1730,8 @@ function buildSkinPicker(){
   $('skins').innerHTML=h; $('dSkins').innerHTML=h;
 }
 function paintSettings(){
+  document.querySelectorAll('.seg.amb button').forEach(b=>b.classList.toggle('on',(b.dataset.amb==='on')===(settings.ambient!==false)));
+  document.querySelectorAll('.seg.vib button').forEach(b=>b.classList.toggle('on',(b.dataset.vib==='on')===(settings.vibro!==false)));
   document.querySelectorAll('#dSkins .skin').forEach(b=>b.classList.toggle('on',b.dataset.skin===settings.skin));
   document.querySelectorAll('#dSounds button').forEach(b=>b.classList.toggle('on',(b.dataset.snd==='on')===settings.sound));
   document.querySelectorAll('#skins .skin').forEach(b=>b.classList.toggle('on',b.dataset.skin===settings.skin));
@@ -1489,24 +1743,73 @@ function paintSettings(){
 }
 for(const id of ['skins','dSkins']) $(id).addEventListener('click',e=>{const b=e.target.closest('.skin'); if(!b) return; settings.skin=b.dataset.skin; saveSettings(); buildStatic(); if(G) render(); paintSettings();});
 $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.level=b.dataset.lvl; saveSettings(); paintSettings(); if(G) renderPanel();});
-$('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);}});
-$('sounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);}});
+$('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
+document.querySelectorAll('.seg.amb').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.ambient=b.dataset.amb==='on'; saveSettings(); paintSettings(); ac(); ambientSync();}));
+document.querySelectorAll('.seg.vib').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.vibro=b.dataset.vib==='on'; saveSettings(); paintSettings(); buzz(30);}));
+$('sounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 $('bSettings').addEventListener('click',()=>{ if(!$('skins').innerHTML) buildSkinPicker(); paintSettings(); $('settings').hidden=false; });
 $('bSettingsClose').addEventListener('click',()=>{$('settings').hidden=true;});
 $('settings').addEventListener('click',e=>{if(e.target===$('settings'))$('settings').hidden=true;});
 
 /* ---------- ввод ---------- */
+/* ---------- перетаскивание шашки пальцем ---------- */
+// Нажал на шашку, которой можно ходить, и повёл — она едет за пальцем; отпустил над подсвеченным пунктом — ход.
+// Просто нажатие (без движения) работает как раньше: выбор шашки, потом пункта.
+function ptAt(x,y){
+  if(x>1010) return 'off';
+  for(let i=0;i<24;i++){
+    const di=G&&G.flip?(i+12)%24:i, px=ptX(di);
+    if(Math.abs(x-px)<=35&&(isTop(di)?y>=40&&y<350:y>=350&&y<=660)) return i;
+  }
+  return null;
+}
+function doMove(path){
+  if(mode==='net'){ G.sel=null; G.targets=null; netSend({t:'mv',s:path.map(st=>[st.from,st.d])}); }
+  else applyPath(path);
+}
+let cdrag=null, swallowClick=false;
+$('board').addEventListener('pointerdown',e=>{
+  if(!G||busy||G.auto||G.netPend||G.phase!=='move'||!isHuman(G.turn)||cdrag) return;
+  const [x,y]=toBoard(e.clientX,e.clientY), t=ptAt(x,y);
+  if(t==null||t==='off'||!G.steps.some(st=>st.src===t)) return;
+  cdrag={id:e.pointerId,src:t,x0:x,y0:y,on:false,g:null};
+  try{$('board').setPointerCapture(e.pointerId);}catch(_){}
+});
+$('board').addEventListener('pointermove',e=>{
+  if(!cdrag||e.pointerId!==cdrag.id) return;
+  const [x,y]=toBoard(e.clientX,e.clientY);
+  if(!cdrag.on){
+    if(Math.hypot(x-cdrag.x0,y-cdrag.y0)<12) return;
+    cdrag.on=true; ac();
+    G.sel=cdrag.src; G.targets=null; flyHide=cdrag.src; render();
+    cdrag.g=document.createElementNS(NS,'g'); cdrag.g.setAttribute('pointer-events','none');
+    cdrag.g.innerHTML=checker(0,0,G.turn); $('lFx').appendChild(cdrag.g);
+  }
+  cdrag.g.setAttribute('transform',`translate(${x},${y-8}) scale(1.12)`);
+  cdrag.x=x; cdrag.y=y;
+});
+function endCheckerDrag(e){
+  if(!cdrag||e.pointerId!==cdrag.id) return;
+  const d=cdrag; cdrag=null;
+  if(!d.on) return;                                     // это было нажатие — его обработает click
+  swallowClick=true; setTimeout(()=>swallowClick=false,0);
+  d.g.remove(); flyHide=null;
+  const t=e.type==='pointercancel'?null:ptAt(d.x,d.y);
+  if(t!=null&&t!==d.src&&G.targets&&G.targets.has(t)){
+    G.dragFrom=[d.x,d.y-8]; doMove(G.targets.get(t)); return;
+  }
+  if(t!=null&&t!==d.src) setStatus(explainMove(d.src,t));
+  render();                                             // шашка возвращается, выбор остаётся
+}
+$('board').addEventListener('pointerup',endCheckerDrag);
+$('board').addEventListener('pointercancel',endCheckerDrag);
 $('board').addEventListener('click',e=>{
+  if(swallowClick) return;
   const el=e.target.closest('[data-pt],[data-act]'); if(!el||busy||!G||G.auto||G.netPend) return;
   ac();
   if(G.phase!=='move'||!isHuman(G.turn)) return;
   const v=el.dataset.pt, t=v==='off'?'off':+v;
-  if(G.sel!=null&&G.targets&&G.targets.has(t)){
-    const path=G.targets.get(t);
-    if(mode==='net'){ G.sel=null; G.targets=null; netSend({t:'mv',s:path.map(st=>[st.from,st.d])}); }
-    else applyPath(path);
-    return;
-  }
+  if(G.sel!=null&&G.targets&&G.targets.has(t)){ doMove(G.targets.get(t)); return; }
   if(t!=='off'&&G.steps.some(x=>x.src===t)){
     G.sel=G.sel===t?null:t; G.targets=null; render(); return;
   }
@@ -1518,7 +1821,13 @@ $('bMain').addEventListener('click',()=>{
   ac();
   if(G.phase==='move'&&!G.steps.length&&!G.auto&&!busy) humanEnd();
 });
-$('bUndo').addEventListener('click',undo);
+$('bUndo').addEventListener('click',()=>{ G.hint=null; undo(); });
+$('bHint').addEventListener('click',()=>{ ac(); G.usedHint=true; showHint(); });
+$('bReview').addEventListener('click',showReview);
+$('bReviewClose').addEventListener('click',()=>{$('reviewSheet').hidden=true;});
+$('bStats').addEventListener('click',showStats);
+$('bStatsClose').addEventListener('click',()=>{$('statsSheet').hidden=true;});
+for(const id of ['statsSheet','reviewSheet']) $(id).addEventListener('click',e=>{if(e.target===$(id))$(id).hidden=true;});
 // ☰ во время партии — боковая шторка: доска, звук, правила, выход в меню. Сложность видна, но не меняется до новой партии.
 function openDrawer(){
   if(!$('dSkins').innerHTML) buildSkinPicker();

@@ -129,8 +129,17 @@ sugar = pmat('sugar', **{'Base Color': (.97, .96, .93, 1), 'Roughness': .7, 'Sub
 X0, Y0 = 22.6, -11.2                                         # правый нижний угол стола, у края доски
 lathe('saucer', [(0, 0), (4.0, 0), (5.6, .6), (6.3, 1.2), (6.4, 1.35)], porcelain, (X0, Y0, 0), solid=.25)
 lathe('rim', [(6.25, 1.36), (6.45, 1.36), (6.45, 1.46), (6.25, 1.46)], gold, (X0, Y0, 0))
-lathe('glass', [(1.9, .05), (2.5, 1.6), (2.7, 3.0), (2.2, 5.4), (2.0, 6.4), (2.3, 8.0), (2.55, 9.3)], glass, (X0, Y0, 1.0 * CM), solid=.15)
-lathe('tea', [(0, .2), (1.8, .25), (2.4, 1.6), (2.55, 3.0), (2.1, 5.4), (1.95, 6.4), (2.05, 7.0), (0, 7.0)], tea, (X0, Y0, 1.0 * CM))
+# чашка армянского кофе: фарфор, золотой ободок, ручка; кофе с плотной пенкой
+lathe('cup', [(1.6, 0), (2.2, .3), (2.9, 1.6), (3.25, 3.4), (3.4, 5.2), (3.45, 5.6)], porcelain, (X0, Y0, 1.0 * CM), solid=.22)
+lathe('cuprim', [(3.36, 5.58), (3.5, 5.58), (3.5, 5.7), (3.36, 5.7)], gold, (X0, Y0, 1.0 * CM))
+foam = bpy.data.materials.new('foam'); foam.use_nodes = True; fn = foam.node_tree.nodes; fb = fn['Principled BSDF']
+noise = fn.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 60; noise.inputs['Detail'].default_value = 8
+ramp = fn.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].color = (.22, .11, .05, 1); ramp.color_ramp.elements[1].color = (.55, .36, .2, 1)
+foam.node_tree.links.new(noise.outputs['Fac'], ramp.inputs['Fac']); foam.node_tree.links.new(ramp.outputs['Color'], fb.inputs['Base Color'])
+fb.inputs['Roughness'].default_value = .35; fb.inputs['Coat Weight'].default_value = .5
+lathe('coffee', [(0, 4.85), (3.2, 4.85), (3.25, 4.75), (0, 4.75)], foam, (X0, Y0, 1.0 * CM))
+bpy.ops.mesh.primitive_torus_add(major_radius=1.25 * CM, minor_radius=.28 * CM, location=(X0 + 4.3 * CM, Y0, 4.0 * CM), rotation=(math.radians(90), 0, 0))
+h_ = bpy.context.object; h_.scale = (1, 1.25, 1); h_.data.materials.append(porcelain)
 # чайная ложечка: вытянутая чаша и тонкая ручка с утолщением на конце
 ang = math.radians(35); ux, uy = math.cos(ang), math.sin(ang)
 bx, by = X0 - 4.0 * CM * ux, Y0 - 4.0 * CM * uy               # чаша ложки на блюдце, ручка лежит на краю и уходит наружу

@@ -260,7 +260,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 /* интерактивный стол: стакан чая и сахар на фоновой картинке; горячие зоны ставит скрипт по положению фона */
 .tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
 .hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.ripple{position:absolute;border-radius:50%;border:2px solid rgba(255,225,180,.55);pointer-events:none;
+.ripple{position:absolute;border-radius:50%;border:2px solid rgba(235,200,150,.5);pointer-events:none;
   animation:ripple 1.4s ease-out forwards}
 @keyframes ripple{from{transform:translate(-50%,-50%) scale(.15);opacity:.9}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
 .steam{position:absolute;width:26px;height:90px;pointer-events:none;border-radius:50%;
@@ -375,7 +375,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
   </div>
   <div class="toasts" id="toasts"></div>
   <div class="tablefx" id="tablefx" aria-hidden="true">
-    <div class="hot" id="hotTea" title="Чай"></div>
+    <div class="hot" id="hotTea" title="Кофе"></div>
     <div class="hot" id="hotSugar" title="Сахар"></div>
   </div>
 </div>
@@ -501,7 +501,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='33';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='34';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -1246,8 +1246,8 @@ function gameOver(pl){
 }
 
 /* ---------- интерактивный стол ---------- */
-// Положения в картинке стола (boards/table.webp, 2400×1500): стакан с блюдцем и два кусочка сахара (см. tools/blender_table.py)
-const TEA={x:2260,y:1120,r:105}, SUGAR=[{x:1890,y:1159},{x:1862,y:1058}];
+// Положения в картинке стола (boards/table.webp, 2400×1500): чашка кофе с блюдцем и два кусочка сахара (см. tools/blender_table.py)
+const TEA={x:2260,y:1120,r:125}, SUGAR=[{x:1890,y:1159},{x:1862,y:1058}];
 function tableMap(){
   const app=$('app'), W=app.clientWidth, H=app.clientHeight, k=Math.max(W/2400,H/1500);
   return {k,ox:(W-2400*k)/2,oy:(H-1500*k)/2,W,H};
@@ -1283,13 +1283,13 @@ function plop(delay){
   g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.25,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+.12);
   o.connect(g).connect(a.destination); o.start(t); o.stop(t+.15);
 }
-// стакан: помешали ложечкой — звон, круги по чаю, пар
+// чашка: помешали ложечкой — звон, круги по кофе, пар
 $('hotTea').addEventListener('click',()=>{
   const t=teaPos(); clink(3); buzz(8);
   const sw=fx('swirl',t.x,t.y,{width:t.r*1.4+'px',height:t.r*1.4+'px'}); setTimeout(()=>sw.remove(),1400);
   ripples(t,3); steamUp(t,5);
 });
-// сахар: кусочек летит в стакан и булькает
+// сахар: кусочек летит в чашку и булькает
 $('hotSugar').addEventListener('click',e=>{
   const t=teaPos(), m=tableMap(), s0=SUGAR[Math.random()*2|0], x0=m.ox+s0.x*m.k, y0=m.oy+s0.y*m.k;
   const c=fx('cube',x0,y0,{width:22*m.k/.45+'px',height:22*m.k/.45+'px'});

@@ -823,7 +823,7 @@ def board_yerevan():
 
 
 def board_glass():
-    alb = wood(H, W, (.40, .37, .43), (.22, .20, .26), rings=14, seed=41, contrast=.55, fiber=.16)
+    alb = wood(H, W, (.30, .20, .14), (.13, .085, .055), rings=14, seed=41, contrast=.55, fiber=.16)   # тёмный орех
     outline = wavy_rect(10, 10, 1090, 690, 12, 7, 3)
     fm, h = carved_frame(outline, 22)
     gloss = np.full((H, W), .25)

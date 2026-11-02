@@ -257,7 +257,50 @@ def checker_real(name, texname, color, k):
     print('saved ck', name)
 
 
+
+# ---------- остальные доски для 3D-рендера ----------
+# Построения те же, что в render_boards.py, но дерево — фото шпона, а вместо картинки сохраняются слои
+# (цвет, высоты, лак, металл, силуэт) для tools/blender_generic.py.
+import render_boards as rb
+_wood_proc = rb.wood
+
+
+def photo_wood(h, w, light, dark, rings=10, seed=1, vertical=False, contrast=.7, fiber=.14, warp=2.2):
+    """Замена rb.wood: волокна из фото шпона, тон — между light и dark, контраст рисунка по contrast."""
+    pale = np.mean(light) > .8
+    im = np.asarray(Image.open(os.path.join(TEX, ('white_maple_veneer' if pale else 'walnut_veneer') + '.jpg')).convert('RGB'), float) / 255
+    if not vertical: im = np.rot90(im)                       # у фото волокна вертикальные
+    t = np.concatenate([im, im[::-1]], 0); t = np.concatenate([t, t[:, ::-1]], 1)
+    rng = np.random.default_rng(seed)
+    oy, ox = int(rng.integers(0, t.shape[0] // 2)), int(rng.integers(0, t.shape[1] // 2))
+    t = np.tile(t, (h // t.shape[0] + 2, w // t.shape[1] + 2, 1))[oy:oy + h, ox:ox + w]
+    col = np.array(light) * .5 + np.array(dark) * .5
+    col = col * .78 + col.mean() * .22                       # морилка не такая яркая, как в рисованной версии
+    lum = t.mean(-1); L_ = lum / lum.mean()
+    return np.clip(col[None, None] * (L_ ** (1.2 + contrast * 1.6))[..., None], 0, 1)
+
+
+def dump_layers(name):
+    got = {}
+    def cap_shade(alb, h, gloss, metal=None, exp=40, cast=1.0):
+        got.update(alb=alb, h=h, gloss=np.broadcast_to(gloss, h.shape), metal=metal if metal is not None else np.zeros_like(h))
+        return np.zeros_like(alb)
+    def cap_save(n, rgb, alpha): got['alpha'] = alpha
+    def bronze_hinges(alb, h, metal, metal_col):
+        for y in (148, 552): alb, h, metal = hinge(alb, h, metal, 500, y)
+        return alb, h, metal
+    saved = rb.wood, rb.shade, rb.save, rb.hinge_layer
+    rb.wood, rb.shade, rb.save = photo_wood, cap_shade, cap_save
+    if name == 'yerevan': rb.hinge_layer = bronze_hinges
+    try: getattr(rb, 'board_' + name)()
+    finally: rb.wood, rb.shade, rb.save, rb.hinge_layer = saved
+    np.savez_compressed(os.path.join(os.path.dirname(__file__), '..', '.preview', f'layers-{name}.npz'),
+                        **{k: np.asarray(v, np.float32) for k, v in got.items()})
+    print('saved layers', name)
+
 if __name__ == '__main__':
+    if len(sys.argv) == 3 and sys.argv[1] == 'layers':
+        sys.exit(dump_layers(sys.argv[2]))
     if sys.argv[1:] == ['layers']:
         L = board_arevakhach(layers=True)
         np.savez_compressed(os.path.join(os.path.dirname(__file__), '..', '.preview', 'layers-ararat.npz'),

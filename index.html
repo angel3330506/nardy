@@ -165,6 +165,9 @@ border-radius:12px;opacity:0}
 .case .lid .front{background:var(--lid) center/100% 100% no-repeat}
 .case .lid .back{background:var(--inside) right/auto 100% no-repeat;transform:rotateY(180deg);border-radius:12px}
 .case.open .lid{transform:rotateY(180deg)}
+/* прозрачная плёнка поверх доски: браузеры (например, Яндекс) не принимают её за картинку и не показывают свои кнопки «найти/сохранить» */
+.case::after{content:"";position:absolute;inset:0;z-index:5}
+.case,#frame,#board{-webkit-user-drag:none;-webkit-touch-callout:none}
 .case.open .half{opacity:1}
 .case .title{position:absolute;left:0;right:0;top:7%;text-align:center;pointer-events:none;transition:opacity .3s}
 .case.open .title{opacity:0}
@@ -485,7 +488,7 @@ border-radius:12px;opacity:0}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='29';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='30';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 

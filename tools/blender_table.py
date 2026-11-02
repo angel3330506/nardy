@@ -100,7 +100,7 @@ for _ in range(8):                                            # лоза — и�
 
 # ---------- стакан армуды с чаем на блюдце, рядом ложечка и сахар ----------
 CM = .39                                                      # сантиметр в единицах сцены (доска 50 см ≈ 19 единиц)
-def lathe(name, prof, mat, loc, seg=96, solid=0.0):
+def lathe(name, prof, mat, loc, seg=96, solid=0.0, cap=True):
     """Тело вращения по профилю [(радиус, высота)] в сантиметрах."""
     import bmesh
     me = bpy.data.meshes.new(name); bm = bmesh.new()
@@ -109,7 +109,7 @@ def lathe(name, prof, mat, loc, seg=96, solid=0.0):
         rings.append([bm.verts.new((r * CM * math.cos(a), r * CM * math.sin(a), z * CM)) for a in np.linspace(0, 2 * math.pi, seg, endpoint=False)])
     for r0, r1 in zip(rings, rings[1:]):
         for k in range(seg): bm.faces.new((r0[k], r0[(k + 1) % seg], r1[(k + 1) % seg], r1[k]))
-    if prof[0][0] > 0: bm.faces.new(list(reversed(rings[0])))
+    if cap and prof[0][0] > 0: bm.faces.new(list(reversed(rings[0])))   # дно; у колец-ободков дна нет
     bm.to_mesh(me); bm.free()
     for p_ in me.polygons: p_.use_smooth = True
     o = bpy.data.objects.new(name, me); sc.collection.objects.link(o); o.location = loc
@@ -122,22 +122,22 @@ def pmat(name, **kw):
     return m
 glass = pmat('glass', **{'Base Color': (1, 1, 1, 1), 'Transmission Weight': 1.0, 'Roughness': .02, 'IOR': 1.5})
 tea = pmat('tea', **{'Base Color': (.55, .16, .03, 1), 'Transmission Weight': .85, 'Roughness': .05, 'IOR': 1.33})
-porcelain = pmat('porc', **{'Base Color': (.86, .88, .93, 1), 'Roughness': .18, 'Coat Weight': .6})
+porcelain = pmat('porc', **{'Base Color': (.93, .93, .94, 1), 'Roughness': .18, 'Coat Weight': .6})
 gold = pmat('gold', **{'Base Color': (.9, .66, .3, 1), 'Metallic': 1.0, 'Roughness': .25})
 silver = pmat('silver', **{'Base Color': (.88, .88, .86, 1), 'Metallic': 1.0, 'Roughness': .18})
 sugar = pmat('sugar', **{'Base Color': (.97, .96, .93, 1), 'Roughness': .7, 'Subsurface Weight': .3})
 X0, Y0 = 22.6, -11.2                                         # правый нижний угол стола, у края доски
 lathe('saucer', [(0, 0), (4.0, 0), (5.6, .6), (6.3, 1.2), (6.4, 1.35)], porcelain, (X0, Y0, 0), solid=.25)
-lathe('rim', [(6.25, 1.36), (6.45, 1.36), (6.45, 1.46), (6.25, 1.46)], gold, (X0, Y0, 0))
+lathe('rim', [(6.25, 1.36), (6.45, 1.36), (6.45, 1.46), (6.25, 1.46), (6.25, 1.36)], gold, (X0, Y0, 0), cap=False)
 # чашка армянского кофе: фарфор, золотой ободок, ручка; кофе с плотной пенкой
 lathe('cup', [(1.6, 0), (2.2, .3), (2.9, 1.6), (3.25, 3.4), (3.4, 5.2), (3.45, 5.6)], porcelain, (X0, Y0, 1.0 * CM), solid=.22)
-lathe('cuprim', [(3.36, 5.58), (3.5, 5.58), (3.5, 5.7), (3.36, 5.7)], gold, (X0, Y0, 1.0 * CM))
+lathe('cuprim', [(3.36, 5.58), (3.5, 5.58), (3.5, 5.7), (3.36, 5.7), (3.36, 5.58)], gold, (X0, Y0, 1.0 * CM), cap=False)
 foam = bpy.data.materials.new('foam'); foam.use_nodes = True; fn = foam.node_tree.nodes; fb = fn['Principled BSDF']
 noise = fn.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 60; noise.inputs['Detail'].default_value = 8
-ramp = fn.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].color = (.22, .11, .05, 1); ramp.color_ramp.elements[1].color = (.55, .36, .2, 1)
+ramp = fn.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].color = (.10, .05, .025, 1); ramp.color_ramp.elements[1].color = (.36, .22, .11, 1)
 foam.node_tree.links.new(noise.outputs['Fac'], ramp.inputs['Fac']); foam.node_tree.links.new(ramp.outputs['Color'], fb.inputs['Base Color'])
 fb.inputs['Roughness'].default_value = .35; fb.inputs['Coat Weight'].default_value = .5
-lathe('coffee', [(0, 4.85), (3.2, 4.85), (3.25, 4.75), (0, 4.75)], foam, (X0, Y0, 1.0 * CM))
+bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=3.22 * CM, depth=.3 * CM, location=(X0, Y0, (1.0 + 4.7) * CM)); bpy.context.object.data.materials.append(foam)
 bpy.ops.mesh.primitive_torus_add(major_radius=1.25 * CM, minor_radius=.28 * CM, location=(X0 + 4.3 * CM, Y0, 4.0 * CM), rotation=(math.radians(90), 0, 0))
 h_ = bpy.context.object; h_.scale = (1, 1.25, 1); h_.data.materials.append(porcelain)
 # чайная ложечка: вытянутая чаша и тонкая ручка с утолщением на конце

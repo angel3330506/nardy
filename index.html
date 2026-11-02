@@ -21,6 +21,7 @@
    На телефоне в портрете игра поворачивается на 90°, отступы берутся из safe-area (Dynamic Island, полоска «Домой»). */
 :root{
   color-scheme: dark;
+  --vw:1vw;--vh:1vh;--W:100vw;--H:100vh;
   --bg:#0c0b0a;
   --bg2:#17130f;
   --panel:#15110d;
@@ -133,15 +134,10 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .card p{color:var(--muted);margin:0 0 14px}
 .card .row{display:flex;gap:8px;justify-content:center}
 
-/* Телефон в портрете: партию разворачиваем горизонтально */
-@media (orientation:portrait) and (pointer:coarse){
-  body.playing #app{
-    inset:auto;top:0;left:0;
-    width:100vh;height:100vw;width:100dvh;height:100dvw;
-    transform-origin:top left;transform:rotate(90deg) translateY(-100%);
-    padding:max(6px,var(--sar)) max(10px,var(--sab)) max(8px,var(--sal)) max(10px,var(--sat));
-  }
-}
+/* Телефон в портрете: вся игра (меню, партия, окна) повёрнута на 90° — играем только горизонтально.
+   Размеры экрана в повёрнутом виде задаёт скрипт: --W, --H и единицы --vw/--vh (1% ширины/высоты). */
+html.rot body{inset:auto;top:0;left:0;width:var(--W);height:var(--H);transform-origin:top left;transform:rotate(90deg) translateY(-100%)}
+html.rot #app{padding:max(6px,var(--sar)) max(10px,var(--sab)) max(8px,var(--sal)) max(10px,var(--sat))}
 @media (max-width:620px) and (pointer:fine){ .pl .meta{display:none} }
 
 /* ---------- меню ---------- */
@@ -153,11 +149,11 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
   padding:max(16px,var(--sat)) max(16px,var(--sar)) max(16px,var(--sab)) max(16px,var(--sal));
   display:flex;align-items:center;justify-content:center;
 }
-.menu-in{width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;gap:clamp(16px,3vh,28px);perspective:1800px}
-@media (orientation:landscape){.menu-in{flex-direction:row;justify-content:center;gap:6vw}}
-.case{position:relative;height:min(52vh,calc(78vw * 700 / 550));aspect-ratio:550/700;flex:0 0 auto;transform-style:preserve-3d;
+.menu-in{width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;gap:clamp(16px,calc(3 * var(--vh)),28px);perspective:1800px}
+html.land .menu-in{flex-direction:row;justify-content:center;gap:calc(6 * var(--vw))}
+.case{position:relative;height:min(calc(52 * var(--vh)),calc(calc(78 * var(--vw)) * 700 / 550));aspect-ratio:550/700;flex:0 0 auto;transform-style:preserve-3d;
   filter:drop-shadow(0 22px 26px rgba(0,0,0,.6)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
-@media (orientation:landscape){.case{height:min(76vh,calc(42vw * 700 / 550))}}
+html.land .case{height:min(calc(76 * var(--vh)),calc(calc(42 * var(--vw)) * 700 / 550))}
 .case .half{position:absolute;inset:0;background:var(--inside) left/auto 100% no-repeat;   /* крышка откидывается вправо: под ней левая половина доски, на её обороте — правая */
 border-radius:12px;opacity:0}
 .case .lid{position:absolute;inset:0;transform-origin:right center;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
@@ -169,21 +165,21 @@ border-radius:12px;opacity:0}
 .case::after{content:"";position:absolute;inset:0;z-index:5}
 .case,#frame,#board{-webkit-user-drag:none;-webkit-touch-callout:none}
 .case.open .half{opacity:1}
-.mtitle{margin:0 0 4px;text-align:center;font-family:var(--display);font-weight:400;font-size:clamp(48px,8vh,84px);letter-spacing:.06em;line-height:1;
+.mtitle{margin:0 0 4px;text-align:center;font-family:var(--display);font-weight:400;font-size:clamp(48px,calc(8 * var(--vh)),84px);letter-spacing:.06em;line-height:1;
   color:#f3dfb4;text-shadow:0 2px 0 rgba(60,30,8,.6),0 4px 18px rgba(0,0,0,.7)}
-.mside{display:flex;flex-direction:column;gap:12px;width:min(92vw,400px);transition:opacity .3s}
+.mside{display:flex;flex-direction:column;gap:12px;width:min(calc(92 * var(--vw)),400px);transition:opacity .3s}
 #menu.opening .mside,#menu.opening .micons{opacity:0;pointer-events:none}
 /* при раскрытии доска уезжает в центр: раскрытая она вдвое шире */
 .case{transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
 #menu.opening .case{transform:translateX(-50%)}
-@media (orientation:landscape){#menu.opening .case{transform:translateX(calc(-50% + 3vw + min(92vw,400px) / 2))}}
+html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw)) + min(calc(92 * var(--vw)),400px) / 2))}
 .mbtns{display:grid;gap:10px}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .micons{opacity:0;pointer-events:none}
 /* при раскрытии доска уезжает в центр: раскрытая она вдвое шире */
 .case{transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
 #menu.opening .case{transform:translateX(-50%)}
-@media (orientation:landscape){#menu.opening .case{transform:translateX(calc(-50% + 3vw + min(92vw,400px) / 2))}}
+html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw)) + min(calc(92 * var(--vw)),400px) / 2))}
 .mbtns{display:grid;gap:10px}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .plq{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;border-radius:6px;padding:13px 14px;
@@ -484,7 +480,7 @@ border-radius:12px;opacity:0}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='31';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='32';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -968,7 +964,7 @@ function renderDiceState(){
 // Экранная точка → координаты доски. На телефоне в портрете вся партия повёрнута на 90° (см. CSS).
 function toBoard(cx,cy){
   const r=frame.getBoundingClientRect();
-  if(getComputedStyle($('app')).transform!=='none') return [(cy-r.top)/r.height*1100,(r.right-cx)/r.width*700];
+  if(document.documentElement.classList.contains('rot')) return [(cy-r.top)/r.height*1100,(r.right-cx)/r.width*700];
   return [(cx-r.left)/r.width*1100,(cy-r.top)/r.height*700];
 }
 let drag=null;
@@ -1740,6 +1736,16 @@ function setStatus(t){$('status').innerHTML=t;}
 const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const isStandalone=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches;
 const coarse=()=>matchMedia('(pointer:coarse)').matches;
+// только горизонтально: телефон в портрете — поворачиваем всю страницу; размеры — для повёрнутого экрана
+function fitOrientation(){
+  const de=document.documentElement, vw=innerWidth, vh=innerHeight;
+  const rot=coarse()&&vh>vw, W=rot?vh:vw, H=rot?vw:vh;
+  de.classList.toggle('rot',rot); de.classList.toggle('land',W>=H);
+  de.style.setProperty('--W',W+'px'); de.style.setProperty('--H',H+'px');
+  de.style.setProperty('--vw',W/100+'px'); de.style.setProperty('--vh',H/100+'px');
+}
+fitOrientation();
+addEventListener('resize',fitOrientation); addEventListener('orientationchange',()=>setTimeout(fitOrientation,250));
 async function lockLandscape(){
   if(!coarse()) return;
   try{
@@ -1754,7 +1760,7 @@ function unlockOrientation(){
 }
 function showGame(){ document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
 function showMenu(){
-  document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false; unlockOrientation();
+  document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false;
   const v=readSaved();
   $('mContinue').hidden=!(v||(NET&&NET.started));
   $('mAi').classList.toggle('main',!v);   // .main — крупная табличка
@@ -1920,7 +1926,7 @@ function openCase(fn){
 // доска плавно «приближается» с места на столе в меню к игровому размеру (FLIP)
 function zoomIn(from){
   const fr=$('frame'), to=fr.getBoundingClientRect();
-  if(!to.width||getComputedStyle($('app')).transform!=='none'){ fadeChrome(); return; }   // повёрнутая вёрстка на телефоне — без приближения
+  if(!to.width||document.documentElement.classList.contains('rot')){ fadeChrome(); return; }   // повёрнутая вёрстка на телефоне — без приближения
   const k=from.w/to.width;
   fr.animate([{transformOrigin:'0 0',transform:`translate(${from.x-to.left}px,${from.y-to.top}px) scale(${k})`},{transformOrigin:'0 0',transform:'none'}],
     {duration:850,easing:'cubic-bezier(.45,0,.2,1)'});

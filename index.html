@@ -325,6 +325,12 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
         <button data-vib="on">Включена</button>
         <button data-vib="off">Выключена</button>
       </div>
+
+      <h4>Голос и музыка</h4>
+      <div class="seg vox" style="grid-template-columns:1fr 1fr">
+        <button data-vox="voice">Названия бросков</button>
+        <button data-vox="music">Дудук при старте</button>
+      </div>
       <div id="dLevelBox">
         <h4>Сложность компьютера</h4>
         <p class="dlevel"><b id="dLevel"></b><span>Во время партии не меняется — выберите в настройках главного меню перед новой игрой.</span></p>
@@ -407,6 +413,12 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
       <button data-vib="on">Включена</button>
       <button data-vib="off">Выключена</button>
     </div>
+    <h4>Голос и музыка</h4>
+    <div class="seg vox" style="grid-template-columns:1fr 1fr">
+      <button data-vox="voice">Названия бросков</button>
+      <button data-vox="music">Дудук при старте</button>
+    </div>
+    <p class="hint">Дудук: запись «Sound of Armenian Duduk», автор איליה מעזיה, Wikimedia Commons, CC BY-SA 4.0. Голос — синтез Piper.</p>
     <button class="primary done" id="bSettingsClose">Готово</button>
   </div>
 </div>
@@ -455,6 +467,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
       <li>Нельзя ставить <b>заграждение из 6 шашек подряд</b>, если впереди него нет ни одной шашки соперника.</li>
       <li>Выбрасывать можно, когда все 15 шашек в доме. Кто выбросил все первым — победил; если у соперника не вышло ни одной — <b>марс</b>, двойная победа.</li>
       <li>Чтобы бросить, <b>потяните кубики</b> с середины доски пальцем на свою половину и отпустите (на компьютере — пробел).</li>
+      <li>Броски называются по-старинному: ек, ду, се, джахар, беш, шеш — 1…6. «Шеш-беш» — 6 и 5, «Ду-шеш» — две шестёрки. Названия можно выключить в настройках.</li>
       <li><b>По сети:</b> «Играть с другом по сети» → отправьте ссылку другу. Каждый видит доску со своей стороны. Кубики честные: бросок складывается из случайных чисел обоих телефонов, подменить его нельзя.</li>
       <li>Как ходить: нажмите на шашку, затем на подсвеченный пункт. Цифра на пункте — на сколько вы идёте. Выброс — нажатие на лоток справа.</li>
     </ul>
@@ -466,7 +479,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='25';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='26';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -669,8 +682,11 @@ const SOUND_FILES={
   roll:['dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a'],
   place:['chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a'],
   stack:['chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a'],
-  off:['chips-stack-1.m4a','chips-stack-2.m4a']
+  off:['chips-stack-1.m4a','chips-stack-2.m4a'],
+  duduk:['duduk.m4a'], intro:['duduk-intro.m4a']
 };
+// голос: название броска (sounds/calls/<больший><меньший>.m4a, синтез Piper)
+for(let h=1;h<=6;h++) for(let l=1;l<=h;l++) SOUND_FILES['call'+h+l]=[`calls/${h}${l}.m4a`];
 const buffers={};
 let AC=null, soundsLoading=false;
 const settings={skin:'night',level:'medium',sound:true};
@@ -696,16 +712,16 @@ function loadSounds(){
 }
 // Шашка по сукну («Ночь») звучит глуше, по лакированному дереву — звонче и чуть ниже.
 const SKIN_SOUND={night:{lp:1600,rate:.9},glass:{lp:5200,rate:1.04},ararat:{lp:9000,rate:.97},yerevan:{lp:7000,rate:.94}};
-function play(k,vol=1,delay=0){
+function play(k,vol=1,delay=0,exact=false){
   const a=settings.sound&&ac(); const l=buffers[k];
   if(!a||!l||!l.length) return false;
   const src=a.createBufferSource(), g=a.createGain(), f=a.createBiquadFilter();
   const ss=(k==='place'||k==='stack')&&SKIN_SOUND[settings.skin]||{lp:12000,rate:1};
   src.buffer=l[Math.random()*l.length|0];
-  src.playbackRate.value=ss.rate*(0.94+Math.random()*0.12);
+  src.playbackRate.value=exact?1:ss.rate*(0.94+Math.random()*0.12);
   f.type='lowpass'; f.frequency.value=ss.lp; g.gain.value=vol;
   src.connect(f).connect(g).connect(a.destination); src.start(a.currentTime+delay);
-  return true;
+  return src;
 }
 // глухой деревянный стук: кубик ударился о доску
 function synthKnock(vol=.5,delay=0){
@@ -719,6 +735,7 @@ function synthKnock(vol=.5,delay=0){
 // раскрыли доску: щелчок застёжки и мягкий удар крышки о стол
 function sOpen(){
   const a=settings.sound&&ac(); if(!a) return;
+  if(settings.music!==false) play('intro',.45,.35,true);
   synthKnock(.35,0); synthKnock(.3,.07);
   const t=a.currentTime+.32, o=a.createOscillator(), g=a.createGain();
   o.type='sine'; o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(55,t+.25);
@@ -751,6 +768,8 @@ function ambientSync(){
       for(const m of [1,2.76]){ const o=a.createOscillator(), gg=a.createGain(); o.frequency.value=fr*m;
         gg.gain.setValueAtTime(.012/m,t); gg.gain.exponentialRampToValueAtTime(.0001,t+.45); o.connect(gg).connect(a.destination); o.start(t); o.stop(t+.5); } }
     AMB.timers.push(setTimeout(spoon,45000+Math.random()*75000)); };
+  const duduk=()=>{ if(!AMB.on) return; const n=play('duduk',.28,0,true); if(n) AMB.nodes.push(n); AMB.timers.push(setTimeout(duduk,(n?90:20)*1000+Math.random()*150000)); };
+  AMB.timers.push(setTimeout(duduk,25000+Math.random()*30000));
   gust(); AMB.timers.push(setTimeout(bird,2500)); AMB.timers.push(setTimeout(spoon,20000+Math.random()*30000));
 }
 document.addEventListener('visibilitychange',()=>ambientSync());
@@ -1039,7 +1058,7 @@ function showCall(text,at){
   frame.appendChild(el); setTimeout(()=>el.remove(),1700);
 }
 function rolled(a,b,land,after,instant){
-    if(!instant) showCall(rollName(a,b)+(a===b?'!':''),land);   // land — уже в координатах экрана
+    if(!instant){ showCall(rollName(a,b)+(a===b?'!':''),land); if(settings.voice!==false) play('call'+Math.max(a,b)+Math.min(a,b),.9,0,true); }   // land — уже в координатах экрана
     G.dice=[a,b]; G.diceAt=land;
     G.rem=a===b?[a,a,a,a]:[a,b];
     G.headUsed=0;
@@ -1764,6 +1783,7 @@ function buildSkinPicker(){
   $('skins').innerHTML=h; $('dSkins').innerHTML=h;
 }
 function paintSettings(){
+  document.querySelectorAll('.seg.vox button').forEach(b=>b.classList.toggle('on',settings[b.dataset.vox]!==false));
   document.querySelectorAll('.seg.amb button').forEach(b=>b.classList.toggle('on',(b.dataset.amb==='on')===(settings.ambient!==false)));
   document.querySelectorAll('.seg.vib button').forEach(b=>b.classList.toggle('on',(b.dataset.vib==='on')===(settings.vibro!==false)));
   document.querySelectorAll('#dSkins .skin').forEach(b=>b.classList.toggle('on',b.dataset.skin===settings.skin));
@@ -1779,6 +1799,7 @@ for(const id of ['skins','dSkins']) $(id).addEventListener('click',e=>{const b=e
 $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.level=b.dataset.lvl; saveSettings(); paintSettings(); if(G) renderPanel();});
 $('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 document.querySelectorAll('.seg.amb').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.ambient=b.dataset.amb==='on'; saveSettings(); paintSettings(); ac(); ambientSync();}));
+document.querySelectorAll('.seg.vox').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; const k=b.dataset.vox; settings[k]=settings[k]===false; saveSettings(); paintSettings();}));
 document.querySelectorAll('.seg.vib').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.vibro=b.dataset.vib==='on'; saveSettings(); paintSettings(); buzz(30);}));
 $('sounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 $('bSettings').addEventListener('click',()=>{ if(!$('skins').innerHTML) buildSkinPicker(); paintSettings(); $('settings').hidden=false; });

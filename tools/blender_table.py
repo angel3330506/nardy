@@ -156,8 +156,8 @@ for k, (dx, dy, rz) in enumerate(((-9.5, -1.0, .3), (-10.2, 1.6, -.4))):
     bpy.ops.mesh.primitive_cube_add(size=1.6 * CM, location=(X0 + dx * CM, Y0 + dy * CM, .8 * CM)); c = bpy.context.object
     c.rotation_euler = (0, 0, rz); c.data.materials.append(sugar); bv = c.modifiers.new('b', 'BEVEL'); bv.width = .12 * CM; bv.segments = 2
 
-# ---------- пачка сигарет King Size, как у армянских Cigaronne (без марки): чёрная матовая, линия откидной крышки,
-# серебряная эмблема-«корона» вверху, серебряный росчерк посередине, белое поле предупреждения внизу ----------
+# ---------- пачка сигарет Cigaronne King Size: чёрная матовая, линия откидной крышки,
+# серебряная эмблема и KING SIZE вверху, надпись Cigaronne курсивом, белое поле предупреждения внизу ----------
 PX, PY = 1.2, -3.6                                           # слева у доски: видна и на компьютере, и на телефоне
 pw, pd, ph = 5.5 * CM, 2.2 * CM, 8.8 * CM                     # ширина, толщина, высота пачки (лежит лицом вверх)
 def pack_textures():
@@ -176,16 +176,12 @@ def pack_textures():
         hgt = 34 if i == 1 else 26
         pts = [(cx + dx - 14, 150), (cx + dx, 150 - hgt), (cx + dx + 14, 150)]
         dc.line(pts, fill=silver, width=4, joint='curve'); dm.line(pts, fill=255, width=4)
-    for y_ in (172,):
-        dc.line([(cx - 60, y_), (cx + 60, y_)], fill=silver, width=2); dm.line([(cx - 60, y_), (cx + 60, y_)], fill=255, width=2)
     # серебряный росчерк вместо надписи
-    # росчерк как рукописное слово: вытянутая циклоида — петли букв, с наклоном
-    t = np.linspace(0, 7.4 * math.pi, 600)
-    sw = [(cx - 175 + 14.5 * tt - 22 * math.sin(tt) + .35 * (40 * math.cos(tt)), 440 - 40 * math.cos(tt) * (1.2 if int(tt / (2 * math.pi)) in (0, 2) else .8)) for tt in t]
-    dc.line(sw, fill=silver, width=6, joint='curve'); dm.line(sw, fill=255, width=6, joint='curve')
-    cap = [(cx - 175 + 30 * math.cos(a) - 10, 395 + 55 * math.sin(a)) for a in np.linspace(-1.2, 3.6, 60)]   # заглавная петля
-    dc.line(cap, fill=silver, width=7, joint='curve'); dm.line(cap, fill=255, width=7, joint='curve')
-    dc.line([(cx - 120, 488), (cx + 150, 482)], fill=silver, width=3); dm.line([(cx - 120, 488), (cx + 150, 482)], fill=255, width=3)
+    # надпись Cigaronne серебряным курсивом (шрифт Great Vibes, OFL) и KING SIZE под эмблемой
+    fs = ImageFont.truetype(os.path.join(ROOT, 'tools', 'fonts', 'GreatVibes-Regular.ttf'), 118)
+    dc.text((cx, 440), 'Cigaronne', font=fs, fill=silver, anchor='mm'); dm.text((cx, 440), 'Cigaronne', font=fs, fill=255, anchor='mm')
+    fk = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 22)
+    dc.text((cx, 200), 'K I N G   S I Z E', font=fk, fill=silver, anchor='mm'); dm.text((cx, 200), 'K I N G   S I Z E', font=fk, fill=255, anchor='mm')
     # белое поле предупреждения с чёрной рамкой
     dc.rectangle([28, 600, W_ - 28, H_ - 40], fill=(245, 245, 242), outline=(0, 0, 0), width=6)
     f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 66)

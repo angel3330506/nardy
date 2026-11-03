@@ -100,8 +100,8 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .hit{cursor:pointer}
 
 /* ---------- 3D кубики ---------- */
-/* кубик — 62/1100 ширины доски, но на телефоне не меньше 40px, иначе его не разглядеть */
-.board-frame{--ds:max(calc(min(100cqw,100cqh * 1100 / 700) * 62 / 1100),min(40px,calc(min(100cqw,100cqh * 1100 / 700) * 90 / 1100)))}
+/* кубик — 48/1100 ширины доски (как настоящий 16-мм кубик рядом с 4-см шашкой), на телефоне не меньше 34px */
+.board-frame{--ds:max(calc(min(100cqw,100cqh * 1100 / 700) * 48 / 1100),min(34px,calc(min(100cqw,100cqh * 1100 / 700) * 80 / 1100)))}
 .dice3d{position:absolute;inset:0;pointer-events:none;overflow:visible}
 /* у каждого кубика своя перспектива с точкой зрения прямо над ним: лежащий кубик показывает только верхнюю грань */
 .d3{position:absolute;width:var(--ds,50px);height:var(--ds,50px);margin:calc(var(--ds,50px) / -2) 0 0 calc(var(--ds,50px) / -2);perspective:calc(var(--ds,50px) * 14);transition:opacity .25s}
@@ -642,7 +642,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='44';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='45';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 

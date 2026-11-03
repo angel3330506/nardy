@@ -282,6 +282,31 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
   opacity:0;transform:translateY(-6px) scale(.96);transition:opacity .25s,transform .25s;pointer-events:none}
 .bubble::before{content:"";position:absolute;top:-7px;right:34px;border:7px solid transparent;border-top:0;border-bottom-color:#f4ead6}
 .bubble.show{opacity:1;transform:none}
+/* время суток: днём ничего, вечером тёплый закат и лампа, ночью синева, свет лампы на середине и светлячки */
+.sky{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.2s}
+html.evening .sky,html.night .sky{opacity:1}
+html.evening .sky{background:radial-gradient(ellipse 60% 65% at 50% 48%,rgba(255,170,90,.25),rgba(110,45,15,.55)),linear-gradient(180deg,rgba(255,140,60,.25),rgba(120,50,20,.35));mix-blend-mode:multiply}
+html.night .sky{background:radial-gradient(ellipse 50% 58% at 50% 46%,rgba(255,200,130,.0),rgba(10,16,40,.55) 70%,rgba(5,8,22,.78)),rgba(30,45,90,.35);mix-blend-mode:multiply}
+#menu .sky{z-index:1} #menu .menu-in,#menu .micons{position:relative;z-index:2}
+#menu .micons{position:fixed}
+.sky i{position:absolute;width:5px;height:5px;border-radius:50%;background:#f8ffb0;box-shadow:0 0 10px 3px rgba(220,255,120,.7);opacity:0;mix-blend-mode:screen;display:none}
+html.night .sky i{display:block;animation:fly 9s ease-in-out infinite}
+.sky i:nth-child(1){left:6%;top:30%;animation-delay:0s!important}.sky i:nth-child(2){left:12%;top:72%;animation-delay:-2s!important}
+.sky i:nth-child(3){left:91%;top:18%;animation-delay:-4s!important}.sky i:nth-child(4){left:95%;top:56%;animation-delay:-6s!important}
+.sky i:nth-child(5){left:4%;top:88%;animation-delay:-1s!important}.sky i:nth-child(6){left:85%;top:85%;animation-delay:-3s!important}
+.sky i:nth-child(7){left:48%;top:4%;animation-delay:-5s!important}.sky i:nth-child(8){left:30%;top:95%;animation-delay:-7s!important}
+@keyframes fly{0%,100%{opacity:0;transform:translate(0,0)}15%{opacity:1}50%{opacity:.85;transform:translate(26px,-18px)}70%{opacity:0;transform:translate(40px,4px)}}
+html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58% at 50% 46%,rgba(8,12,32,.12) 30%,rgba(8,12,32,.55) 72%,rgba(4,6,18,.78)),rgba(20,30,70,.3)}
+@media (prefers-reduced-motion:reduce){html.night .sky i{animation:none;opacity:.6}}
+/* обучение: подсказка-табличка над доской */
+.coach{position:absolute;left:50%;top:calc(clamp(32px,8.5cqh,46px) + 18px);transform:translateX(-50%);z-index:8;width:min(560px,86%);
+  background:linear-gradient(180deg,#2a2013,#17110b);border:1px solid var(--gold);border-radius:14px;padding:12px 16px 10px;
+  box-shadow:0 14px 40px rgba(0,0,0,.65);animation:fadeIn .3s ease}
+.coach p{margin:0 0 8px;font-size:15px;line-height:1.4}
+.coach p b{color:var(--gold-hi);font-weight:500}
+.coachrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.coachrow .link{background:none;border:0;color:var(--muted);padding:4px 0;text-decoration:underline;font-size:13px}
+.coachrow .primary{padding:7px 18px}
 .nettext{margin:0;color:var(--muted);font-size:14.5px}
 .netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
@@ -291,6 +316,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 <body>
 
 <div id="app">
+  <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>   <!-- время суток: под доской, как будто над ней лампа -->
   <div class="vign" id="vign"></div>
   <header class="bar">
     <button class="ib" id="bMenu" aria-label="Меню"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -339,6 +365,13 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
       <button id="dNew">Начать заново</button>
       <h4>Доска</h4>
       <div class="dskins" id="dSkins"></div>
+      <h4>Время суток</h4>
+      <div class="seg tod" style="grid-template-columns:repeat(4,1fr)">
+        <button data-tod="auto">Как сейчас</button>
+        <button data-tod="day">День</button>
+        <button data-tod="evening">Вечер</button>
+        <button data-tod="night">Ночь</button>
+      </div>
       <h4>Звук</h4>
       <div class="seg" id="dSounds" style="grid-template-columns:1fr 1fr">
         <button data-snd="on">Включён</button>
@@ -384,6 +417,10 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
   </div>
   <div class="toasts" id="toasts"></div>
   <div class="bubble" id="bubble" role="status"></div>
+  <div class="coach" id="coach" hidden>
+    <p id="coachText"></p>
+    <div class="coachrow"><button class="link" id="coachSkip">Пропустить обучение</button><button class="primary" id="coachNext" hidden>Дальше</button></div>
+  </div>
   <div class="tablefx" id="tablefx" aria-hidden="true">
     <div class="hot" id="hotTea" title="Кофе"></div>
     <div class="hot" id="hotSugar" title="Сахар"></div>
@@ -391,6 +428,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 </div>
 
 <div id="menu">
+  <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="micons">
     <button class="mic" id="bStats" aria-label="Статистика и достижения" title="Статистика"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></button>
     <button class="mic" id="bRules" aria-label="Правила" title="Правила"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13M9 7h6"/></svg></button>
@@ -424,6 +462,13 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
     <h3>Настройки</h3>
     <h4>Доска</h4>
     <div class="skins" id="skins"></div>
+    <h4>Время суток</h4>
+    <div class="seg tod" style="grid-template-columns:repeat(4,1fr)">
+      <button data-tod="auto">Как сейчас</button>
+      <button data-tod="day">День</button>
+      <button data-tod="evening">Вечер</button>
+      <button data-tod="night">Ночь</button>
+    </div>
     <h4>Соперник</h4>
     <div class="opps" id="levels">
       <button data-lvl="easy"><i style="background:#7a4b2a">А</i><b>Арам</b><span>новичок</span></button>
@@ -485,6 +530,15 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
     <p class="hint" style="margin:0">Пункты считаются от вашей головы: 1 — голова, 19–24 — дом. «Выброс» — шашка ушла с доски.</p>
     <div class="review" id="reviewList"></div>
     <button class="primary done" id="bReviewClose">Понятно</button>
+  </div>
+</div>
+
+<div class="sheet" id="tutorSheet" hidden>
+  <div class="sheet-in">
+    <h3>Барев, добро пожаловать!</h3>
+    <p class="nettext">Это длинные нарды — как во дворе в Ереване. Покажу, как играть: одна партия с подсказками против Арама, минута-две.</p>
+    <button class="primary" id="tutorStart">Начать обучение</button>
+    <button id="tutorSkip">Я умею играть — пропустить</button>
   </div>
 </div>
 
@@ -889,11 +943,13 @@ function freshState(){
   s.o[0]=0;s.n[0]=15;s.o[12]=1;s.n[12]=15;
   return s;
 }
-function newGame(m){
+function newGame(m,tutor){
   clearTimers(); netLeave();
   if(m) mode=m;
   loadScore();
-  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:settings.level,turns:[0,0],undos:0,mistakes:[]};   // сложность закреплена за партией
+  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:tutor?'easy':settings.level,turns:[0,0],undos:0,mistakes:[]};   // сложность закреплена за партией
+  if(tutor) G.tutor={};
+  $('coach').hidden=true;
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
   showGame();
   render(); sOpen();
@@ -1091,6 +1147,7 @@ function rollOff(vals){
 function promptRoll(){
   if(mode==='net') setStatus(!isHuman(G.turn)?'Ходит друг…':NET.rv[1-NET.me].length>NET.k?'Ваш ход — потяните кубики на доску.':'Ваш ход. Ждём, когда друг будет на связи…');
   else setStatus(mode==='ai'?'Ваш ход — потяните кубики на доску.':`Ходят ${NAME[G.turn].toLowerCase()} — потяните кубики на доску.`);
+  if(isHuman(G.turn)) tutorHook('roll');
 }
 
 // start/land — откуда летят и куда лягут; без них кубики бросаются со стыка на половину бросающего
@@ -1135,7 +1192,7 @@ function rolled(a,b,land,after,instant){
       else { if(NET) NET.hold=true; later(()=>{ if(NET) NET.hold=false; endTurn(); },1600); }
       return;
     }
-    if(isHuman(G.turn)){ setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`); if(a===b&&!instant) say('yourDouble',.5); }
+    if(isHuman(G.turn)){ setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`); if(a===b&&!instant) say('yourDouble',.5); if(!instant) tutorHook('rolled'); }
     else if(mode==='net') setStatus(`Друг: <b>${a}–${b}</b>. Ходит…`);
     render();
     after&&after();
@@ -1169,6 +1226,7 @@ function afterStep(){
   if(G.hint){ G.hint=null; if(G.steps.length&&G.usedHint) return showHint(); }
   if(!G.steps.length) setStatus(G.rem.length?'Остальные кубики сыграть нельзя. Завершите ход.':'Ход сделан. Завершите ход или отмените.');
   else setStatus(`Осталось: <b>${G.rem.join(', ')}</b>.`);
+  tutorHook('step');
   render();
 }
 function fly(pl,[x0,y0],[x1,y1],toOff,done,fromOff){
@@ -1251,7 +1309,7 @@ function endTurn(){
   if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
   G.turn=1-G.turn; G.phase='roll'; G.rem=[]; G.hist=[]; G.sel=null; G.steps=[]; G.targets=null;
   clearDice(); render();
-  if(isAI(G.turn)) later(aiTurn,450); else promptRoll();
+  if(isAI(G.turn)){ later(aiTurn,450); tutorHook('ai'); } else promptRoll();
   netKick();
 }
 function humanEnd(){ if(mode==='net'){ if(!G.netPend) netSend({t:'end'}); } else endTurn(); }
@@ -1278,7 +1336,7 @@ function gameOver(pl){
   const mars=G.s.off[1-pl]===0, pts=mars?2:1;
   score[pl]+=pts; saveScore(); render();
   if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
-  recordGame(pl,mars);
+  recordGame(pl,mars); if(G.tutor) finishTutor();
   if(mode==='ai') setTimeout(()=>say(pl===1?(mars?'mars':'win'):'lose'),700);
   $('bReview').hidden=!(mode==='ai');
   $('wTitle').textContent=mode!=='pvp'?(pl===(mode==='net'?G.me:0)?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
@@ -1342,6 +1400,30 @@ $('hotSugar').addEventListener('click',e=>{
              {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) rotate(400deg) scale(.4)`,opacity:0}],{duration:D,easing:'ease-in'});
   setTimeout(()=>{ c.remove(); ripples(t,4); buzz(12); },D); plop(D/1000);
 });
+
+/* ---------- обучение при первом запуске ---------- */
+// Шаги показываются один раз, по ходу настоящей партии против Арама. Пропустить можно в любой момент.
+const TUTOR_KEY='nardy-tutorial-v1';
+const tutorDone=()=>{ try{return !!localStorage.getItem(TUTOR_KEY);}catch(e){return true;} };
+function finishTutor(){ try{localStorage.setItem(TUTOR_KEY,'1');}catch(e){} if(G) G.tutor=null; $('coach').hidden=true; }
+function coach(step,text,withNext){
+  if(!G||!G.tutor||G.tutor[step]) return;
+  G.tutor[step]=1;
+  $('coachText').innerHTML=text; $('coachNext').hidden=!withNext; $('coach').hidden=false;
+}
+$('coachSkip').addEventListener('click',finishTutor);
+$('coachNext').addEventListener('click',()=>{ if(G&&G.tutor&&G.tutor.final) finishTutor(); else $('coach').hidden=true; });
+function tutorHook(ev){
+  if(!G||!G.tutor||mode!=='ai') return;
+  const hide=()=>{$('coach').hidden=true;};
+  if(ev==='roll'&&!G.tutor.roll) coach('roll','Ваш ход! Ваши — светлые шашки, их «голова» справа внизу. <b>Потяните кубики</b> пальцем (или мышкой) на свою половину доски и отпустите.');
+  else if(ev==='roll'&&G.tutor.ai&&!G.tutor.goal){ coach('goal','Цель — привести все 15 шашек в <b>дом</b> (правая верхняя четверть доски) и выбросить их в лоток справа. Кто первым выбросит все — победил. Удачи! Правила всегда в меню ☰.',true); G.tutor.final=1; }
+  else if(ev==='rolled') coach('move','Подсвечены шашки, которыми можно ходить. <b>Нажмите на шашку, потом на пункт с числом</b> — или просто перетащите её. Число — на сколько пунктов вы идёте.');
+  else if(ev==='step'&&G.steps.length) coach('step','Отлично! Сыграйте второй кубик. Передумали — стрелка ↶ отменит ход, а лампочка подскажет хороший вариант.');
+  else if(ev==='step') coach('end','Ход сделан. Нажмите <b>«Завершить ход»</b> вверху — или просто на кубики.');
+  else if(ev==='ai') coach('ai','Теперь ходит Арам. Запомните главное: шашки идут <b>против часовой стрелки</b>, бить чужие нельзя — пункт с чужой шашкой закрыт, а с головы за ход снимается <b>одна шашка</b>.',true);
+  else if(ev==='hide') hide();
+}
 
 /* ---------- статистика и достижения ---------- */
 const ACH=[
@@ -1918,7 +2000,15 @@ function buildSkinPicker(){
   }
   $('skins').innerHTML=h; $('dSkins').innerHTML=h;
 }
+// время суток: «как сейчас» — по часам телефона (вечер 18–21, ночь 21–6)
+function timeOfDay(){
+  const t=settings.tod||'auto'; if(t!=='auto') return t;
+  const h=new Date().getHours(); return h>=21||h<6?'night':h>=18?'evening':'day';
+}
+function applyTod(){ const de=document.documentElement, t=timeOfDay(); de.classList.toggle('evening',t==='evening'); de.classList.toggle('night',t==='night'); }
+applyTod(); setInterval(applyTod,60000);
 function paintSettings(){
+  document.querySelectorAll('.seg.tod button').forEach(b=>b.classList.toggle('on',b.dataset.tod===(settings.tod||'auto')));
   document.querySelectorAll('.seg.vox button').forEach(b=>b.classList.toggle('on',settings[b.dataset.vox]!==false));
   document.querySelectorAll('.seg.amb button').forEach(b=>b.classList.toggle('on',(b.dataset.amb==='on')===(settings.ambient!==false)));
   document.querySelectorAll('.seg.vib button').forEach(b=>b.classList.toggle('on',(b.dataset.vib==='on')===(settings.vibro!==false)));
@@ -1935,6 +2025,7 @@ for(const id of ['skins','dSkins']) $(id).addEventListener('click',e=>{const b=e
 $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.level=b.dataset.lvl; saveSettings(); paintSettings(); if(G) renderPanel();});
 $('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 document.querySelectorAll('.seg.amb').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.ambient=b.dataset.amb==='on'; saveSettings(); paintSettings(); ac(); ambientSync();}));
+document.querySelectorAll('.seg.tod').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.tod=b.dataset.tod; saveSettings(); paintSettings(); applyTod();}));
 document.querySelectorAll('.seg.vox').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; const k=b.dataset.vox; settings[k]=settings[k]===false; saveSettings(); paintSettings();}));
 document.querySelectorAll('.seg.vib').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.vibro=b.dataset.vib==='on'; saveSettings(); paintSettings(); buzz(30);}));
 $('sounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
@@ -2095,6 +2186,10 @@ buildStatic();
 $('winStar').innerHTML=star(0,0,46,16,'#f1d48a','#1a120b',-90,'rgba(0,0,0,.4)');
 paintSettings();
 showMenu();
+// первый запуск: предложить обучение (если человек ещё не играл и не отказывался)
+if(!tutorDone()&&!readSaved()&&!loadStats().games&&!new URLSearchParams(location.search).get('room')) $('tutorSheet').hidden=false;
+$('tutorStart').addEventListener('click',()=>{ $('tutorSheet').hidden=true; openCase(()=>newGame('ai',true)); });
+$('tutorSkip').addEventListener('click',()=>{ $('tutorSheet').hidden=true; finishTutor(); });
 { const room=new URLSearchParams(location.search).get('room'); if(room&&/^[a-z0-9]{4,12}$/.test(room)) netEnter(room); }
 // при каждом запуске проверяем, нет ли новой версии; новая подхватывается со следующего открытия меню
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});

@@ -1,5 +1,5 @@
 // Офлайн-кэш: страница, доски, звуки и шрифты кэшируются при установке.
-const V = '35';                 // = APP_VERSION в index.html
+const V = '36';                 // = APP_VERSION в index.html
 const VERSION = 'nardy-v' + V;
 const SHELL = [
   './',
@@ -12,6 +12,7 @@ const SHELL = [
   ...['ivory', 'onyx', 'beech', 'walnut'].map(k => `boards/ck-${k}.png?v=${V}`),
   ...['ivory', 'onyx', 'beech', 'walnut'].map(k => `boards/ckside-${k}.png?v=${V}`),
   `boards/table.webp?v=${V}`,
+  `boards/table-bare.webp?v=${V}`, `boards/vine.webp?v=${V}`,
   `boards/lid.webp?v=${V}`, `boards/maple.webp?v=${V}`,
   ...[1, 2, 3, 4, 5, 6].map(f => `boards/die-${f}.png?v=${V}`),
 ];

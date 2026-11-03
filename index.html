@@ -62,7 +62,7 @@ button.primary:hover:not(:disabled){background:linear-gradient(180deg,#f0d38f,#c
 
 /* ---------- игра ---------- */
 #app{
-  position:fixed;inset:0;display:flex;flex-direction:column;gap:clamp(4px,1.6cqh,12px);
+  position:fixed;inset:0;display:flex;flex-direction:column;gap:clamp(4px,1.6cqh,12px);overflow:hidden;
   /* стол во дворике: картинка из tools/render_boards.py, адрес с версией ставится из скрипта (--table) */
   background:#1c120a var(--table,none) center/cover no-repeat;
   container-type:size;
@@ -263,6 +263,8 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 .hintmark{animation:pulse 1s ease-in-out infinite}
 /* интерактивный стол: стакан чая и сахар на фоновой картинке; горячие зоны ставит скрипт по положению фона */
 .tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+/* тень виноградного навеса — отдельный слой поверх голого стола (boards/vine.webp — множитель света), качается от касания */
+.vine{position:absolute;inset:-40px;pointer-events:none;background-repeat:no-repeat;mix-blend-mode:multiply;transform-origin:50% -30%}
 .hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .ripple{position:absolute;border-radius:50%;border:2px solid rgba(235,200,150,.5);pointer-events:none;
   animation:ripple 1.4s ease-out forwards}
@@ -287,6 +289,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 <body>
 
 <div id="app">
+  <div class="vine" id="vine" aria-hidden="true"></div>   <!-- первым: тень ложится на стол, но под доской -->
   <div class="vign" id="vign"></div>
   <header class="bar">
     <button class="ib" id="bMenu" aria-label="Меню"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -506,7 +509,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='35';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='36';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -557,7 +560,9 @@ const SKINS={
   yerevan:{name:'Армения',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'}
 };
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
-for(const id of ['app','menu']) $(id).style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
+$('menu').style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
+$('app').style.setProperty('--table',`url(boards/table-bare.webp?v=${APP_VERSION})`);
+$('vine').style.backgroundImage=`url(boards/vine.webp?v=${APP_VERSION})`;
 $('case').style.setProperty('--lid',`url(boards/lid.webp?v=${APP_VERSION})`);
 for(let f=1;f<=6;f++){const im=new Image();im.src=`boards/die-${f}.png?v=${APP_VERSION}`;}
 for(const c of Object.keys(CK)){const im=new Image();im.src=`boards/ckside-${c}.png?v=${APP_VERSION}`;}
@@ -1258,6 +1263,8 @@ function tableMap(){
 }
 function placeHot(){
   const m=tableMap(), at=(p,r)=>({x:m.ox+p.x*m.k,y:m.oy+p.y*m.k,r:r*m.k});
+  // слой тени совпадает с фоном (cover), но шире на 40px с каждой стороны — чтобы при качании не открывались края
+  Object.assign($('vine').style,{backgroundSize:`${2400*m.k}px ${1500*m.k}px`,backgroundPosition:`${m.ox+40}px ${m.oy+40}px`});
   const fr=$('frame').getBoundingClientRect(), ap=$('app').getBoundingClientRect();
   const put=(el,c)=>{
     // зона спрятана, если её закрывает доска или она за краем экрана
@@ -1303,6 +1310,30 @@ $('hotSugar').addEventListener('click',e=>{
              {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) rotate(380deg) scale(.6)`,opacity:1,offset:.92},
              {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) rotate(400deg) scale(.4)`,opacity:0}],{duration:D,easing:'ease-in'});
   setTimeout(()=>{ c.remove(); ripples(t,4); buzz(12); },D); plop(D/1000);
+});
+
+// листва: касание стола (мимо доски и чашки) — ветер качает навес, тени плывут, шелест
+function rustle(){
+  const a=settings.sound&&ac(); if(!a) return;
+  const sr=a.sampleRate, buf=a.createBuffer(1,sr*1.6,sr), d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++){ const t=i/d.length; d[i]=(Math.random()*2-1)*Math.sin(Math.PI*t)**1.5*(.6+.4*Math.sin(t*40)); }
+  const src=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain();
+  f.type='bandpass'; f.frequency.value=3000; f.Q.value=.7; g.gain.value=.12;
+  src.buffer=buf; src.connect(f).connect(g).connect(a.destination); src.start();
+}
+let swaying=null;
+function swayVine(){
+  if(swaying) return;
+  rustle();
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const kf=[]; for(let i=0;i<=12;i++){ const t=i/12, damp=Math.exp(-t*3), w=Math.sin(t*Math.PI*5);
+    kf.push({transform:`translate(${(w*14*damp).toFixed(1)}px,${(w*5*damp).toFixed(1)}px) rotate(${(w*.6*damp).toFixed(2)}deg)`}); }
+  swaying=$('vine').animate(kf,{duration:2600,easing:'ease-out'}); swaying.onfinish=()=>swaying=null;
+}
+$('app').addEventListener('click',e=>{
+  if(e.target!==$('app')&&!e.target.closest('.board-box')) return;
+  if(e.target.closest('.board-frame')) return;
+  swayVine();
 });
 
 /* ---------- статистика и достижения ---------- */

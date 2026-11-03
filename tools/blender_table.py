@@ -156,6 +156,70 @@ for k, (dx, dy, rz) in enumerate(((-9.5, -1.0, .3), (-10.2, 1.6, -.4))):
     bpy.ops.mesh.primitive_cube_add(size=1.6 * CM, location=(X0 + dx * CM, Y0 + dy * CM, .8 * CM)); c = bpy.context.object
     c.rotation_euler = (0, 0, rz); c.data.materials.append(sugar); bv = c.modifiers.new('b', 'BEVEL'); bv.width = .12 * CM; bv.segments = 2
 
+# ---------- пачка тонких сигарет: белая с чёрным верхом и золотой полосой, без марки ----------
+PX, PY = 1.15, -3.4                                          # левый верхний угол стола, вне доски
+def boxmat(name, col, rough=.35, metal=0.0):
+    return pmat(name, **{'Base Color': (*col, 1), 'Roughness': rough, 'Metallic': metal, 'Coat Weight': .3})
+pw, pd, ph = 5.6 * CM, 2.0 * CM, 8.6 * CM                     # ширина, толщина, длина пачки (лежит плашмя)
+bpy.ops.mesh.primitive_cube_add(size=1, location=(PX, PY, pd / 2)); pk = bpy.context.object
+pk.scale = (pw, ph, pd); pk.rotation_euler = (0, 0, math.radians(-14)); pk.modifiers.new('b', 'BEVEL').width = .08 * CM
+pk.data.materials.append(boxmat('packwhite', (.92, .91, .88)))
+for (dy, h, col, met) in ((ph / 2 - 1.6 * CM, 3.2 * CM, (.04, .04, .045), 0), (ph / 2 - 3.35 * CM, .32 * CM, (.85, .65, .3), 1), (-ph / 2 + 1.0 * CM, .18 * CM, (.85, .65, .3), 1)):
+    bpy.ops.mesh.primitive_cube_add(size=1); b = bpy.context.object; b.parent = pk
+    b.location = (0, dy / ph, .5 + .002); b.scale = (1.002, h / ph, .006)
+    b.data.materials.append(boxmat('band%d' % int(dy * 100), col, .3 if met else .5, met))
+# золотой медальон-герб на пачке (абстрактный ромб)
+bpy.ops.mesh.primitive_cylinder_add(vertices=4, radius=.9 * CM, depth=.02 * CM); md = bpy.context.object; md.parent = pk
+md.location = (0, -.08, .5 + .01); md.scale = (.9 * CM / pw, .9 * CM / ph * 1.3, .5); md.data.materials.append(boxmat('gold2', (.85, .65, .3), .25, 1))
+
+# ---------- чётки с армянским крестом: бусины на нитке, кисточка-крест ----------
+RX, RY = 2.3, -12.0                                          # левый нижний угол стола
+amber = pmat('amber', **{'Base Color': (.10, .03, .008, 1), 'Roughness': .1, 'Coat Weight': 1.0, 'Coat Roughness': .03})   # тёмный янтарь
+silver2 = pmat('silver2', **{'Base Color': (.82, .82, .8, 1), 'Metallic': 1.0, 'Roughness': .28})
+cord = pmat('cord', **{'Base Color': (.25, .05, .03, 1), 'Roughness': .7})
+nb = 33
+pts = []
+for k in range(nb):                                           # петля, брошенная небрежно: эллипс с изгибом
+    t = 2 * math.pi * k / nb
+    pts.append((RX + 1.6 * math.cos(t) + .25 * math.sin(2 * t), RY + 1.05 * math.sin(t) - .15 * math.cos(3 * t)))
+for x, y in pts:
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=.34 * CM * 1.6, location=(x, y, .34 * CM * 1.6), segments=24, ring_count=12)
+    bd = bpy.context.object; bd.data.materials.append(amber)
+    for p_ in bd.data.polygons: p_.use_smooth = True
+cu = bpy.data.curves.new('cord', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = .05 * CM * 1.6
+sp = cu.splines.new('POLY'); sp.points.add(len(pts)); sp.use_cyclic_u = True
+for p_, (x, y) in zip(sp.points, pts + [pts[0]]): p_.co = (x, y, .34 * CM * 1.6, 1)
+cd = bpy.data.objects.new('cord', cu); sc.collection.objects.link(cd); cd.data.materials.append(cord)
+# хвост: две бусины и серебряный армянский крест (концы с «ласточкиными хвостами»)
+tx, ty = pts[nb // 4]
+tail = [(tx + .05, ty + .35 * k) for k in range(1, 3)]
+for x, y in tail:
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=.3 * CM * 1.6, location=(x, y, .3 * CM * 1.6)); bpy.context.object.data.materials.append(amber)
+cx, cy = tx + .05, ty + 1.45
+# армянский крест: ветви расширяются к концам и раздваиваются завитками; плоский серебряный, с ушком сверху
+def arm_pts(L, w0, w1):
+    """контур одной ветви вдоль +y: от центра к раздвоенному концу"""
+    return [(-w0, w0), (-w1, L * .82), (-w1 * 1.25, L), (-w1 * .35, L * .9), (0, L * .97), (w1 * .35, L * .9), (w1 * 1.25, L), (w1, L * .82), (w0, w0)]
+outline = []
+# крест лежит длинной ветвью от чёток (к +y), ушко — на короткой ветви у бусин
+for ang, L in ((0, .62), (-90, .42), (180, .5), (90, .42)):   # +y, вправо, −y, влево; ветви стыкуются в углах (±w0, ±w0)
+    ca, sa = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+    outline += [(x * ca - y * sa, x * sa + y * ca) for x, y in arm_pts(L, .07, .13)][:-1]
+crv = bpy.data.curves.new('cross', 'CURVE'); crv.dimensions = '2D'; crv.fill_mode = 'BOTH'; crv.extrude = .02; crv.bevel_depth = .006
+spl = crv.splines.new('POLY'); spl.points.add(len(outline) - 1); spl.use_cyclic_u = True
+for p_, (x, y) in zip(spl.points, outline): p_.co = (x, y, 0, 1)
+cr = bpy.data.objects.new('cross', crv); sc.collection.objects.link(cr); cr.location = (cx, cy, .03); cr.data.materials.append(silver2)
+bpy.ops.mesh.primitive_torus_add(major_radius=.06, minor_radius=.015, location=(cx, cy - .56, .03)); bpy.context.object.data.materials.append(silver2)
+# нитка от хвоста к ушку
+cu2 = bpy.data.curves.new('cord2', 'CURVE'); cu2.dimensions = '3D'; cu2.bevel_depth = .05 * CM * 1.6
+sp2 = cu2.splines.new('POLY'); sp2.points.add(2)
+for p_, c_ in zip(sp2.points, [(tx, ty, .34 * CM * 1.6), (tail[-1][0], tail[-1][1], .3 * CM * 1.6), (cx, cy - .62, .03)]): p_.co = (*c_, 1)
+o2 = bpy.data.objects.new('cord2', cu2); sc.collection.objects.link(o2); o2.data.materials.append(cord)
+
+# без навеса: для отдельного слоя тени (листва качается в игре)
+if os.environ.get('NOVINE'):
+    for o in leaves.all_objects: o.hide_render = True
+
 # ---------- свет и камера ----------
 sun = bpy.data.lights.new('sun', 'SUN'); sun.energy = 4.6; sun.angle = math.radians(1.4); sun.color = (1, .93, .8)
 so = bpy.data.objects.new('sun', sun); sc.collection.objects.link(so); so.rotation_euler = (SUN[0], SUN[1], 0)
@@ -168,7 +232,8 @@ sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = int(o
 sc.render.resolution_x, sc.render.resolution_y = 2400, 1500
 sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'Medium Contrast'
 sc.render.image_settings.file_format = 'PNG'
-sc.render.filepath = os.path.join(ROOT, '.preview', 'blender-table.png')
+NV = bool(os.environ.get('NOVINE'))
+sc.render.filepath = os.path.join(ROOT, '.preview', 'blender-table%s.png' % ('-novine' if NV else ''))
 bpy.ops.render.render(write_still=True)
-Image.open(sc.render.filepath).convert('RGB').save(os.path.join(ROOT, 'boards', 'table.webp'), 'WEBP', quality=80, method=6)
-print('saved table')
+if not NV: Image.open(sc.render.filepath).convert('RGB').save(os.path.join(ROOT, 'boards', 'table.webp'), 'WEBP', quality=80, method=6)
+print('saved table', 'novine' if NV else '')

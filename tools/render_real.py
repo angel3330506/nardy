@@ -126,7 +126,7 @@ def hinge(alb, h, metal, x, y):
     return alb, h, metal
 
 
-def board_arevakhach(layers=False):
+def board_arevakhach(layers=False, center=None):
     """layers=True — вместо картинки вернуть слои для 3D-рендера (tools/blender_board.py): высоты, маски дерева и металла.
     Тогда «основное дерево» = (1,0,0), «светлый бук» = (0,1,0): после всех затемнений R и G — доли и тон каждого."""
     STAIN = (.30, .165, .075)                                 # «орех» на буке, как на фото
@@ -198,14 +198,16 @@ def board_arevakhach(layers=False):
     alb = alb * (1 - burn[..., None] * .8)
     # аревахач в центре половины: лопасти — светлый бук, между ними тонкие тёмные линии; вокруг витой жгут
     for cx in (250, 750):
-        sl, union, petals, angles = arevakhach_masks(cx, 350, 99, n=12, band=.02)
-        a = alb[sl]
-        for k, pm in enumerate(petals):
-            tex = (light if k % 2 else light_h)[sl] * (.96 + .06 * (k % 2))
-            a = a * (1 - pm[..., None]) + tex * pm[..., None]
-        alb[sl] = a
-        lit = np.max(petals, axis=0)
-        h[sl] -= np.clip(union - lit, 0, 1) * .6
+        if center: alb, h = center(alb, h, cx, light)        # другой рисунок в медальоне (гранат, Севан)
+        else:
+            sl, union, petals, angles = arevakhach_masks(cx, 350, 99, n=12, band=.02)
+            a = alb[sl]
+            for k, pm in enumerate(petals):
+                tex = (light if k % 2 else light_h)[sl] * (.96 + .06 * (k % 2))
+                a = a * (1 - pm[..., None]) + tex * pm[..., None]
+            alb[sl] = a
+            lit = np.max(petals, axis=0)
+            h[sl] -= np.clip(union - lit, 0, 1) * .6
         rope, rb = rope_ring(cx, 350, 112, 131, n=64)
         alb = put(alb, rb * .85, light)
         groove = rb * (1 - np.clip(rope * 1.6, 0, 1))
@@ -351,18 +353,94 @@ def board_lid_layers():
 
 
 # Дерево как на «Армении»: фото шпона ореха с сильным рисунком волокон. Тон у каждой доски свой.
-WOOD_TONE = {'ararat': ((.52, .33, .15), (.30, .17, .07)), 'lid': ((.52, .33, .15), (.30, .17, .07))}
+WOOD_TONE = {'ararat': ((.52, .33, .15), (.30, .17, .07)), 'lid': ((.52, .33, .15), (.30, .17, .07)),
+             'pomegranate': ((.46, .28, .13), (.26, .14, .06)), 'sevan': ((.50, .32, .15), (.28, .16, .07))}
+RED = ((.62, .12, .08), (.40, .06, .04))                         # красная инкрустация (падук, тон граната)
+FIELD_TONE = {'sevan': ((.20, .34, .52), (.08, .17, .30))}      # поля «Севана» — шпон, тонированный в цвет озера
 INLAY = ((.97, .90, .74), (.88, .76, .56))                    # светлый клён/бук инкрустации
 
+
+
+def _paint(alb, m, rgb):
+    """залить маску m цветом канала: (1,0,0) — тёмное дерево, (0,1,0) — светлая инкрустация, (0,0,1) — красная"""
+    return alb * (1 - m[..., None]) + np.array(rgb, float)[None, None] * m[..., None]
+
+
+def pomegranate_center(alb, h, cx, light):
+    """Гранат маркетри: круглый плод из красного дерева с короной, листья из светлого клёна, справа — разрезанная
+    половинка: светлая мякоть с красными зёрнами. Контуры — выжженная линия."""
+    cy = 352
+    body = circle(cx - 14, cy + 8, 60)
+    crown = poly([(cx - 34, cy - 44), (cx - 26, cy - 72), (cx - 18, cy - 54), (cx - 10, cy - 78), (cx - 2, cy - 54), (cx + 6, cy - 72), (cx + 10, cy - 44)])
+    fruit = np.clip(body + crown, 0, 1)
+    leaves = np.zeros((H, W))
+    for (lx, ly, ang) in ((cx - 30, cy - 56, -150), (cx + 2, cy - 58, -25)):   # листья растут от короны
+        a_ = math.radians(ang); ca, sa = math.cos(a_), math.sin(a_)
+        pts = [(lx + ca * t * 40 - sa * math.sin(math.pi * t) * 12, ly + sa * t * 40 + ca * math.sin(math.pi * t) * 12) for t in np.linspace(0, 1, 16)]
+        pts += [(lx + ca * t * 40 + sa * math.sin(math.pi * t) * 12, ly + sa * t * 40 - ca * math.sin(math.pi * t) * 12) for t in np.linspace(1, 0, 16)]
+        leaves = np.maximum(leaves, poly(pts))
+    half = circle(cx + 52, cy + 30, 40)
+    pulp = circle(cx + 52, cy + 30, 33)
+    alb = _paint(alb, leaves * (1 - fruit), (0, 1, 0))
+    alb = _paint(alb, fruit, (0, 0, 1))
+    alb = _paint(alb, half, (0, 0, 1)); alb = _paint(alb, pulp, (0, 1, 0))
+    rng = np.random.default_rng(int(cx))
+    seeds = np.zeros((H, W))
+    for _ in range(46):
+        r_, a_ = 28 * math.sqrt(rng.random()), rng.random() * 2 * math.pi
+        seeds = np.maximum(seeds, circle(cx + 52 + r_ * math.cos(a_), cy + 30 + r_ * math.sin(a_), 3.2))
+    alb = _paint(alb, seeds * pulp, (0, 0, 1))
+    shapes = np.clip(fruit + leaves + half, 0, 1)
+    burn = outline(shapes, .9) + outline(pulp, .7) * .7
+    alb = alb * (1 - np.clip(burn, 0, 1)[..., None] * .8)
+    # плод выпуклый, мякоть чуть ниже кожуры
+    d = ndi.distance_transform_edt(fruit > .5) / S
+    h += fruit * np.clip(d / 18, 0, 1) ** .6 * 1.6 + half * .8 - pulp * .4 + seeds * pulp * .5
+    return alb, h
+
+
+def sevan_center(alb, h, cx, light):
+    """Севан маркетри: на полуострове — силуэт Севанаванка (два храма с коническими куполами) из тёмного ореха,
+    над ним небо из светлого клёна, внизу — гребни волн, разделённые выжженными линиями."""
+    cy = 350; R_ = 98
+    disc = circle(cx, cy, R_)
+    alb = _paint(alb, disc, (0, 1, 0))
+    yy, xx = np.mgrid[0:H, 0:W] / S
+    water = disc * (yy > cy + 18)
+    # волны: синусоидальные полосы, тёмные линии между ними
+    ph = ((yy - cy - 18) / 13 + .25 * np.sin((xx - cx) / 14)) % 1
+    wave_l = water * (np.abs(ph - .5) < .07)
+    alb = _paint(alb, water * (ph < .5) * .35, (1, 0, 0))
+    alb = alb * (1 - wave_l[..., None] * .8)
+    # берег-полуостров и храмы
+    shore = poly([(cx - 70, cy + 22), (cx - 40, cy + 6), (cx + 10, cy + 2), (cx + 60, cy + 12), (cx + 82, cy + 22)]) * disc
+    church = np.zeros((H, W))
+    for (x0, w_, h_, dh) in ((cx - 34, 30, 30, 26), (cx + 8, 24, 24, 22)):
+        church = np.maximum(church, poly([(x0, cy + 6), (x0, cy + 6 - h_), (x0 + w_, cy + 6 - h_), (x0 + w_, cy + 6)]))
+        church = np.maximum(church, poly([(x0 + w_ * .25, cy + 6 - h_), (x0 + w_ * .25, cy + 6 - h_ - 10), (x0 + w_ * .75, cy + 6 - h_ - 10), (x0 + w_ * .75, cy + 6 - h_)]))
+        church = np.maximum(church, poly([(x0 + w_ * .18, cy + 6 - h_ - 10), (x0 + w_ / 2, cy + 6 - h_ - 10 - dh), (x0 + w_ * .82, cy + 6 - h_ - 10)]))
+    hills = poly([(cx - 98, cy - 12), (cx - 60, cy - 36), (cx - 20, cy - 22), (cx + 30, cy - 44), (cx + 98, cy - 14), (cx + 98, cy + 20), (cx - 98, cy + 20)]) * disc * (yy < cy + 20)
+    alb = _paint(alb, hills * .35, (1, 0, 0))
+    alb = _paint(alb, np.clip(shore + church, 0, 1), (1, 0, 0))
+    sun = circle(cx + 46, cy - 52, 13)
+    alb = _paint(alb, sun, (0, 0, 1))
+    burn = outline(disc, .8) + outline(np.clip(shore + church, 0, 1), .7) + outline(hills, .6) * .5 + outline(sun, .6)
+    alb = alb * (1 - np.clip(burn, 0, 1)[..., None] * .75)
+    h += np.clip(shore + church, 0, 1) * 1.0 - wave_l * .5
+    return alb, h
 
 def to_generic(name, L):
     """Слои board_arevakhach/board_lid_layers (R — тёмное дерево, G — инкрустация) → цветные слои для blender_generic.py."""
     h_, w_ = L['h'].shape
     dark = photo_wood(h_, w_, *WOOD_TONE[name], seed=11, vertical=True, contrast=.85)
     light = photo_wood(h_, w_, *INLAY, seed=12, vertical=True, contrast=.3)
-    a = L['alb']; R, G_ = a[..., :1], a[..., 1:2]
+    a = L['alb']; R, G_, B_ = a[..., :1], a[..., 1:2], a[..., 2:3]
     metal = L['metal'][..., None]
-    alb = dark * R + light * G_
+    if name in FIELD_TONE:                                    # поля другим тоном, рама остаётся орехом
+        fld = np.maximum(rrect(34, 34, 466, 666, 8), rrect(534, 34, 966, 666, 8))[..., None]
+        dark = dark * (1 - fld) + photo_wood(h_, w_, *FIELD_TONE[name], seed=13, vertical=True, contrast=.6) * fld
+    red = photo_wood(h_, w_, *RED, seed=14, vertical=True, contrast=.5)
+    alb = dark * R + light * G_ + red * B_ * (1 - metal)
     alb = alb * (1 - metal) + a * metal
     out = dict(h=L['h'], alb=alb, gloss=np.ones_like(L['h']), metal=L['metal'], alpha=L['body'])
     np.savez_compressed(os.path.join(os.path.dirname(__file__), '..', '.preview', f'layers-{name}.npz'),
@@ -372,6 +450,9 @@ def to_generic(name, L):
 if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == 'layers':
         sys.exit(dump_layers(sys.argv[2]))
+    if sys.argv[1:] == ['new']:
+        to_generic('pomegranate', board_arevakhach(layers=True, center=pomegranate_center))
+        to_generic('sevan', board_arevakhach(layers=True, center=sevan_center)); sys.exit()
     if sys.argv[1:] == ['generic']:
         to_generic('ararat', board_arevakhach(layers=True)); to_generic('lid', board_lid_layers()); sys.exit()
     if sys.argv[1:] == ['lid']:

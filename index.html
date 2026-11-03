@@ -179,13 +179,6 @@ border-radius:12px;opacity:0}
 html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw)) + min(calc(92 * var(--vw)),400px) / 2))}
 .mbtns{display:grid;gap:10px}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.micons{opacity:0;pointer-events:none}
-/* при раскрытии доска уезжает в центр: раскрытая она вдвое шире */
-.case{transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
-#menu.opening .case{transform:translateX(-50%)}
-html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw)) + min(calc(92 * var(--vw)),400px) / 2))}
-.mbtns{display:grid;gap:10px}
-.mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .plq{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;border-radius:6px;padding:13px 14px;
   background:#c9a37a url(boards/maple.webp) center/cover;color:#3a200b;font-weight:700;font-size:17px;text-shadow:0 1px 0 rgba(255,240,215,.5);
   box-shadow:inset 0 2px 1px rgba(255,240,215,.55),inset 0 -3px 2px rgba(70,35,10,.45),inset 2px 0 1px rgba(255,240,215,.25),inset -2px 0 1px rgba(70,35,10,.3),0 6px 12px rgba(0,0,0,.5)}
@@ -278,6 +271,17 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
   animation:swirl 1.3s ease-in-out forwards}
 @keyframes swirl{from{transform:translate(-50%,-50%) rotate(0);opacity:.9}to{transform:translate(-50%,-50%) rotate(900deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){.steam,.swirl{display:none}}
+.opps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opps button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:8px 10px}
+.opps button i{grid-row:span 2;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--display);font-size:20px;color:#f3d993;border:1.5px solid var(--gold);box-shadow:inset 0 2px 6px rgba(0,0,0,.5)}
+.opps button b{font-weight:500;font-size:14px}.opps button span{font-size:12px;color:var(--muted)}
+.opps button.on{border-color:var(--gold);background:rgba(217,181,106,.12)}
+/* реплика соперника — облачко под его именем в верхней строке */
+.bubble{position:absolute;right:clamp(40px,8cqw,90px);top:calc(clamp(32px,8.5cqh,46px) + 12px);z-index:7;max-width:min(46%,320px);
+  background:#f4ead6;color:#2a1a0c;border-radius:14px;padding:8px 13px;font-size:14px;line-height:1.3;box-shadow:0 8px 24px rgba(0,0,0,.5);
+  opacity:0;transform:translateY(-6px) scale(.96);transition:opacity .25s,transform .25s;pointer-events:none}
+.bubble::before{content:"";position:absolute;top:-7px;right:34px;border:7px solid transparent;border-top:0;border-bottom-color:#f4ead6}
+.bubble.show{opacity:1;transform:none}
 .nettext{margin:0;color:var(--muted);font-size:14.5px}
 .netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
@@ -356,7 +360,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
         <button data-vox="music">Дудук при старте</button>
       </div>
       <div id="dLevelBox">
-        <h4>Сложность компьютера</h4>
+        <h4>Соперник</h4>
         <p class="dlevel"><b id="dLevel"></b><span>Во время партии не меняется — выберите в настройках главного меню перед новой игрой.</span></p>
       </div>
       <div class="dfoot">
@@ -379,6 +383,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
     </div>
   </div>
   <div class="toasts" id="toasts"></div>
+  <div class="bubble" id="bubble" role="status"></div>
   <div class="tablefx" id="tablefx" aria-hidden="true">
     <div class="hot" id="hotTea" title="Кофе"></div>
     <div class="hot" id="hotSugar" title="Сахар"></div>
@@ -400,7 +405,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
       <h1 class="mtitle">Нарды</h1>
       <div class="mbtns">
         <button class="plq main" id="mContinue" hidden>Продолжить партию<span class="cap" id="contCap"></span></button>
-        <button class="plq" id="mAi">Играть с компьютером<span class="cap" id="lvlCap"></span></button>
+        <button class="plq" id="mAi">Играть с соперником<span class="cap" id="lvlCap"></span></button>
         <div class="mrow">
           <button class="plq" id="mPvp">Вдвоём<span class="cap">на одном телефоне</span></button>
           <button class="plq" id="mNet">С другом<span class="cap">по ссылке</span></button>
@@ -419,11 +424,12 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
     <h3>Настройки</h3>
     <h4>Доска</h4>
     <div class="skins" id="skins"></div>
-    <h4>Сложность компьютера</h4>
-    <div class="seg" id="levels">
-      <button data-lvl="easy">Лёгкий</button>
-      <button data-lvl="medium">Средний</button>
-      <button data-lvl="hard">Сильный</button>
+    <h4>Соперник</h4>
+    <div class="opps" id="levels">
+      <button data-lvl="easy"><i style="background:#7a4b2a">А</i><b>Арам</b><span>новичок</span></button>
+      <button data-lvl="medium"><i style="background:#5b3a1e">Ա</i><b>Дядя Ашот</b><span>средний</span></button>
+      <button data-lvl="hard"><i style="background:#6e1f1c">Ս</i><b>Бабушка Сирануш</b><span>сильная</span></button>
+      <button data-lvl="expert"><i style="background:#2c3a4d">Գ</i><b>Варпет Гурген</b><span>мастер</span></button>
     </div>
     <p class="hint" id="lvlHint"></p>
     <h4>Звук</h4>
@@ -506,7 +512,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='39';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='40';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -669,12 +675,18 @@ function enumerate(ctx){
   })(ctx,[]);
   return [...ends.values()];
 }
+// гонка: шашки уже разошлись (ни одна не должна обгонять чужие) — важны только очки и выброс
+function noContact(s){
+  for(let q=0;q<24;q++){ const i=P(0,q); if(own(s,i,1)){ for(let r=q+1;r<24;r++) if(own(s,P(0,r),0)) return false; } }
+  return true;
+}
 function aiChoose(level){
   const pl=G.turn, ends=enumerate(curCtx());
   if(!ends.length) return [];
   if(level==='easy'){
+    // Арам: азартный — любит продвигать шашки, мало думает о заборах
     let best=null,bv=-1e9;
-    for(const e of ends){const v=evaluate(e.s,pl)+Math.random()*14;if(v>bv){bv=v;best=e;}}
+    for(const e of ends){const v=evaluate(e.s,pl)-pips(e.s,pl)*.6+Math.random()*14;if(v>bv){bv=v;best=e;}}
     return best.path;
   }
   if(level!=='hard'){
@@ -682,9 +694,10 @@ function aiChoose(level){
     for(const e of ends){const v=evaluate(e.s,pl)+Math.random()*0.8;if(v>bv){bv=v;best=e;}}
     return best.path;
   }
-  // сильный: лучшие 4 варианта проверяем на все 21 бросок соперника
-  const opp=1-pl;
-  const cands=ends.map(e=>({e,v:V(e.s,pl)})).sort((a,b)=>b.v-a.v).slice(0,4);
+  // сильный: лучшие 4 варианта проверяем на все 21 бросок соперника; мастер — 8 вариантов и чувство гонки
+  const opp=1-pl, expert=level==='expert';
+  const VV=expert?((s,p)=>noContact(s)?(pips(s,1-p)-pips(s,p))*1.6+(s.off[p]-s.off[1-p])*6:V(s,p)):V;
+  const cands=ends.map(e=>({e,v:VV(e.s,pl)})).sort((a,b)=>b.v-a.v).slice(0,expert?8:4);
   if(cands.length===1) return cands[0].e.path;
   let best=cands[0].e,bv=-1e9;
   for(const c of cands){
@@ -693,8 +706,8 @@ function aiChoose(level){
       const w=a===b?1:2, rem=a===b?[a,a,a,a]:[a,b];
       const hl=(G.first[opp]&&a===b&&(a===3||a===4||a===6))?2:1;
       const replies=enumerate({s:c.e.s,pl:opp,rem,headUsed:0,headLimit:hl});
-      let worst=replies.length?1e9:V(c.e.s,pl);
-      for(const o of replies){const v=V(o.s,pl);if(v<worst)worst=v;}
+      let worst=replies.length?1e9:VV(c.e.s,pl);
+      for(const o of replies){const v=VV(o.s,pl);if(v<worst)worst=v;}
       exp+=w*worst;
     }
     exp=exp/36+c.v*0.15;
@@ -843,9 +856,31 @@ const isHuman=pl=>mode==='pvp'||pl===(mode==='net'?G.me:0);
 const isAI=pl=>mode==='ai'&&pl===1;
 const who=pl=>mode==='net'?(pl===G.me?'Вы':'Друг'):NAME[pl];
 const NAME=['Белые','Чёрные'];
-const LEVELS={easy:['Лёгкий','лёгкий','Часто ошибается, подходит для знакомства с правилами.'],
-              medium:['Средний','средний','Строит заборы и не копит шашки кучей.'],
-              hard:['Сильный','сильный','Просчитывает все ответные броски соперника. Думает до пары секунд.']};
+// Соперники с характером: уровень игры, манера (style: risk — гонит вперёд, safe — строит заборы) и фразы
+const LEVELS={
+  easy:['Арам','Арам из соседнего двора','Молодой и азартный: гонит шашки вперёд и часто ошибается. Для знакомства с игрой.','А','#7a4b2a'],
+  medium:['Дядя Ашот','дядя Ашот','Осторожный: строит заборы, не копит шашки кучей, зря не рискует.','Ա','#5b3a1e'],
+  hard:['Бабушка Сирануш','бабушка Сирануш','Играет полвека. Просчитывает ответные броски соперника. Думает до пары секунд.','Ս','#6e1f1c'],
+  expert:['Варпет Гурген','варпет Гурген','Мастер двора: считает глубже бабушки и чувствует гонку. Думает до нескольких секунд.','Գ','#2c3a4d']
+};
+const PHRASES={
+  easy:{start:['Давай, кто кого!','Сыграем по-быстрому?'],myDouble:['Ду-шеш! Вот это я понимаю!','Ха, дубль!'],yourDouble:['Везёт же тебе…','Ну ничего, отыграюсь'],
+    win:['Я выиграл! Ещё разок?','Вот так-то!'],lose:['Эх… ещё партию!','Ты сегодня в ударе'],mars:['Марс! Не обижайся, джан'],slow:['Ну что, ходить будем?']},
+  medium:{start:['Садись, сыграем. Не торопись.','Ну, бросай, посмотрим.'],myDouble:['Хорошо легли.','Дубль — к делу.'],yourDouble:['Неплохо, неплохо.','Повезло тебе, джан.'],
+    win:['Хорошая партия. Спасибо.','Опыт не пропьёшь.'],lose:['Молодец, сынок. Честно выиграл.','Ну ты дал!'],mars:['Марс, дорогой. Бывает.'],slow:['Думай, думай, я не спешу.']},
+  hard:{start:['Ну, внучок, покажи, чему научился.','Садись, чай остынет.'],myDouble:['Ай, молодец кубики.','Вот и мне повезло.'],yourDouble:['Ишь ты, дубль.','Ну-ну…'],
+    win:['Учись, пока я жива.','Ничего, в следующий раз.'],lose:['Ах ты! Обыграл бабушку.','Молодец, порадовал.'],mars:['Марс, родной. Иди чай пей.'],slow:['Ты уснул там?']},
+  expert:{start:['Посмотрим, что ты умеешь.','Нарды — это терпение.'],myDouble:['Как заказывал.','Так и было задумано.'],yourDouble:['Пока везёт.','Удача — не мастерство.'],
+    win:['Партия.','Неплохо держался.'],lose:['Достойно. Уважаю.','Сегодня твой день.'],mars:['Марс. Учись строить дом.'],slow:['Хороший ход стоит подумать.']}
+};
+const opp=()=>LEVELS[(G&&G.level)||settings.level];
+function say(kind,chance=1){
+  if(mode!=='ai'||Math.random()>chance) return;
+  const l=PHRASES[(G&&G.level)||settings.level][kind]; if(!l) return;
+  const el=$('bubble'); el.textContent=l[Math.random()*l.length|0];
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(say.t); say.t=setTimeout(()=>el.classList.remove('show'),3800);
+}
 function curCtx(){return {s:G.s,pl:G.turn,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit};}
 function refreshSteps(){G.steps=G.phase==='move'?legalSteps(curCtx(),new Map()):[];G.targets=null;}
 
@@ -862,6 +897,7 @@ function newGame(m){
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
   showGame();
   render(); sOpen();
+  if(mode==='ai') setTimeout(()=>say('start'),1600);
   later(rollOff,650);
 }
 function resumeGame(){
@@ -1099,7 +1135,7 @@ function rolled(a,b,land,after,instant){
       else { if(NET) NET.hold=true; later(()=>{ if(NET) NET.hold=false; endTurn(); },1600); }
       return;
     }
-    if(isHuman(G.turn)) setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`);
+    if(isHuman(G.turn)){ setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`); if(a===b&&!instant) say('yourDouble',.5); }
     else if(mode==='net') setStatus(`Друг: <b>${a}–${b}</b>. Ходит…`);
     render();
     after&&after();
@@ -1220,10 +1256,11 @@ function endTurn(){
 }
 function humanEnd(){ if(mode==='net'){ if(!G.netPend) netSend({t:'end'}); } else endTurn(); }
 function aiTurn(){
-  setStatus('Компьютер бросает…');
+  setStatus(`${opp()[0]} бросает…`);
   doRoll(()=>{
     const [a,b]=G.dice;
-    setStatus(`Компьютер: <b>${a}–${b}</b>. Думает…`);
+    if(a===b) say('myDouble',.7);
+    setStatus(`${opp()[0]}: <b>${a}–${b}</b>. Думает…`);
     later(aiPlay,380);
   });
 }
@@ -1242,6 +1279,7 @@ function gameOver(pl){
   score[pl]+=pts; saveScore(); render();
   if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
   recordGame(pl,mars);
+  if(mode==='ai') setTimeout(()=>say(pl===1?(mars?'mars':'win'):'lose'),700);
   $('bReview').hidden=!(mode==='ai');
   $('wTitle').textContent=mode!=='pvp'?(pl===(mode==='net'?G.me:0)?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
   $('wText').textContent=(mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
@@ -1309,10 +1347,11 @@ $('hotSugar').addEventListener('click',e=>{
 const ACH=[
   ['first','🏆','Первая победа','Выиграть партию'],
   ['mars','🔥','Марс!','Выиграть, пока у соперника ни одной шашки не выброшено'],
-  ['medium','🎯','Уверенная игра','Победить компьютер на среднем уровне'],
-  ['hard','🧠','Гроссмейстер','Победить сильный компьютер'],
+  ['medium','🎯','Уважение дяди Ашота','Обыграть дядю Ашота'],
+  ['hard','🧠','Внук бабушки Сирануш','Обыграть бабушку Сирануш'],
+  ['expert','👑','Ученик варпета','Обыграть варпета Гургена'],
   ['streak3','✨','Три подряд','Три победы подряд'],
-  ['streak10','👑','Непобедимый','Десять побед подряд'],
+  ['streak10','🏅','Непобедимый','Десять побед подряд'],
   ['fast','⚡','Блиц','Победить меньше чем за 22 своих хода'],
   ['clean','🪶','Без сомнений','Победить, ни разу не отменив ход'],
   ['games10','🎲','Завсегдатай','Сыграть 10 партий'],
@@ -1341,7 +1380,8 @@ function recordGame(winner,mars){
       const t=G.turns[me]; if(!st.fastest||t<st.fastest) st.fastest=t;
       unlock(st,'first'); if(mars) unlock(st,'mars');
       if(mode==='ai'&&G.level==='medium') unlock(st,'medium');
-      if(mode==='ai'&&G.level==='hard'){ unlock(st,'medium'); unlock(st,'hard'); }
+      if(mode==='ai'&&(G.level==='hard'||G.level==='expert')){ unlock(st,'medium'); unlock(st,'hard'); }
+      if(mode==='ai'&&G.level==='expert') unlock(st,'expert');
       if(st.streak>=3) unlock(st,'streak3'); if(st.streak>=10) unlock(st,'streak10');
       if(t<22) unlock(st,'fast'); if(!G.undos) unlock(st,'clean'); if(mode==='net') unlock(st,'net');
     }else{ st.losses++; st.streak=0; }
@@ -1810,7 +1850,7 @@ function renderPanel(){
   if(mode==='net') for(const pl of [0,1]) $('n'+pl).textContent=pl===G.me?'Вы':'Друг'+(NET&&NET.ready&&!NET.opp?' · не в сети':'');
   else{
     $('n0').textContent=mode==='ai'?'Вы':'Белые';
-    $('n1').textContent=mode==='ai'?`Компьютер · ${LEVELS[G.level||settings.level][1]}`:'Чёрные';
+    $('n1').textContent=mode==='ai'?opp()[0]:'Чёрные';
   }
   const human=isHuman(G.turn);
   $('bMain').hidden=!(G.phase==='move'&&human&&!busy&&!G.auto&&!G.steps.length&&!G.netPend);
@@ -1852,9 +1892,9 @@ function showMenu(){
   $('mContinue').hidden=!(v||(NET&&NET.started));
   $('mAi').classList.toggle('main',!v);   // .main — крупная табличка
   const cm=NET&&NET.started?'net':v&&v.mode;
-  $('contCap').textContent=cm==='ai'?`с компьютером · ${LEVELS[v.level||settings.level][1]}`:cm==='pvp'?'вдвоём':cm==='net'?'с другом по сети':'';
+  $('contCap').textContent=cm==='ai'?`с соперником: ${LEVELS[v.level||settings.level][1]}`:cm==='pvp'?'вдвоём':cm==='net'?'с другом по сети':'';
   $('case').classList.remove('open'); $('menu').classList.remove('opening');
-  $('lvlCap').textContent='Сложность: '+LEVELS[settings.level][1];
+  $('lvlCap').textContent='Соперник: '+LEVELS[settings.level][1];
   let sc='';
   try{const all=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};
     if(all.ai&&(all.ai[0]||all.ai[1])) sc+=`С компьютером ${all.ai[0]} : ${all.ai[1]}`;
@@ -1888,8 +1928,8 @@ function paintSettings(){
   document.querySelectorAll('#levels button').forEach(b=>b.classList.toggle('on',b.dataset.lvl===settings.level));
   document.querySelectorAll('#sounds button').forEach(b=>b.classList.toggle('on',(b.dataset.snd==='on')===settings.sound));
   const playing=mode==='ai'&&G&&G.phase!=='over'&&(G.level||settings.level)!==settings.level;
-  $('lvlHint').textContent=LEVELS[settings.level][2]+(playing?` Начатая партия доигрывается на уровне «${LEVELS[G.level][1]}», новый — со следующей.`:'');
-  $('lvlCap').textContent='Сложность: '+LEVELS[settings.level][1];
+  $('lvlHint').textContent=LEVELS[settings.level][2]+(playing?` Начатую партию доиграет ${LEVELS[G.level][1]}, выбранный соперник сядет со следующей.`:'');
+  $('lvlCap').textContent='Соперник: '+LEVELS[settings.level][1];
 }
 for(const id of ['skins','dSkins']) $(id).addEventListener('click',e=>{const b=e.target.closest('.skin'); if(!b) return; settings.skin=b.dataset.skin; saveSettings(); buildStatic(); if(G) render(); paintSettings();});
 $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.level=b.dataset.lvl; saveSettings(); paintSettings(); if(G) renderPanel();});

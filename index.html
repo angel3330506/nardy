@@ -4,7 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Нарды</title>
-<meta name="description" content="Длинные армянские нарды с воровскими звёздами">
+<meta name="description" content="Длинные армянские нарды ручной работы: играйте с компьютером, вдвоём на одном телефоне или с другом по ссылке. Бесплатно, без регистрации.">
+<!-- превью ссылки в мессенджерах и соцсетях -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Нарды">
+<meta property="og:title" content="Нарды — длинные армянские нарды">
+<meta property="og:description" content="Играйте с компьютером, вдвоём или с другом по ссылке. Резные доски, кофе во дворике и честные кубики. Бесплатно, без регистрации.">
+<meta property="og:url" content="https://angel3330506.github.io/nardy/">
+<meta property="og:image" content="https://angel3330506.github.io/nardy/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Нарды — длинные армянские нарды">
+<meta name="twitter:image" content="https://angel3330506.github.io/nardy/og.jpg">
 <meta name="theme-color" content="#0c0b0a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -491,6 +504,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
       <div class="install" id="iosHint" hidden>Чтобы играть как в приложении: в Safari нажмите <b>«Поделиться»</b> → <b>«На экран „Домой“»</b>.</div>
       <div class="scoreline" id="scoreline"></div>
       <div class="scoreline" id="appVer" style="opacity:.6"></div>
+      <a class="scoreline" href="privacy.html" target="_blank" style="opacity:.6;color:inherit">Конфиденциальность</a>
     </div>
   </div>
 </div>
@@ -549,7 +563,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
     <div class="seg vox" style="grid-template-columns:1fr">
       <button data-vox="music">Дудук при старте</button>
     </div>
-    <p class="hint">Дудук: запись «Sound of Armenian Duduk», автор איליה מעזיה, Wikimedia Commons, CC BY-SA 4.0.</p>
+    <p class="hint">Дудук: запись «Sound of Armenian Duduk», автор איליה מעזיה, Wikimedia Commons, CC BY-SA 4.0. <a href="privacy.html" target="_blank" style="color:var(--gold-hi)">Конфиденциальность</a></p>
     <button class="link" id="sBug" style="background:none;border:0;color:var(--muted);text-decoration:underline;font-size:13px;align-self:flex-start">Сообщить об ошибке</button>
     <button class="primary done" id="bSettingsClose">Готово</button>
   </div>
@@ -644,7 +658,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='46';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='47';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 

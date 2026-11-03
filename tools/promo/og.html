@@ -1,0 +1,21 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=Onest:wght@500&display=swap">
+<style>
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#1c120a url(../../boards/table.webp) center/cover}
+.v{position:absolute;inset:0;background:radial-gradient(ellipse at 38% 50%,transparent 35%,rgba(0,0,0,.6))}
+.board{position:absolute;left:40px;top:62px;width:796px;filter:drop-shadow(0 20px 26px rgba(0,0,0,.6))}
+.board img{width:100%;display:block}
+.ck{position:absolute;width:44px}
+.t{position:absolute;right:42px;top:150px;width:300px;text-align:center;color:#f3dfb4;font-family:Forum,serif}
+.t h1{margin:0;font-weight:400;font-size:92px;letter-spacing:.05em;text-shadow:0 3px 0 rgba(60,30,8,.6),0 6px 22px rgba(0,0,0,.8)}
+.t p{margin:10px 0 0;font-family:Onest,sans-serif;font-size:24px;line-height:1.35;color:#ecd6a6;text-shadow:0 2px 8px #000}
+.t b{display:inline-block;margin-top:26px;padding:12px 26px;border-radius:8px;background:#d7b27a;color:#3a200b;font-family:Onest,sans-serif;font-size:22px;box-shadow:0 6px 14px rgba(0,0,0,.5)}
+</style></head><body>
+<div class="board" id="b"><img src="../../boards/ararat.webp"></div>
+<div class="v"></div>
+<div class="t"><h1>Нарды</h1><p>Длинные армянские нарды —<br>с компьютером, вдвоём<br>и с другом по сети</p><b>Играть бесплатно</b></div>
+<script>
+// шашки в начальной позиции: голова белых справа внизу, чёрных слева вверху
+const b=document.getElementById('b'), k=796/1100;
+for(let n=0;n<6;n++){ for(const [x,y,c] of [[925,630-n*24,'beech'],[75,70+n*24,'walnut']]){ const i=document.createElement('img'); i.className='ck'; i.src='../../boards/ck-'+c+'.png'; i.style.left=(x-30)*k+'px'; i.style.top=(y-30)*k+'px'; i.style.width=60*k+'px'; b.appendChild(i);} }
+</script></body></html>

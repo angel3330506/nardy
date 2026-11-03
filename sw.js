@@ -1,5 +1,5 @@
 // Офлайн-кэш: страница, доски, звуки и шрифты кэшируются при установке.
-const V = '46';                 // = APP_VERSION в index.html
+const V = '47';                 // = APP_VERSION в index.html
 const VERSION = 'nardy-v' + V;
 const SHELL = [
   './',
@@ -59,10 +59,12 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   // Страница: сначала сеть (чтобы обновления приходили), без сети — кэш
+  // (только сама игра: другие страницы, например privacy.html, не должны подменить её в кэше)
   if (req.mode === 'navigate') {
+    const game = /\/(index\.html)?$/.test(url.pathname);
     e.respondWith(
-      fetch(req).then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put('index.html', copy)); return r; })
-        .catch(() => caches.match('index.html'))
+      fetch(req).then(r => { if (game && r.ok) { const copy = r.clone(); caches.open(VERSION).then(c => c.put('index.html', copy)); } return r; })
+        .catch(() => game ? caches.match('index.html') : caches.match(req))
     );
     return;
   }

@@ -100,8 +100,8 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .hit{cursor:pointer}
 
 /* ---------- 3D кубики ---------- */
-/* кубик — 46/1100 ширины доски, но на телефоне не меньше 32px, иначе его не разглядеть */
-.board-frame{--ds:max(calc(min(100cqw,100cqh * 1100 / 700) * 46 / 1100),min(32px,calc(min(100cqw,100cqh * 1100 / 700) * 80 / 1100)))}
+/* кубик — 62/1100 ширины доски, но на телефоне не меньше 40px, иначе его не разглядеть */
+.board-frame{--ds:max(calc(min(100cqw,100cqh * 1100 / 700) * 62 / 1100),min(40px,calc(min(100cqw,100cqh * 1100 / 700) * 90 / 1100)))}
 .dice3d{position:absolute;inset:0;pointer-events:none;overflow:visible}
 /* у каждого кубика своя перспектива с точкой зрения прямо над ним: лежащий кубик показывает только верхнюю грань */
 .d3{position:absolute;width:var(--ds,50px);height:var(--ds,50px);margin:calc(var(--ds,50px) / -2) 0 0 calc(var(--ds,50px) / -2);perspective:calc(var(--ds,50px) * 14);transition:opacity .25s}
@@ -263,8 +263,6 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 .hintmark{animation:pulse 1s ease-in-out infinite}
 /* интерактивный стол: стакан чая и сахар на фоновой картинке; горячие зоны ставит скрипт по положению фона */
 .tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
-/* тень виноградного навеса — отдельный слой поверх голого стола (boards/vine.webp — множитель света), качается от касания */
-.vine{position:absolute;inset:-40px;pointer-events:none;background-repeat:no-repeat;mix-blend-mode:multiply;transform-origin:50% -30%}
 .hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .ripple{position:absolute;border-radius:50%;border:2px solid rgba(235,200,150,.5);pointer-events:none;
   animation:ripple 1.4s ease-out forwards}
@@ -289,7 +287,6 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 <body>
 
 <div id="app">
-  <div class="vine" id="vine" aria-hidden="true"></div>   <!-- первым: тень ложится на стол, но под доской -->
   <div class="vign" id="vign"></div>
   <header class="bar">
     <button class="ib" id="bMenu" aria-label="Меню"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
@@ -509,7 +506,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='38';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='39';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -560,9 +557,7 @@ const SKINS={
   yerevan:{name:'Армения',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'}
 };
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
-$('menu').style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
-$('app').style.setProperty('--table',`url(boards/table-bare.webp?v=${APP_VERSION})`);
-$('vine').style.backgroundImage=`url(boards/vine.webp?v=${APP_VERSION})`;
+for(const id of ['app','menu']) $(id).style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
 $('case').style.setProperty('--lid',`url(boards/lid.webp?v=${APP_VERSION})`);
 for(let f=1;f<=6;f++){const im=new Image();im.src=`boards/die-${f}.png?v=${APP_VERSION}`;}
 for(const c of Object.keys(CK)){const im=new Image();im.src=`boards/ckside-${c}.png?v=${APP_VERSION}`;}
@@ -895,7 +890,7 @@ const REST=[[500,316],[500,384]];
 const ZONE={l:[90,410],r:[590,910],y:[300,400]};
 const DIE_POS=[[712,350],[788,350]];
 const frame=$('frame'), diceBox=$('dice3d');
-function sizeDice(){}   // размер кубика задан в CSS (--ds у .board-frame) и всегда равен 46/1100 ширины доски
+function sizeDice(){}   // размер кубика задан в CSS (--ds у .board-frame)
 function dieEl(v){
   const el=document.createElement('div'); el.className='d3';
   let faces='';
@@ -1263,8 +1258,6 @@ function tableMap(){
 }
 function placeHot(){
   const m=tableMap(), at=(p,r)=>({x:m.ox+p.x*m.k,y:m.oy+p.y*m.k,r:r*m.k});
-  // слой тени совпадает с фоном (cover), но шире на 40px с каждой стороны — чтобы при качании не открывались края
-  Object.assign($('vine').style,{backgroundSize:`${2400*m.k}px ${1500*m.k}px`,backgroundPosition:`${m.ox+40}px ${m.oy+40}px`});
   const fr=$('frame').getBoundingClientRect(), ap=$('app').getBoundingClientRect();
   const put=(el,c)=>{
     // зона спрятана, если её закрывает доска или она за краем экрана
@@ -1310,30 +1303,6 @@ $('hotSugar').addEventListener('click',e=>{
              {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) rotate(380deg) scale(.6)`,opacity:1,offset:.92},
              {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) rotate(400deg) scale(.4)`,opacity:0}],{duration:D,easing:'ease-in'});
   setTimeout(()=>{ c.remove(); ripples(t,4); buzz(12); },D); plop(D/1000);
-});
-
-// листва: касание стола (мимо доски и чашки) — ветер качает навес, тени плывут, шелест
-function rustle(){
-  const a=settings.sound&&ac(); if(!a) return;
-  const sr=a.sampleRate, buf=a.createBuffer(1,sr*1.6,sr), d=buf.getChannelData(0);
-  for(let i=0;i<d.length;i++){ const t=i/d.length; d[i]=(Math.random()*2-1)*Math.sin(Math.PI*t)**1.5*(.6+.4*Math.sin(t*40)); }
-  const src=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain();
-  f.type='bandpass'; f.frequency.value=3000; f.Q.value=.7; g.gain.value=.12;
-  src.buffer=buf; src.connect(f).connect(g).connect(a.destination); src.start();
-}
-let swaying=null;
-function swayVine(){
-  if(swaying) return;
-  rustle();
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const kf=[]; for(let i=0;i<=12;i++){ const t=i/12, damp=Math.exp(-t*3), w=Math.sin(t*Math.PI*5);
-    kf.push({transform:`translate(${(w*14*damp).toFixed(1)}px,${(w*5*damp).toFixed(1)}px) rotate(${(w*.6*damp).toFixed(2)}deg)`}); }
-  swaying=$('vine').animate(kf,{duration:2600,easing:'ease-out'}); swaying.onfinish=()=>swaying=null;
-}
-$('app').addEventListener('click',e=>{
-  if(e.target!==$('app')&&!e.target.closest('.board-box')) return;
-  if(e.target.closest('.board-frame')) return;
-  swayVine();
 });
 
 /* ---------- статистика и достижения ---------- */
@@ -1495,7 +1464,13 @@ if(MOCK) window.__t={                                   // ручки для а�
   undo:()=>undo(),
   end:()=>humanEnd(),
   best:()=>{const b=bestEnd(curCtx()); b&&b.path.length&&applyPath(b.path.slice(0,1));},
-  bad:()=>{const st=G.steps[G.steps.length-1]; applyPath([st]);}
+  bad:()=>{const st=G.steps[G.steps.length-1]; applyPath([st]);},
+  // экранные точки: верхняя шашка, которой можно ходить, и пункт, куда она может пойти
+  coords:()=>{ const st=G.steps[0], src=st.src, n=G.s.n[src], a=slotXY(src,n-1,n);
+    const tg=movesFrom(curCtx(),src), to=[...tg.keys()].find(t=>t!=='off'), m=G.s.n[to], b=slotXY(to,m,m+1);
+    const r=frame.getBoundingClientRect(), rot=document.documentElement.classList.contains('rot');
+    const sc=([x,y])=>rot?[r.right-y/700*r.width,r.top+x/1100*r.height]:[r.left+x/1100*r.width,r.top+y/700*r.height];
+    return [sc(a),sc(b)]; }
 };
 
 const hexOf=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -1981,10 +1956,11 @@ $('board').addEventListener('pointerup',endCheckerDrag);
 $('board').addEventListener('pointercancel',endCheckerDrag);
 $('board').addEventListener('click',e=>{
   if(swallowClick) return;
-  const el=e.target.closest('[data-pt],[data-act]'); if(!el||busy||!G||G.auto||G.netPend) return;
+  // пункт определяем по координатам: после setPointerCapture (перетаскивание) click приходит самой доске, а не пункту
+  if(busy||!G||G.auto||G.netPend) return;
+  const t=ptAt(...toBoard(e.clientX,e.clientY)); if(t==null) return;
   ac();
   if(G.phase!=='move'||!isHuman(G.turn)) return;
-  const v=el.dataset.pt, t=v==='off'?'off':+v;
   if(G.sel!=null&&G.targets&&G.targets.has(t)){ doMove(G.targets.get(t)); return; }
   if(t!=='off'&&G.steps.some(x=>x.src===t)){
     G.sel=G.sel===t?null:t; G.targets=null; render(); return;

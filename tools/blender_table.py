@@ -156,24 +156,61 @@ for k, (dx, dy, rz) in enumerate(((-9.5, -1.0, .3), (-10.2, 1.6, -.4))):
     bpy.ops.mesh.primitive_cube_add(size=1.6 * CM, location=(X0 + dx * CM, Y0 + dy * CM, .8 * CM)); c = bpy.context.object
     c.rotation_euler = (0, 0, rz); c.data.materials.append(sugar); bv = c.modifiers.new('b', 'BEVEL'); bv.width = .12 * CM; bv.segments = 2
 
-# ---------- пачка тонких сигарет: белая с чёрным верхом и золотой полосой, без марки ----------
-PX, PY = 1.15, -3.4                                          # левый верхний угол стола, вне доски
-def boxmat(name, col, rough=.35, metal=0.0):
-    return pmat(name, **{'Base Color': (*col, 1), 'Roughness': rough, 'Metallic': metal, 'Coat Weight': .3})
-pw, pd, ph = 5.6 * CM, 2.0 * CM, 8.6 * CM                     # ширина, толщина, длина пачки (лежит плашмя)
+# ---------- пачка сигарет King Size, как у армянских Cigaronne (без марки): чёрная матовая, линия откидной крышки,
+# серебряная эмблема-«корона» вверху, серебряный росчерк посередине, белое поле предупреждения внизу ----------
+PX, PY = 1.2, -3.6                                           # слева у доски: видна и на компьютере, и на телефоне
+pw, pd, ph = 5.5 * CM, 2.2 * CM, 8.8 * CM                     # ширина, толщина, высота пачки (лежит лицом вверх)
+def pack_textures():
+    from PIL import ImageFont
+    W_, H_ = 550, 880
+    col = Image.new('RGB', (W_, H_), (7, 7, 8)); met = Image.new('L', (W_, H_), 0)
+    dc, dm = ImageDraw.Draw(col), ImageDraw.Draw(met)
+    rng_ = np.random.default_rng(3)
+    n = (rng_.normal(0, 3, (H_, W_))).astype(np.int16)
+    col = Image.fromarray(np.clip(np.asarray(col, np.int16) + n[..., None], 0, 255).astype(np.uint8)); dc = ImageDraw.Draw(col)
+    dc.line([(0, 250), (W_, 250)], fill=(4, 4, 5), width=3)                 # линия откидной крышки
+    dc.line([(0, 253), (W_, 253)], fill=(40, 40, 44), width=1)
+    silver = (205, 205, 210)
+    cx = W_ // 2                                                             # эмблема: три пика
+    for i, dx in enumerate((-26, 0, 26)):
+        hgt = 34 if i == 1 else 26
+        pts = [(cx + dx - 14, 150), (cx + dx, 150 - hgt), (cx + dx + 14, 150)]
+        dc.line(pts, fill=silver, width=4, joint='curve'); dm.line(pts, fill=255, width=4)
+    for y_ in (172,):
+        dc.line([(cx - 60, y_), (cx + 60, y_)], fill=silver, width=2); dm.line([(cx - 60, y_), (cx + 60, y_)], fill=255, width=2)
+    # серебряный росчерк вместо надписи
+    # росчерк как рукописное слово: вытянутая циклоида — петли букв, с наклоном
+    t = np.linspace(0, 7.4 * math.pi, 600)
+    sw = [(cx - 175 + 14.5 * tt - 22 * math.sin(tt) + .35 * (40 * math.cos(tt)), 440 - 40 * math.cos(tt) * (1.2 if int(tt / (2 * math.pi)) in (0, 2) else .8)) for tt in t]
+    dc.line(sw, fill=silver, width=6, joint='curve'); dm.line(sw, fill=255, width=6, joint='curve')
+    cap = [(cx - 175 + 30 * math.cos(a) - 10, 395 + 55 * math.sin(a)) for a in np.linspace(-1.2, 3.6, 60)]   # заглавная петля
+    dc.line(cap, fill=silver, width=7, joint='curve'); dm.line(cap, fill=255, width=7, joint='curve')
+    dc.line([(cx - 120, 488), (cx + 150, 482)], fill=silver, width=3); dm.line([(cx - 120, 488), (cx + 150, 482)], fill=255, width=3)
+    # белое поле предупреждения с чёрной рамкой
+    dc.rectangle([28, 600, W_ - 28, H_ - 40], fill=(245, 245, 242), outline=(0, 0, 0), width=6)
+    f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 66)
+    for k, word in enumerate(('Курение', 'убивает')):
+        dc.text((cx, 680 + k * 86), word, font=f, fill=(10, 10, 10), anchor='mm')
+    pc = os.path.join(ROOT, '.preview', 'pack_col.png'); pm = os.path.join(ROOT, '.preview', 'pack_met.png')
+    col.save(pc); met.save(pm); return pc, pm
+pc, pm = pack_textures()
+blackm = pmat('packblack', **{'Base Color': (.01, .01, .012, 1), 'Roughness': .6})
 bpy.ops.mesh.primitive_cube_add(size=1, location=(PX, PY, pd / 2)); pk = bpy.context.object
-pk.scale = (pw, ph, pd); pk.rotation_euler = (0, 0, math.radians(-14)); pk.modifiers.new('b', 'BEVEL').width = .08 * CM
-pk.data.materials.append(boxmat('packwhite', (.92, .91, .88)))
-for (dy, h, col, met) in ((ph / 2 - 1.6 * CM, 3.2 * CM, (.04, .04, .045), 0), (ph / 2 - 3.35 * CM, .32 * CM, (.85, .65, .3), 1), (-ph / 2 + 1.0 * CM, .18 * CM, (.85, .65, .3), 1)):
-    bpy.ops.mesh.primitive_cube_add(size=1); b = bpy.context.object; b.parent = pk
-    b.location = (0, dy / ph, .5 + .002); b.scale = (1.002, h / ph, .006)
-    b.data.materials.append(boxmat('band%d' % int(dy * 100), col, .3 if met else .5, met))
-# золотой медальон-герб на пачке (абстрактный ромб)
-bpy.ops.mesh.primitive_cylinder_add(vertices=4, radius=.9 * CM, depth=.02 * CM); md = bpy.context.object; md.parent = pk
-md.location = (0, -.08, .5 + .01); md.scale = (.9 * CM / pw, .9 * CM / ph * 1.3, .5); md.data.materials.append(boxmat('gold2', (.85, .65, .3), .25, 1))
+pk.scale = (pw, ph, pd); pk.rotation_euler = (0, 0, math.radians(-5)); bv = pk.modifiers.new('b', 'BEVEL'); bv.width = .05 * CM; bv.segments = 2
+pk.data.materials.append(blackm)
+# лицевая сторона — плоскость с картинкой; серебро — металл по маске
+fm_ = bpy.data.materials.new('packface'); fm_.use_nodes = True; ft = fm_.node_tree; fb_ = ft.nodes['Principled BSDF']
+ti_ = ft.nodes.new('ShaderNodeTexImage'); ti_.image = bpy.data.images.load(pc)
+tm_ = ft.nodes.new('ShaderNodeTexImage'); tm_.image = bpy.data.images.load(pm); tm_.image.colorspace_settings.name = 'Non-Color'
+ft.links.new(ti_.outputs['Color'], fb_.inputs['Base Color']); ft.links.new(tm_.outputs['Color'], fb_.inputs['Metallic'])
+rr_ = ft.nodes.new('ShaderNodeMapRange'); ft.links.new(tm_.outputs['Color'], rr_.inputs['Value']); rr_.inputs['To Min'].default_value = .7; rr_.inputs['To Max'].default_value = .22
+ft.links.new(rr_.outputs['Result'], fb_.inputs['Roughness'])
+bpy.ops.mesh.primitive_plane_add(size=1, location=(PX, PY, pd + .002)); face = bpy.context.object
+face.scale = (pw * .985, ph * .985, 1); face.rotation_euler = (0, 0, math.radians(-5)); face.data.materials.append(fm_)
+# серебряные метки «X» на боковой грани видны чуть-чуть — опускаем
 
 # ---------- чётки с армянским крестом: бусины на нитке, кисточка-крест ----------
-RX, RY = 2.3, -12.0                                          # левый нижний угол стола
+RX, RY = 1.2, -10.6                                          # слева у доски, под пачкой
 amber = pmat('amber', **{'Base Color': (.10, .03, .008, 1), 'Roughness': .1, 'Coat Weight': 1.0, 'Coat Roughness': .03})   # тёмный янтарь
 silver2 = pmat('silver2', **{'Base Color': (.82, .82, .8, 1), 'Metallic': 1.0, 'Roughness': .28})
 cord = pmat('cord', **{'Base Color': (.25, .05, .03, 1), 'Roughness': .7})
@@ -181,7 +218,7 @@ nb = 33
 pts = []
 for k in range(nb):                                           # петля, брошенная небрежно: эллипс с изгибом
     t = 2 * math.pi * k / nb
-    pts.append((RX + 1.6 * math.cos(t) + .25 * math.sin(2 * t), RY + 1.05 * math.sin(t) - .15 * math.cos(3 * t)))
+    pts.append((RX + .85 * math.cos(t) + .12 * math.sin(2 * t), RY + 1.55 * math.sin(t) - .15 * math.cos(3 * t)))   # вытянутая вдоль края доски петля
 for x, y in pts:
     bpy.ops.mesh.primitive_uv_sphere_add(radius=.34 * CM * 1.6, location=(x, y, .34 * CM * 1.6), segments=24, ring_count=12)
     bd = bpy.context.object; bd.data.materials.append(amber)

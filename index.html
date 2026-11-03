@@ -68,7 +68,9 @@ button.primary:hover:not(:disabled){background:linear-gradient(180deg,#f0d38f,#c
   container-type:size;
   padding:max(6px,var(--sat)) max(10px,var(--sar)) max(8px,var(--sab)) max(10px,var(--sal));
 }
-.board-box{flex:1 1 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
+.vign{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at 50% 45%,transparent 30%,rgba(0,0,0,.55));transition:opacity 1.6s ease}
+.vign.on{opacity:1;transition:none}
+.board-box{position:relative;flex:1 1 auto;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;container-type:size}
 .board-frame{position:relative;width:min(100cqw,calc(100cqh * 1100 / 700));aspect-ratio:1100/700;filter:drop-shadow(0 12px 30px rgba(0,0,0,.6))}
 svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 /* строка партии: игроки по краям, подсказка посередине, снизу золотая волосяная линия */
@@ -98,6 +100,8 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .hit{cursor:pointer}
 
 /* ---------- 3D кубики ---------- */
+/* кубик — 46/1100 ширины доски, но на телефоне не меньше 32px, иначе его не разглядеть */
+.board-frame{--ds:max(calc(min(100cqw,100cqh * 1100 / 700) * 46 / 1100),min(32px,calc(min(100cqw,100cqh * 1100 / 700) * 80 / 1100)))}
 .dice3d{position:absolute;inset:0;pointer-events:none;overflow:visible}
 /* у каждого кубика своя перспектива с точкой зрения прямо над ним: лежащий кубик показывает только верхнюю грань */
 .d3{position:absolute;width:var(--ds,50px);height:var(--ds,50px);margin:calc(var(--ds,50px) / -2) 0 0 calc(var(--ds,50px) / -2);perspective:calc(var(--ds,50px) * 14);transition:opacity .25s}
@@ -283,6 +287,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 <body>
 
 <div id="app">
+  <div class="vign" id="vign"></div>
   <header class="bar">
     <button class="ib" id="bMenu" aria-label="Меню"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <div class="pl" id="p0">
@@ -501,7 +506,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='34';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='35';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -885,8 +890,7 @@ const REST=[[500,316],[500,384]];
 const ZONE={l:[90,410],r:[590,910],y:[300,400]};
 const DIE_POS=[[712,350],[788,350]];
 const frame=$('frame'), diceBox=$('dice3d');
-function sizeDice(){ frame.style.setProperty('--ds',(frame.clientWidth*46/1100)+'px'); }
-new ResizeObserver(sizeDice).observe(frame);
+function sizeDice(){}   // размер кубика задан в CSS (--ds у .board-frame) и всегда равен 46/1100 ширины доски
 function dieEl(v){
   const el=document.createElement('div'); el.className='d3';
   let faces='';
@@ -2009,7 +2013,7 @@ function zoomIn(from){
     {duration:850,easing:'cubic-bezier(.45,0,.2,1)'});
   fadeChrome();
 }
-function fadeChrome(){ for(const el of [document.querySelector('.bar')]) el.animate([{opacity:0},{opacity:0,offset:.5},{opacity:1}],{duration:900}); }
+function fadeChrome(){ const v=$('vign'); v.classList.add('on'); requestAnimationFrame(()=>requestAnimationFrame(()=>v.classList.remove('on'))); for(const el of [document.querySelector('.bar')]) el.animate([{opacity:0},{opacity:0,offset:.5},{opacity:1}],{duration:900}); }
 $('mAi').addEventListener('click',()=>openCase(()=>newGame('ai')));
 $('mPvp').addEventListener('click',()=>openCase(()=>newGame('pvp')));
 $('mContinue').addEventListener('click',()=>openCase(()=>{ if(NET&&NET.started) showGame(); else if(G&&G.phase!=='over'&&readSaved()&&mode!=='net') showGame(); else resumeGame(); }));

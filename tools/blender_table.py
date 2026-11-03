@@ -134,7 +134,7 @@ lathe('cup', [(1.6, 0), (2.2, .3), (2.9, 1.6), (3.25, 3.4), (3.4, 5.2), (3.45, 5
 lathe('cuprim', [(3.36, 5.58), (3.5, 5.58), (3.5, 5.7), (3.36, 5.7), (3.36, 5.58)], gold, (X0, Y0, 1.0 * CM), cap=False)
 foam = bpy.data.materials.new('foam'); foam.use_nodes = True; fn = foam.node_tree.nodes; fb = fn['Principled BSDF']
 noise = fn.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 60; noise.inputs['Detail'].default_value = 8
-ramp = fn.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].color = (.10, .05, .025, 1); ramp.color_ramp.elements[1].color = (.36, .22, .11, 1)
+ramp = fn.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].color = (.035, .016, .008, 1); ramp.color_ramp.elements[1].color = (.17, .09, .04, 1)
 foam.node_tree.links.new(noise.outputs['Fac'], ramp.inputs['Fac']); foam.node_tree.links.new(ramp.outputs['Color'], fb.inputs['Base Color'])
 fb.inputs['Roughness'].default_value = .35; fb.inputs['Coat Weight'].default_value = .5
 bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=3.22 * CM, depth=.3 * CM, location=(X0, Y0, (1.0 + 4.7) * CM)); bpy.context.object.data.materials.append(foam)

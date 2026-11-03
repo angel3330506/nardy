@@ -1,5 +1,5 @@
 // Офлайн-кэш: страница, доски, звуки и шрифты кэшируются при установке.
-const V = '42';                 // = APP_VERSION в index.html
+const V = '43';                 // = APP_VERSION в index.html
 const VERSION = 'nardy-v' + V;
 const SHELL = [
   './',
@@ -9,8 +9,8 @@ const SHELL = [
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
   ...['night', 'ararat', 'glass', 'yerevan', 'pomegranate', 'sevan'].flatMap(k => [`boards/${k}.webp?v=${V}`, `boards/${k}-thumb.webp?v=${V}`]),
-  ...['ivory', 'onyx', 'beech', 'walnut'].map(k => `boards/ck-${k}.png?v=${V}`),
-  ...['ivory', 'onyx', 'beech', 'walnut'].map(k => `boards/ckside-${k}.png?v=${V}`),
+  ...['ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold'].map(k => `boards/ck-${k}.png?v=${V}`),
+  ...['ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold'].map(k => `boards/ckside-${k}.png?v=${V}`),
   `boards/table.webp?v=${V}`,
   `boards/lid.webp?v=${V}`, `boards/maple.webp?v=${V}`,
   ...['', 'wood-', 'amber-'].flatMap(m => [1, 2, 3, 4, 5, 6].map(f => `boards/die-${m}${f}.png?v=${V}`)),

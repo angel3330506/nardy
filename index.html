@@ -228,6 +228,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 .dlevel{margin:0;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
 .dlevel b{color:var(--fg);font-weight:500;font-size:14.5px}
 .dlevel span::before{content:"🔒 "}
+.drawer .link{background:none!important;border:0;color:var(--muted);text-decoration:underline;font-size:13px;padding:4px 0;align-self:flex-start}
 .dfoot{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:8px}
 @keyframes slideIn{from{transform:translateX(-100%)}}
 @keyframes fadeIn{from{opacity:0}}
@@ -259,7 +260,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 .hintmark{animation:pulse 1s ease-in-out infinite}
 /* интерактивный стол: стакан чая и сахар на фоновой картинке; горячие зоны ставит скрипт по положению фона */
 .tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
-.hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
 .ripple{position:absolute;border-radius:50%;border:2px solid rgba(235,200,150,.5);pointer-events:none;
   animation:ripple 1.4s ease-out forwards}
 @keyframes ripple{from{transform:translate(-50%,-50%) scale(.15);opacity:.9}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
@@ -274,6 +275,8 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
   animation:swirl 1.3s ease-in-out forwards}
 @keyframes swirl{from{transform:translate(-50%,-50%) rotate(0);opacity:.9}to{transform:translate(-50%,-50%) rotate(900deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){.steam,.swirl{display:none}}
+.ckset button{display:flex;align-items:center;justify-content:center;gap:6px}.ckset img{width:24px;height:24px}
+.ckset button:disabled{opacity:.45}
 .dicesel button{display:flex;align-items:center;justify-content:center;gap:8px}.dicesel img{width:26px;height:26px}
 .opps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .opps button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:8px 10px}
@@ -320,6 +323,15 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 .friends button{padding:6px 12px;font-size:13px}
 .rating .me{border-color:var(--gold);background:rgba(217,181,106,.08)}
 .toast .acts{display:flex;gap:6px;margin-left:6px;pointer-events:auto}.toast .acts button{padding:5px 10px;font-size:13px}
+.rbar{position:absolute;left:50%;bottom:max(10px,var(--sab));transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:8px;
+  background:linear-gradient(180deg,#2a2013,#17110b);border:1px solid var(--gold);border-radius:999px;padding:6px 8px;box-shadow:0 10px 30px rgba(0,0,0,.6);white-space:nowrap}
+.rbar button{border-radius:999px;padding:7px 12px;min-width:40px}
+.rbar span{font-size:13.5px;color:var(--fg);padding:0 6px;font-variant-numeric:tabular-nums}
+.games{display:grid;gap:6px}
+.games div{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;font-size:13.5px}
+.games span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.games small{color:var(--muted);white-space:nowrap}
+.games button{padding:6px 10px;font-size:13px}
+#bugText{font:inherit;color:var(--fg);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical;-webkit-user-select:text;user-select:text}
 .nettext{margin:0;color:var(--muted);font-size:14.5px}
 .netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
@@ -376,6 +388,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
       <h3>Партия</h3>
       <button class="primary" id="dResume">Продолжить игру</button>
       <button id="dNew">Начать заново</button>
+      <div class="mrow" id="dGiveBox"><button id="dResign">Сдаться</button><button id="dDraw">Предложить ничью</button></div>
       <h4>Доска</h4>
       <div class="dskins" id="dSkins"></div>
       <h4>Время суток</h4>
@@ -409,6 +422,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
         <h4>Соперник</h4>
         <p class="dlevel"><b id="dLevel"></b><span>Во время партии не меняется — выберите в настройках главного меню перед новой игрой.</span></p>
       </div>
+      <button class="link" id="dBug">Сообщить об ошибке</button>
       <div class="dfoot">
         <button id="dRules">Правила</button>
         <button id="dMain">Главное меню</button>
@@ -429,6 +443,12 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
     </div>
   </div>
   <div class="toasts" id="toasts"></div>
+  <div class="rbar" id="rbar" hidden>
+    <button id="rFirst" aria-label="К началу">⏮</button><button id="rPrev" aria-label="Назад">◀</button>
+    <span id="rlabel"></span>
+    <button id="rNext" aria-label="Вперёд">▶</button><button id="rLast" aria-label="В конец">⏭</button>
+    <button id="rClose">Закрыть</button>
+  </div>
   <div class="bubble" id="bubble" role="status"></div>
   <div class="coach" id="coach" hidden>
     <p id="coachText"></p>
@@ -437,6 +457,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
   <div class="tablefx" id="tablefx" aria-hidden="true">
     <div class="hot" id="hotTea" title="Кофе"></div>
     <div class="hot" id="hotSugar" title="Сахар"></div>
+    <div class="hot" id="hotBeads" title="Чётки"></div>
   </div>
 </div>
 
@@ -462,6 +483,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
           <button class="plq" id="mPvp">Вдвоём<span class="cap">на одном телефоне</span></button>
           <button class="plq" id="mNet">С другом<span class="cap">по ссылке</span></button>
         </div>
+        <button class="plq" id="mTour">Турнир двора<span class="cap" id="tourCap"></span></button>
       </div>
       <button class="plq" id="bInstall" hidden>Установить приложение</button>
       <div class="install" id="iosHint" hidden>Чтобы играть как в приложении: в Safari нажмите <b>«Поделиться»</b> → <b>«На экран „Домой“»</b>.</div>
@@ -476,6 +498,13 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
     <h3>Настройки</h3>
     <h4>Доска</h4>
     <div class="skins" id="skins"></div>
+    <h4>Автоход</h4>
+    <div class="seg autosel">
+      <button data-auto="on">Если ход один — сам</button>
+      <button data-auto="off">Всегда сам ходить</button>
+    </div>
+    <h4>Шашки</h4>
+    <div class="seg ckset" id="cksets"></div>
     <h4>Ваше имя</h4>
     <label class="namerow"><input id="setName" maxlength="20" autocomplete="nickname" placeholder="Для игры по сети и рейтинга"></label>
     <h4>Кубики</h4>
@@ -519,6 +548,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
       <button data-vox="music">Дудук при старте</button>
     </div>
     <p class="hint">Дудук: запись «Sound of Armenian Duduk», автор איליה מעזיה, Wikimedia Commons, CC BY-SA 4.0.</p>
+    <button class="link" id="sBug" style="background:none;border:0;color:var(--muted);text-decoration:underline;font-size:13px;align-self:flex-start">Сообщить об ошибке</button>
     <button class="primary done" id="bSettingsClose">Готово</button>
   </div>
 </div>
@@ -551,6 +581,10 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
     </div>
     <h4>Достижения</h4>
     <div class="achs" id="achList"></div>
+    <div id="gamesBox" hidden>
+      <h4>Сыгранные партии</h4>
+      <div class="games" id="gamesList"></div>
+    </div>
     <button class="primary done" id="bStatsClose">Закрыть</button>
   </div>
 </div>
@@ -570,6 +604,17 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
     <p class="nettext">Это длинные нарды — как во дворе в Ереване. Покажу, как играть: одна партия с подсказками против Арама, минута-две.</p>
     <button class="primary" id="tutorStart">Начать обучение</button>
     <button id="tutorSkip">Я умею играть — пропустить</button>
+  </div>
+</div>
+
+<div class="sheet" id="bugSheet" hidden>
+  <div class="sheet-in">
+    <h3>Сообщить об ошибке</h3>
+    <p class="nettext">Что пошло не так? Опишите своими словами — вместе с сообщением отправится снимок экрана и положение на доске.</p>
+    <textarea id="bugText" rows="4" maxlength="1500" placeholder="Например: шашка не ставится на пункт 7, хотя выпало 4"></textarea>
+    <label class="namerow"><input type="checkbox" id="bugShot" checked style="flex:0"> приложить снимок экрана</label>
+    <button class="primary" id="bugSend">Отправить</button>
+    <button id="bugClose">Отмена</button>
   </div>
 </div>
 
@@ -597,7 +642,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='42';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='43';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -639,8 +684,16 @@ const CK={
   ivory:{img:'ivory',slab:'#e9dfc8',edge:'#a07e38',cntBg:'#1a130c',cntFg:'#f3d993'},
   onyx:{img:'onyx',slab:'#2a2a30',edge:'#7d7d86',cntBg:'#efe6d4',cntFg:'#1a130c'},
   beech:{img:'beech',slab:'#e8c896',edge:'#a57a42',cntBg:'#4a2c14',cntFg:'#fbe9c8'},
-  walnut:{img:'walnut',slab:'#6b4022',edge:'#2e1808',cntBg:'#fbe9c8',cntFg:'#3c210d'}
+  walnut:{img:'walnut',slab:'#6b4022',edge:'#2e1808',cntBg:'#fbe9c8',cntFg:'#3c210d'},
+  pomegranate:{img:'pomegranate',cntBg:'#fbe9c8',cntFg:'#4a0d0a'},
+  pearl:{img:'pearl',cntBg:'#1a130c',cntFg:'#f3e9da'},
+  copper:{img:'copper',cntBg:'#2a140a',cntFg:'#ffd9b8'},
+  bronze:{img:'bronze',cntBg:'#f3d993',cntFg:'#1a120b'},
+  gold:{img:'gold',cntBg:'#2a1a06',cntFg:'#fff0c4'}
 };
+// наборы шашек (светлые/тёмные); «золото» открывается за победу в турнире двора
+const CKSETS={skin:['Как у доски'],pomegranate:['Гранат',CK.beech,CK.pomegranate],pearl:['Перламутр',CK.pearl,CK.onyx],
+  copper:['Медь',CK.copper,CK.bronze],gold:['Золото',CK.gold,CK.walnut]};
 const SKINS={
   night:{name:'Ночь',ck:{w:CK.ivory,b:CK.onyx},tgt:'#f3d993'},
   ararat:{name:'Аревахач',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
@@ -933,11 +986,11 @@ const clearTimers=()=>{timers.forEach(clearTimeout);timers=[];};
 function loadScore(){try{const v=JSON.parse(localStorage.getItem('nardy-score-v1')||'null');score=(v&&v[mode])||[0,0];}catch(e){score=[0,0];}}
 function saveScore(){if(mode==='net')return;try{const v=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};v[mode]=score;localStorage.setItem('nardy-score-v1',JSON.stringify(v));}catch(e){}}
 function saveGame(){
-  if(!G||mode==='net') return;
+  if(!G||mode==='net'||mode==='replay') return;
   try{
     if(G.phase==='over'||G.phase==='start'){localStorage.removeItem('nardy-game-v1');return;}
     const phase=G.phase==='rolling'?'roll':G.phase;
-    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first,level:G.level,turns:G.turns,undos:G.undos}));
+    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first,level:G.level,turns:G.turns,undos:G.undos,tour:G.tour,rec:G.rec}));
   }catch(e){}
 }
 function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')||'null');}catch(e){return null;}}
@@ -979,11 +1032,13 @@ function freshState(){
   s.o[0]=0;s.n[0]=15;s.o[12]=1;s.n[12]=15;
   return s;
 }
-function newGame(m,tutor){
+// tour — партия турнира двора: соперник по ступени, Арам → дядя Ашот → бабушка Сирануш → варпет Гурген
+function newGame(m,tutor,tour){
   clearTimers(); netLeave();
   if(m) mode=m;
   loadScore();
-  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:tutor?'easy':settings.level,turns:[0,0],undos:0,mistakes:[]};   // сложность закреплена за партией
+  const lvl=tour?TOUR[tourStage()]:tutor?'easy':settings.level;
+  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:lvl,turns:[0,0],undos:0,mistakes:[],tour:!!tour};   // сложность закреплена за партией
   if(tutor) G.tutor={};
   $('coach').hidden=true;
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
@@ -996,7 +1051,7 @@ function resumeGame(){
   const v=readSaved(); if(!v){newGame(mode);return;}
   clearTimers();
   mode=v.mode; loadScore();
-  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level,turns:v.turns||[0,0],undos:v.undos||0,mistakes:[]};
+  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level,turns:v.turns||[0,0],undos:v.undos||0,mistakes:[],tour:!!v.tour,rec:v.rec||[]};
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML='';
   showGame();
   if(G.phase==='move') placeDice(G.dice); else clearDice();
@@ -1212,6 +1267,7 @@ function showCall(text,at){
 }
 function rolled(a,b,land,after,instant){
     if(!instant){ showCall(rollName(a,b)+(a===b?'!':''),land); }   // land — уже в координатах экрана
+    (G.rec=G.rec||[]).push({p:G.turn,d:[a,b],st:[]});              // запись партии для повтора
     G.dice=[a,b]; G.diceAt=land;
     G.rem=a===b?[a,a,a,a]:[a,b];
     G.headUsed=0;
@@ -1228,7 +1284,7 @@ function rolled(a,b,land,after,instant){
       else { if(NET) NET.hold=true; later(()=>{ if(NET) NET.hold=false; endTurn(); },1600); }
       return;
     }
-    if(isHuman(G.turn)){ setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`); if(a===b&&!instant) say('yourDouble',.5); if(!instant) tutorHook('rolled'); }
+    if(isHuman(G.turn)){ setStatus(`Выпало <b>${a}–${b}</b>${a===b?' — дубль, четыре хода':''}. Выберите шашку.`); if(a===b&&!instant) say('yourDouble',.5); if(!instant){ tutorHook('rolled'); G.noAuto=false; autoMove(); } }
     else if(mode==='net') setStatus(`Друг: <b>${a}–${b}</b>. Ходит…`);
     render();
     after&&after();
@@ -1257,8 +1313,19 @@ function applyPath(path){
   const next=()=>{ if(i<path.length) applyStep(path[i++],()=>later(next,60)); else {G.auto=false; render();} };
   next();
 }
+// автоход: если сыграть кубики можно только одним способом, игра делает это сама (не после отмены)
+function autoMove(){
+  if(settings.automove===false||!G||G.noAuto||G.phase!=='move'||!isHuman(G.turn)||!G.steps.length||(G.tutor&&!G.tutor.step)) return false;
+  const ends=enumerate(curCtx()); if(ends.length!==1) return false;
+  const path=ends[0].path; if(!path.length) return false;
+  setStatus('Ход здесь один — сыграно автоматически.');
+  G.autoPending=true;
+  later(()=>{ G.autoPending=false; if(G.phase==='move'&&isHuman(G.turn)&&!busy&&!G.auto&&!G.netPend) doMove(path); },650);
+  return true;
+}
 function afterStep(){
   if(!isHuman(G.turn)) return;
+  if(G.steps.length&&!G.auto&&autoMove()){ render(); return; }
   if(G.hint){ G.hint=null; if(G.steps.length&&G.usedHint) return showHint(); }
   if(!G.steps.length) setStatus(G.rem.length?'Остальные кубики сыграть нельзя. Завершите ход.':'Ход сделан. Завершите ход или отмените.');
   else setStatus(`Осталось: <b>${G.rem.join(', ')}</b>.`);
@@ -1288,7 +1355,7 @@ function fly(pl,[x0,y0],[x1,y1],toOff,done,fromOff){
 function undo(force){
   if(busy||G.auto||!G.hist.length||(!force&&!isHuman(G.turn))||G.phase!=='move') return;
   if(mode==='net'&&!force){ if(!G.netPend) netSend({t:'undo'}); return; }
-  G.undos=(G.undos||0)+1;
+  G.undos=(G.undos||0)+1; G.noAuto=true;
   // отменяем весь ход одного касания (например 2+2) и плавно возвращаем шашку на место
   const pl=G.turn, last=G.hist[G.hist.length-1];
   let first=last;
@@ -1341,7 +1408,9 @@ function explainMove(src,t){
   if(why.k==='head') return 'С головы за ход снимается только одна шашка.';
   return 'Нельзя ставить заграждение из 6 шашек подряд, если впереди него нет ни одной шашки соперника.';
 }
+function recTurn(){ const r=G.rec&&G.rec[G.rec.length-1]; if(r&&r.p===G.turn) r.st=G.hist.map(h=>[h.st.from,h.st.d]); }
 function endTurn(){
+  recTurn();
   if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
   G.turn=1-G.turn; G.phase='roll'; G.rem=[]; G.hist=[]; G.sel=null; G.steps=[]; G.targets=null;
   clearDice(); render();
@@ -1367,9 +1436,11 @@ function aiPlay(){
   };
   next();
 }
-function gameOver(pl){
-  G.phase='over'; G.auto=false;
-  const mars=G.s.off[1-pl]===0, pts=mars?2:1;
+// res.resign — проигравший сдался (без марса)
+function gameOver(pl,res={}){
+  recTurn(); G.phase='over'; G.auto=false; clearTimers();
+  saveRecord(pl,res);
+  const mars=!res.resign&&G.s.off[1-pl]===0, pts=mars?2:1;
   score[pl]+=pts; saveScore(); render();
   if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
   recordGame(pl,mars); if(G.tutor) finishTutor();
@@ -1377,14 +1448,108 @@ function gameOver(pl){
   if(mode==='ai') setTimeout(()=>say(pl===1?(mars?'mars':'win'):'lose'),700);
   $('bReview').hidden=!(mode==='ai');
   $('wTitle').textContent=mode!=='pvp'?(pl===(mode==='net'?G.me:0)?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
-  $('wText').textContent=(mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
-  setStatus(mode==='net'?(pl===G.me?'Вы выбросили все шашки!':`${who(pl)}: все шашки выброшены.`):`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
+  const tr=mode==='ai'?tourResult(pl===0):'';
+  $('bAgain').textContent=G.tour?(pl===0&&tourStage()!==0?'Следующий соперник':'Ещё раз'):'Ещё партию';
+  $('wText').textContent=(tr?tr+' ':'')+(res.resign?(pl===(mode==='net'?G.me:0)?'Соперник сдался. ':'Партия сдана. '):'')+(mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
+  if(res.resign) setStatus(pl===(mode==='net'?G.me:0)?'Соперник сдался.':'Вы сдались.'); else setStatus(mode==='net'?(pl===G.me?'Вы выбросили все шашки!':`${who(pl)}: все шашки выброшены.`):`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
   $('over').hidden=false;
+}
+
+/* ---------- сыгранные партии и повтор ---------- */
+const loadGames=()=>{ try{return JSON.parse(localStorage.getItem('nardy-games')||'[]');}catch(e){return [];} };
+function saveRecord(winner,res){
+  if(!G||mode==='replay'||!G.rec||!G.rec.length||G.tutor) return;
+  const me=mode==='net'?G.me:0;
+  const opp=mode==='ai'?LEVELS[G.level][0]:mode==='net'?((NET&&NET.oppName)||'Друг'):'Чёрные';
+  const g={t:Date.now(),mode,me,opp,winner,res:res.draw?'draw':res.resign?'resign':(winner!=null&&G.s.off[1-winner]===0?'mars':'win'),rec:G.rec,
+           skin:settings.skin};
+  const all=[g,...loadGames()].slice(0,25);
+  try{ localStorage.setItem('nardy-games',JSON.stringify(all)); }catch(e){}
+}
+function gamesList(){
+  const all=loadGames();
+  $('gamesBox').hidden=!all.length;
+  $('gamesList').innerHTML=all.map((g,i)=>{
+    const d=new Date(g.t), when=d.toLocaleDateString('ru',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
+    const r=g.res==='draw'?'ничья':g.winner===g.me?(g.res==='mars'?'марс!':'победа'):(g.res==='mars'?'вам марс':'поражение');
+    const vs=g.mode==='pvp'?'вдвоём':g.mode==='net'?`с ${esc(g.opp)} по сети`:`с ${esc(g.opp)}`;
+    return `<div><span>${when} · ${vs}</span><small>${r} · ${g.rec.length} бросков</small><button data-g="${i}">Смотреть</button></div>`;
+  }).join('');
+}
+let RP=null;                                             // повтор: {g, i — сколько бросков показано, prev — режим до повтора}
+function openReplay(g){
+  $('statsSheet').hidden=true; $('bubble').classList.remove('show');
+  RP={g,i:0,prevMode:mode,prevG:G};
+  mode='replay';
+  G={s:freshState(),turn:0,phase:'replay',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,flip:g.mode==='net'&&g.me===1,me:g.me,turns:[0,0],undos:0,mistakes:[]};
+  $('over').hidden=true; clearDice(); buildHit(); showGame(); $('rbar').hidden=false; replayTo(0);
+}
+function replayTo(i){
+  const g=RP.g; i=Math.max(0,Math.min(g.rec.length,i)); RP.i=i;
+  let s=freshState();
+  for(let k=0;k<i;k++){ const r=g.rec[k];
+    for(const [from,d] of r.st){ const ns=tryStep(s,r.p,from,d,{headUsed:0,headLimit:4}); if(!ns) break; s=ns; } }
+  G.s=s; const r=g.rec[i-1];
+  G.turn=r?r.p:0; G.dice=r?r.d:[0,0];
+  clearDice(); if(r) placeDice(r.d,[[712,350],[788,350]].map(p=>r.p===1?[p[0]-500,p[1]]:p));
+  render();
+  const who_=p=>p===g.me?'Вы':g.mode==='pvp'?NAME[p]:g.opp;
+  $('rlabel').textContent=i?`Бросок ${i} из ${g.rec.length} · ${who_(r.p)}: ${r.d.join('–')}`:`Начало · ${g.rec.length} бросков`;
+  setStatus(i===g.rec.length?(g.res==='draw'?'Ничья.':`${who_(g.winner)}: ${g.res==='resign'?'победа — соперник сдался':g.res==='mars'?'марс!':'победа'}`):'Повтор партии');
+}
+function closeReplay(){
+  $('rbar').hidden=true; clearDice();
+  mode=RP.prevMode; G=RP.prevG; RP=null; if(G) buildHit();
+  showMenu();
+}
+
+/* турнир двора */
+const TOUR=['easy','medium','hard','expert'];
+const tourStage=()=>{ try{return Math.min(3,JSON.parse(localStorage.getItem('nardy-tour')||'{}').stage|0);}catch(e){return 0;} };
+const setTour=st=>{ try{localStorage.setItem('nardy-tour',JSON.stringify({stage:st}));}catch(e){} };
+function tourResult(won){
+  if(!G.tour) return '';
+  const st=tourStage();
+  if(!won) return `Турнир: ${LEVELS[TOUR[st]][1]} пока сильнее. Попробуйте ещё раз — ступень ${st+1} из 4.`;
+  if(st<3){ setTour(st+1); return `Турнир: ступень ${st+1} пройдена! Следующий за столом — ${LEVELS[TOUR[st+1]][1]}.`; }
+  setTour(0);
+  const s_=loadStats(); const first=!s_.ach.tour; unlock(s_,'tour'); saveStats(s_); buildCksets();
+  return first?'Вы прошли весь двор! Открыты золотые шашки — выберите их в настройках.':'Вы снова прошли весь двор!';
+}
+
+// ничья по согласию (только по сети)
+function gameDraw(){
+  recTurn(); saveRecord(null,{draw:true});
+  G.phase='over'; G.auto=false; clearTimers(); render();
+  const st=loadStats(); st.games++; saveStats(st);
+  if(NET&&NET.ready){ NET.games=(NET.games||0)+1; netRate('draw',false); }
+  $('bReview').hidden=true;
+  $('wTitle').textContent='Ничья'; $('wText').textContent=`Разошлись миром. Счёт ${score[0]} : ${score[1]}.`;
+  setStatus('Ничья по согласию.'); $('over').hidden=false;
+}
+function resign(){
+  if(!G||G.phase==='over'||G.phase==='start') return;
+  if(!confirm('Сдаться и закончить партию?')) return;
+  closeDrawer();
+  if(mode==='net') netSend({t:'resign'});
+  else if(mode==='ai') gameOver(1,{resign:true});
+}
+function offerDraw(){
+  if(mode!=='net'||!G||G.phase==='over'||G.phase==='start'||G.netPend) return;
+  closeDrawer(); netSend({t:'drawq'}); toast('🤝','Ничья предложена','ждём ответа соперника');
+}
+function askDraw(){
+  const el=document.createElement('div'); el.className='toast'; el.style.animation='none'; el.style.pointerEvents='auto';
+  el.innerHTML=`<i>🤝</i><div><b>${esc(who(1-G.me))} предлагает ничью</b><small>партия закончится без победителя</small></div><div class="acts"><button class="primary">Согласен</button><button>Играем</button></div>`;
+  const [ok,no]=el.querySelectorAll('button');
+  ok.onclick=()=>{ el.remove(); netSend({t:'drawa'}); };
+  no.onclick=()=>{ el.remove(); netSend({t:'drawn'}); };
+  $('toasts').appendChild(el);
 }
 
 /* ---------- интерактивный стол ---------- */
 // Положения в картинке стола (boards/table.webp, 2400×1500): чашка кофе с блюдцем и два кусочка сахара (см. tools/blender_table.py)
-const TEA={x:2260,y:1120,r:125}, SUGAR=[{x:1890,y:1159},{x:1862,y:1058}];
+const TEA={x:2260,y:1120,r:125}, SUGAR=[{x:1890,y:1159},{x:1862,y:1058}], BEADS={x:165,y:1060,r:180};
 function tableMap(){
   const app=$('app'), W=app.clientWidth, H=app.clientHeight, k=Math.max(W/2400,H/1500);
   return {k,ox:(W-2400*k)/2,oy:(H-1500*k)/2,W,H};
@@ -1401,6 +1566,7 @@ function placeHot(){
   };
   put($('hotTea'),at(TEA,TEA.r*1.6));
   const sx=(SUGAR[0].x+SUGAR[1].x)/2, sy=(SUGAR[0].y+SUGAR[1].y)/2; put($('hotSugar'),at({x:sx,y:sy},80));
+  put($('hotBeads'),at(BEADS,BEADS.r));
 }
 new ResizeObserver(placeHot).observe($('app'));
 function fx(cls,x,y,style){ const el=document.createElement('div'); el.className=cls; Object.assign(el.style,{left:x+'px',top:y+'px'},style||{}); $('tablefx').appendChild(el); return el; }
@@ -1462,6 +1628,55 @@ function tutorHook(ev){
   else if(ev==='hide') hide();
 }
 
+// чётки: стук янтарных бусин — нажать или перебирать пальцем
+function beadClick(vol=.5,delay=0){
+  const a=settings.sound&&ac(); if(!a) return; const t=a.currentTime+delay;
+  for(const [dt,fr] of [[0,3600+Math.random()*900],[.018,2600+Math.random()*700]]){
+    const buf=a.createBuffer(1,a.sampleRate*.02,a.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(a.sampleRate*.0025));
+    const src=a.createBufferSource(), f=a.createBiquadFilter(), g=a.createGain();
+    f.type='bandpass'; f.frequency.value=fr; f.Q.value=6; g.gain.value=vol;
+    src.buffer=buf; src.connect(f).connect(g).connect(a.destination); src.start(t+dt);
+  }
+}
+{ let bd=null;
+  $('hotBeads').addEventListener('pointerdown',e=>{ ac(); bd={x:e.clientX,y:e.clientY,n:0}; try{$('hotBeads').setPointerCapture(e.pointerId);}catch(_){} });
+  $('hotBeads').addEventListener('pointermove',e=>{ if(!bd) return; const dd=Math.hypot(e.clientX-bd.x,e.clientY-bd.y);
+    if(dd>14){ bd.x=e.clientX; bd.y=e.clientY; bd.n++; beadClick(.45+Math.random()*.2); if(bd.n%3===0) buzz(5); } });
+  const up=()=>{ if(bd&&!bd.n){ for(let k=0;k<3;k++) beadClick(.5,k*.11); buzz(8); } bd=null; };
+  $('hotBeads').addEventListener('pointerup',up); $('hotBeads').addEventListener('pointercancel',()=>{bd=null;});
+}
+
+/* ---------- сообщить об ошибке: текст, снимок экрана и состояние партии — в reports/ базы ---------- */
+let bugShot=null;
+async function snapScreen(){
+  try{
+    if(!window.html2canvas) await new Promise((ok,no)=>{ const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; sc.onload=ok; sc.onerror=no; document.head.appendChild(sc); });
+    const c=await html2canvas(document.body,{scale:.5,backgroundColor:'#1c120a',logging:false,useCORS:true});
+    return c.toDataURL('image/jpeg',.6);
+  }catch(e){ console.error(e); return null; }
+}
+async function openBug(){
+  closeDrawer(); $('settings').hidden=true;
+  bugShot=null; $('bugText').value=''; $('bugSend').disabled=false; $('bugSend').textContent='Отправить';
+  bugShot=snapScreen();                                  // снимок — пока окно ещё не открыто
+  await new Promise(r=>setTimeout(r,60)); $('bugSheet').hidden=false; $('bugText').focus();
+}
+$('dBug').addEventListener('click',openBug); $('sBug').addEventListener('click',openBug);
+$('bugClose').addEventListener('click',()=>{ $('bugSheet').hidden=true; });
+$('bugSend').addEventListener('click',async()=>{
+  const text=$('bugText').value.trim(); if(!text){ $('bugText').focus(); return; }
+  $('bugSend').disabled=true; $('bugSend').textContent='Отправляем…';
+  try{
+    await NETB.init();
+    const img=$('bugShot').checked?await bugShot:null;
+    await NETB.push('reports',{text:text.slice(0,1500),name:myName(),v:APP_VERSION,ua:navigator.userAgent.slice(0,200),t:Date.now(),
+      state:G?JSON.stringify({mode,phase:G.phase,turn:G.turn,dice:G.dice,rem:G.rem,key:key(G.s),level:G.level,skin:settings.skin}).slice(0,2000):'',
+      ...(img&&img.length<900000?{img}:{})});
+    $('bugSheet').hidden=true; toast('✉️','Спасибо!','сообщение отправлено');
+  }catch(e){ console.error(e); $('bugSend').disabled=false; $('bugSend').textContent='Не отправилось — ещё раз'; }
+});
+
 /* ---------- статистика и достижения ---------- */
 const ACH=[
   ['first','🏆','Первая победа','Выиграть партию'],
@@ -1476,6 +1691,7 @@ const ACH=[
   ['games10','🎲','Завсегдатай','Сыграть 10 партий'],
   ['games50','🍵','Свой человек во дворе','Сыграть 50 партий'],
   ['net','🤝','По ту сторону экрана','Победить друга по сети'],
+  ['tour','🏆','Чемпион двора','Пройти турнир двора — открыть золотые шашки'],
   ['doubles','🎰','Везунчик','Выбросить три дубля подряд за партию']
 ];
 function loadStats(){ try{return Object.assign({games:0,wins:0,losses:0,mars:0,streak:0,best:0,fastest:0,ach:{}},JSON.parse(localStorage.getItem('nardy-stats-v1')||'{}'));}catch(e){return {games:0,wins:0,losses:0,mars:0,streak:0,best:0,fastest:0,ach:{}};} }
@@ -1520,6 +1736,7 @@ function showStats(){
     .map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
   $('achList').innerHTML=ACH.map(([id,ic,t,d])=>`<div class="ach${st.ach[id]?'':' off'}"><i>${ic}</i><div>${t}<small>${d}</small></div></div>`).join('');
   $('statsSheet').hidden=false;
+  gamesList();
   $('rateBox').hidden=true;
   try{ if(localStorage.getItem('nardy-net-on')) showRating(); }catch(e){}
 }
@@ -1591,6 +1808,7 @@ const NETB_fb={
   onValue(p,cb){return this.D.onValue(this.r(p),s=>cb(s.val()));},
   onChild(p,cb){return this.D.onChildAdded(this.r(p),s=>cb(s.key,s.val()));},
   remove(p){return this.D.remove(this.r(p));},
+  push(p,v){return this.D.push(this.r(p),v);},
   async top(p,field,n){ const D=this.D, v=(await D.get(D.query(this.r(p),D.orderByChild(field),D.limitToLast(n)))).val()||{}; return v; },
   presence(p){
     const D=this.D, ref=this.r(p);
@@ -1615,6 +1833,7 @@ const NETB_mock={
   onValue(p,cb){let last;return this.listen(()=>{const v=JSON.stringify(this.at(this.data(),p)??null);if(v!==last){last=v;cb(JSON.parse(v));}});},
   onChild(p,cb){const seen=new Set();return this.listen(()=>{const o=this.at(this.data(),p)||{};Object.keys(o).sort((a,b)=>a-b).forEach(k=>{if(!seen.has(k)){seen.add(k);cb(k,o[k]);}});});},
   presence(p){const i=p.lastIndexOf('/');this.update(p.slice(0,i),{[p.slice(i+1)]:true});return ()=>{};},
+  async push(p,v){const d=this.data();this.put(d,p+'/'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),v);this.save(d);},
   async remove(p){const d=this.data(),ks=p.split('/');let o=d;for(const k of ks.slice(0,-1)){o=o&&o[k];}if(o)delete o[ks[ks.length-1]];this.save(d);},
   async top(p,field,n){const o=this.at(this.data(),p)||{};return Object.fromEntries(Object.entries(o).sort((a,b)=>(a[1][field]||0)-(b[1][field]||0)).slice(-n));},
   fire(){this.ls.slice().forEach(l=>l());}
@@ -1623,7 +1842,7 @@ const MOCK=new URLSearchParams(location.search).has('mock');
 const NETB=MOCK?NETB_mock:NETB_fb;
 let NET=null;
 if(MOCK) window.__t={                                   // ручки для автотестов
-  st:()=>({over:!$('over').hidden,mist:G&&G.mistakes&&G.mistakes.map(m=>m.loss|0).join(','),phase:G&&G.phase,turn:G&&G.turn,me:G&&G.me,rem:G&&G.rem,steps:G&&G.steps.length,hist:G&&G.hist.length,key:G&&key(G.s),k:NET&&NET.k,pend:G&&G.netPend,busy,auto:G&&G.auto,dead:NET&&NET.dead,hold:NET&&NET.hold,status:$('status').textContent}),
+  st:()=>({over:!$('over').hidden,mist:G&&G.mistakes&&G.mistakes.map(m=>m.loss|0).join(','),phase:G&&G.phase,turn:G&&G.turn,me:G&&G.me,rem:G&&G.rem,steps:G&&G.steps.length,hist:G&&G.hist.length,key:G&&key(G.s),k:NET&&NET.k,pend:G&&(G.netPend||G.autoPending),busy,auto:G&&G.auto,dead:NET&&NET.dead,hold:NET&&NET.hold,status:$('status').textContent}),
   roll:()=>doRoll(),
   move:()=>{const st=G.steps[0];netSend({t:'mv',s:[[st.from,st.d]]});},
   undo:()=>undo(),
@@ -1708,13 +1927,14 @@ async function showRating(){
   }catch(e){ console.error(e); }
 }
 // после сетевой партии: рейтинг Эло пересчитывает каждый сам себе (K=32, за марс ×1,5)
+// won: true / false / 'draw'
 async function netRate(won,mars){
   if(!NET||NET.rated===NET.games) return; NET.rated=NET.games;
   try{
-    const me=await myProfile(), ro=NET.oppR||1200;
-    const E=1/(1+Math.pow(10,(ro-me.r)/400)), K=32*(mars?1.5:1);
-    me.r=(me.r||1200)+K*((won?1:0)-E); me.g=(me.g|0)+1; await saveProfile(me);
-    toast(won?'📈':'📉','Рейтинг: '+Math.round(me.r),`${won?'+':''}${Math.round(K*((won?1:0)-E))} за партию`);
+    const me=await myProfile(), ro=NET.oppR||1200, S=won==='draw'?.5:won?1:0;
+    const E=1/(1+Math.pow(10,(ro-me.r)/400)), K=32*(mars?1.5:1), d=K*(S-E);
+    me.r=(me.r||1200)+d; me.g=(me.g|0)+1; await saveProfile(me);
+    toast(d>=0?'📈':'📉','Рейтинг: '+Math.round(me.r),`${d>=0?'+':''}${Math.round(d)} за партию`);
   }catch(e){ console.error(e); }
 }
 
@@ -1911,6 +2131,16 @@ async function netApply(ev,live){
       if(G.phase!=='move'||G.turn!==p||G.steps.length) bad();
       endTurn();
       break;
+    case 'resign':
+      if(G.phase==='over'||G.phase==='start') bad();
+      if(live) gameOver(1-p,{resign:true}); else { G.phase='over'; }
+      break;
+    case 'drawq': if(live&&p!==me&&G.phase!=='over') askDraw(); break;
+    case 'drawa':
+      if(G.phase==='over') break;
+      if(live) gameDraw(); else G.phase='over';
+      break;
+    case 'drawn': if(live&&p!==me) toast('🎲','Соперник хочет доиграть','ничья не принята'); G.netPend=false; break;
     case 'new':
       if(G.phase!=='over') break;               // оба нажали «Ещё партию» — вторая просьба лишняя
       G=netFresh(); $('over').hidden=true; clearDice(); render(); setStatus('Новая партия!');
@@ -1951,7 +2181,9 @@ function netThrow(start,land,lift){
 }
 
 /* ---------- отрисовка ---------- */
-const skin=()=>SKINS[settings.skin];
+const skin=()=>{ const sk=SKINS[settings.skin], set=CKSETS[settings.ckset];
+  return set&&set[1]&&(settings.ckset!=='gold'||goldOpen())?{...sk,ck:{w:set[1],b:set[2]}}:sk; };
+const goldOpen=()=>{ try{return !!loadStats().ach.tour;}catch(e){return false;} };
 function checker(x,y,pl,cnt,ck=skin().ck){
   const c=pl?ck.b:ck.w;
   return `<g transform="translate(${x},${y})">
@@ -1964,8 +2196,9 @@ function buildStatic(){
   const k=settings.skin, sk=SKINS[k];
   $('case').style.setProperty('--inside',`url(boards/${k}.webp?v=${APP_VERSION})`);   // под крышкой в меню — выбранная доска
   $('lStatic').innerHTML=`<image href="boards/${k}.webp?v=${APP_VERSION}" x="0" y="0" width="1100" height="700"/>`;
-  $('chip0').innerHTML=`<image href="boards/ck-${sk.ck.w.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
-  $('chip1').innerHTML=`<image href="boards/ck-${sk.ck.b.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
+  const ck=skin().ck;
+  $('chip0').innerHTML=`<image href="boards/ck-${ck.w.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
+  $('chip1').innerHTML=`<image href="boards/ck-${ck.b.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
   if(!$('lHit').innerHTML) buildHit();
 }
 function buildHit(){
@@ -2047,7 +2280,8 @@ function renderPanel(){
     $('m'+pl).textContent=`${pips(s,pl)} · вышло ${s.off[pl]}`;
     $('s'+pl).textContent=score[pl];
   }
-  if(mode==='net') for(const pl of [0,1]) $('n'+pl).textContent=pl===G.me?'Вы':((NET&&NET.oppName)||'Друг')+(NET&&NET.oppR?` · ${Math.round(NET.oppR)}`:'')+(NET&&NET.ready&&!NET.opp?' · не в сети':'');
+  if(mode==='replay'&&RP){ const g=RP.g; for(const pl of [0,1]) $('n'+pl).textContent=pl===g.me?'Вы':g.mode==='pvp'?NAME[pl]:g.opp; }
+  else if(mode==='net') for(const pl of [0,1]) $('n'+pl).textContent=pl===G.me?'Вы':((NET&&NET.oppName)||'Друг')+(NET&&NET.oppR?` · ${Math.round(NET.oppR)}`:'')+(NET&&NET.ready&&!NET.opp?' · не в сети':'');
   else{
     $('n0').textContent=mode==='ai'?'Вы':'Белые';
     $('n1').textContent=mode==='ai'?opp()[0]:'Чёрные';
@@ -2095,6 +2329,7 @@ function showMenu(){
   $('contCap').textContent=cm==='ai'?`с соперником: ${LEVELS[v.level||settings.level][1]}`:cm==='pvp'?'вдвоём':cm==='net'?'с другом по сети':'';
   $('case').classList.remove('open'); $('menu').classList.remove('opening');
   $('lvlCap').textContent='Соперник: '+LEVELS[settings.level][1];
+  $('tourCap').textContent=`ступень ${tourStage()+1} из 4 · ${LEVELS[TOUR[tourStage()]][1]}`;
   let sc='';
   try{const all=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};
     if(all.ai&&(all.ai[0]||all.ai[1])) sc+=`С компьютером ${all.ai[0]} : ${all.ai[1]}`;
@@ -2125,7 +2360,16 @@ function timeOfDay(){
 }
 function applyTod(){ const de=document.documentElement, t=timeOfDay(); de.classList.toggle('evening',t==='evening'); de.classList.toggle('night',t==='night'); }
 applyTod(); setInterval(applyTod,60000);
+function buildCksets(){
+  $('cksets').innerHTML=Object.entries(CKSETS).map(([k,v])=>{
+    const imgs=v[1]?`<img alt="" src="boards/ck-${v[1].img}.png"><img alt="" src="boards/ck-${v[2].img}.png">`:'';
+    const lock=k==='gold'&&!goldOpen();
+    return `<button data-ck="${k}"${lock?' disabled title="Пройдите турнир двора"':''}>${imgs}${v[0]}${lock?' 🔒':''}</button>`; }).join('');
+}
 function paintSettings(){
+  document.querySelectorAll('.seg.autosel button').forEach(b=>b.classList.toggle('on',(b.dataset.auto==='on')===(settings.automove!==false)));
+  if(!$('cksets').innerHTML) buildCksets();
+  document.querySelectorAll('#cksets button').forEach(b=>b.classList.toggle('on',b.dataset.ck===(settings.ckset||'skin')));
   if($('setName')&&document.activeElement!==$('setName')) $('setName').value=settings.name||'';
   document.querySelectorAll('.seg.dicesel button').forEach(b=>b.classList.toggle('on',b.dataset.dice===(settings.dice||'bone')));
   document.querySelectorAll('.seg.tod button').forEach(b=>b.classList.toggle('on',b.dataset.tod===(settings.tod||'auto')));
@@ -2146,6 +2390,8 @@ $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(
 $('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 document.querySelectorAll('.seg.amb').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.ambient=b.dataset.amb==='on'; saveSettings(); paintSettings(); ac(); ambientSync();}));
 $('setName').addEventListener('change',()=>{ settings.name=$('setName').value.trim().slice(0,20); saveSettings(); });
+document.querySelectorAll('.seg.autosel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.automove=b.dataset.auto==='on'; saveSettings(); paintSettings();}));
+$('cksets').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b||b.disabled) return; settings.ckset=b.dataset.ck; saveSettings(); paintSettings(); buildStatic(); if(G) render();});
 document.querySelectorAll('.seg.dicesel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.dice=b.dataset.dice; saveSettings(); paintSettings();
   for(let f=1;f<=6;f++){const im=new Image();im.src=diceImg(f);} if(G&&(G.phase==='move'||G.phase==='roll')){ diceBox.dataset.state=''; if(G.phase==='move') placeDice(G.dice); else render(); }}));
 document.querySelectorAll('.seg.tod').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.tod=b.dataset.tod; saveSettings(); paintSettings(); applyTod();}));
@@ -2174,7 +2420,7 @@ function doMove(path){
 }
 let cdrag=null, swallowClick=false;
 $('board').addEventListener('pointerdown',e=>{
-  if(!G||busy||G.auto||G.netPend||G.phase!=='move'||!isHuman(G.turn)||cdrag) return;
+  if(!G||busy||G.auto||G.netPend||G.autoPending||G.phase!=='move'||!isHuman(G.turn)||cdrag) return;
   const [x,y]=toBoard(e.clientX,e.clientY), t=ptAt(x,y);
   if(t==null||t==='off'||!G.steps.some(st=>st.src===t)) return;
   cdrag={id:e.pointerId,src:t,x0:x,y0:y,on:false,g:null};
@@ -2211,7 +2457,7 @@ $('board').addEventListener('pointercancel',endCheckerDrag);
 $('board').addEventListener('click',e=>{
   if(swallowClick) return;
   // пункт определяем по координатам: после setPointerCapture (перетаскивание) click приходит самой доске, а не пункту
-  if(busy||!G||G.auto||G.netPend) return;
+  if(busy||!G||G.auto||G.netPend||G.autoPending) return;
   const t=ptAt(...toBoard(e.clientX,e.clientY)); if(t==null) return;
   ac();
   if(G.phase!=='move'||!isHuman(G.turn)) return;
@@ -2239,19 +2485,27 @@ function openDrawer(){
   if(!$('dSkins').innerHTML) buildSkinPicker();
   paintSettings();
   $('dNew').hidden=mode==='net';
+  $('dGiveBox').hidden=mode==='pvp'||!G||G.phase==='over'||G.phase==='start'; $('dDraw').hidden=mode!=='net';
   $('dLevelBox').hidden=mode!=='ai';
   $('dLevel').textContent=LEVELS[G.level||settings.level][0];
   $('drawer').hidden=false;
 }
 const closeDrawer=()=>{ $('drawer').hidden=true; };
-$('bMenu').addEventListener('click',openDrawer);
+$('bMenu').addEventListener('click',()=>{ if(mode==='replay') closeReplay(); else openDrawer(); });
+$('gamesList').addEventListener('click',e=>{ const b=e.target.closest('[data-g]'); if(b) openReplay(loadGames()[+b.dataset.g]); });
+$('rFirst').addEventListener('click',()=>replayTo(0)); $('rPrev').addEventListener('click',()=>replayTo(RP.i-1));
+$('rNext').addEventListener('click',()=>replayTo(RP.i+1)); $('rLast').addEventListener('click',()=>replayTo(RP.g.rec.length));
+$('rClose').addEventListener('click',closeReplay);
 $('dClose').addEventListener('click',closeDrawer);
 $('dResume').addEventListener('click',closeDrawer);
 $('drawer').addEventListener('click',e=>{ if(e.target===$('drawer')) closeDrawer(); });
+$('dResign').addEventListener('click',resign);
+$('dDraw').addEventListener('click',offerDraw);
 $('dNew').addEventListener('click',()=>{ if(busy||G.auto) return; if(!confirm('Начать партию заново? Текущая позиция пропадёт.')) return; closeDrawer(); ac(); newGame(mode); });
 $('dRules').addEventListener('click',()=>{ closeDrawer(); $('rules').hidden=false; });
 $('dMain').addEventListener('click',()=>{ if(busy||G.auto) return; closeDrawer(); showMenu(); });
-$('bAgain').addEventListener('click',()=>{ac(); if(mode==='net'){ if(NET) netSend({t:'new'}); } else newGame(mode);});
+$('bAgain').addEventListener('click',()=>{ac(); if(mode==='net'){ if(NET) netSend({t:'new'}); } else newGame(mode,false,G&&G.tour);});
+$('mTour').addEventListener('click',()=>openCase(()=>newGame('ai',false,true)));
 $('bToMenu').addEventListener('click',showMenu);
 // крышка откидывается, под ней доска — и начинается партия
 let opening=false;

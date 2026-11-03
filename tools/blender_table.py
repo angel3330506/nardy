@@ -158,7 +158,7 @@ for k, (dx, dy, rz) in enumerate(((-9.5, -1.0, .3), (-10.2, 1.6, -.4))):
 
 # ---------- пачка сигарет Cigaronne King Size: чёрная матовая, линия откидной крышки,
 # серебряная эмблема и KING SIZE вверху, надпись Cigaronne курсивом, белое поле предупреждения внизу ----------
-PX, PY = 1.2, -3.6                                           # слева у доски: видна и на компьютере, и на телефоне
+PX, PY = 1.6, -5.2                                           # слева у доски: видна и на компьютере, и на телефоне
 pw, pd, ph = 5.5 * CM, 2.2 * CM, 8.8 * CM                     # ширина, толщина, высота пачки (лежит лицом вверх)
 def pack_textures():
     from PIL import ImageFont
@@ -206,7 +206,7 @@ face.scale = (pw * .985, ph * .985, 1); face.rotation_euler = (0, 0, math.radian
 # серебряные метки «X» на боковой грани видны чуть-чуть — опускаем
 
 # ---------- чётки с армянским крестом: бусины на нитке, кисточка-крест ----------
-RX, RY = 1.2, -10.6                                          # слева у доски, под пачкой
+RX, RY = 1.6, -11.6                                          # слева у доски, под пачкой
 amber = pmat('amber', **{'Base Color': (.10, .03, .008, 1), 'Roughness': .1, 'Coat Weight': 1.0, 'Coat Roughness': .03})   # тёмный янтарь
 silver2 = pmat('silver2', **{'Base Color': (.82, .82, .8, 1), 'Metallic': 1.0, 'Roughness': .28})
 cord = pmat('cord', **{'Base Color': (.25, .05, .03, 1), 'Roughness': .7})
@@ -214,7 +214,7 @@ nb = 33
 pts = []
 for k in range(nb):                                           # петля, брошенная небрежно: эллипс с изгибом
     t = 2 * math.pi * k / nb
-    pts.append((RX + .85 * math.cos(t) + .12 * math.sin(2 * t), RY + 1.55 * math.sin(t) - .15 * math.cos(3 * t)))   # вытянутая вдоль края доски петля
+    pts.append((RX + .85 * math.cos(t) + .12 * math.sin(2 * t), RY + 1.3 * math.sin(t) - .15 * math.cos(3 * t)))   # вытянутая вдоль края доски петля
 for x, y in pts:
     bpy.ops.mesh.primitive_uv_sphere_add(radius=.34 * CM * 1.6, location=(x, y, .34 * CM * 1.6), segments=24, ring_count=12)
     bd = bpy.context.object; bd.data.materials.append(amber)

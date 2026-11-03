@@ -16,6 +16,38 @@ def checker(kind):
     # точёный профиль: борт со скруглённой кромкой, верх чуть выпуклый
     h = np.minimum(np.sqrt(np.clip(1 - r ** 2, 0, 1)) * .05 + .16, np.clip((1 - r) / .09, 0, 1) ** .5 * .2)
     g = lambda rad, d, w: -np.exp(-((r - rad) / w) ** 2) * d
+    metal = np.zeros((N, N))
+    grooves = lambda: g(.80, .018, .012) + g(.60, .015, .01) + g(.38, .012, .009) + g(.16, .01, .008)
+    if kind in ('copper', 'bronze', 'gold'):
+        # металлические шашки: медь, тёмная бронза, золото — точёные бороздки, в них патина
+        col = {'copper': (.86, .45, .26), 'bronze': (.30, .20, .12), 'gold': (.95, .74, .36)}[kind]
+        rng = np.random.default_rng(len(kind))
+        brush = ndi.gaussian_filter(rng.random((N, N)), (0.6, 0.6))
+        ang = np.arctan2(y, x); turn = ndi.map_coordinates(rng.random((64, 2048)), [np.clip(r * 63, 0, 63), (ang / math.pi + 1) / 2 * 2047], order=1)
+        alb = np.array(col) * (.86 + .22 * turn)[..., None]
+        h = h + grooves()
+        pat = (np.exp(-((r - .8) / .013) ** 2) + np.exp(-((r - .6) / .011) ** 2) + np.exp(-((r - .38) / .01) ** 2))
+        alb = alb * (1 - np.clip(pat, 0, 1)[..., None] * .55)
+        metal = np.ones((N, N)) * (1 - np.clip(pat, 0, 1) * .5)
+        return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), 1.0), metal=metal)
+    if kind == 'pearl':
+        # перламутр: белый с радужными переливами, тонкий серебряный ободок
+        rng = np.random.default_rng(7)
+        n1 = ndi.gaussian_filter(rng.random((N, N)), 18); n1 = (n1 - n1.min()) / (np.ptp(n1) + 1e-6)
+        hue = (n1 * 1.1 + r * .35) % 1
+        irid = np.stack([.5 + .5 * np.cos(2 * math.pi * (hue + k / 3)) for k in range(3)], -1)
+        alb = np.array((.92, .91, .89)) * .8 + irid * .2
+        h = h + g(.77, .012, .012)
+        ring = np.exp(-((r - .77) / .015) ** 2)
+        alb = alb * (1 - ring[..., None]) + np.array((.75, .75, .78)) * ring[..., None]
+        return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), 1.0), metal=ring)
+    if kind == 'pomegranate':
+        # гранатовое дерево: шпон, тонированный в тёмно-красный, с бороздками
+        im = np.asarray(Image.open(os.path.join(TEX, 'walnut_veneer.jpg')).convert('RGB').resize((N, N)), float) / 255
+        lum = im.mean(-1); alb = np.array((.30, .045, .04)) * (lum / lum.mean())[..., None] ** 1.5
+        h = h + grooves()
+        alb = alb * (1 - (np.exp(-((r - .8) / .013) ** 2) + np.exp(-((r - .6) / .011) ** 2) + np.exp(-((r - .38) / .01) ** 2))[..., None] * .35)
+        return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), 1.0), metal=metal)
     if kind in ('beech', 'walnut'):
         im = np.asarray(Image.open(os.path.join(TEX, 'white_maple_veneer.jpg' if kind == 'beech' else 'walnut_veneer.jpg')).convert('RGB').resize((N, N)), float) / 255
         col = np.array((.80, .60, .40)) if kind == 'beech' else np.array((.30, .18, .09))
@@ -77,7 +109,7 @@ def die_face(v, mat='bone'):
 
 if __name__ == '__main__':
     out = os.path.join(os.path.dirname(__file__), '..', '.preview')
-    for k in ('ivory', 'onyx', 'beech', 'walnut'):
+    for k in ('ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold'):
         np.savez_compressed(os.path.join(out, f'piece-ck-{k}.npz'), **checker(k))
     for mat in ('bone', 'wood', 'amber'):
         for v in range(1, 7):

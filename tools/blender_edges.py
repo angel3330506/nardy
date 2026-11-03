@@ -7,7 +7,11 @@ from PIL import Image
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 TEX = os.path.join(ROOT, 'tools', 'tex')
 KINDS = {'beech': ('white_maple_veneer.jpg', (.80, .58, .38)), 'walnut': ('walnut_veneer.jpg', (.36, .21, .11)),
-         'ivory': (None, (.88, .84, .74)), 'onyx': (None, (.03, .03, .035))}
+         'ivory': (None, (.88, .84, .74)), 'onyx': (None, (.03, .03, .035)),
+         'pomegranate': ('walnut_veneer.jpg', (.30, .045, .04)), 'pearl': (None, (.92, .91, .90)),
+         'copper': ('METAL', (.86, .45, .26)), 'bronze': ('METAL', (.30, .20, .12)), 'gold': ('METAL', (.95, .74, .36))}
+import sys as _s
+if 'new' in _s.argv: KINDS = {k: v for k, v in KINDS.items() if k in ('pomegranate', 'pearl', 'copper', 'bronze', 'gold')}
 for name, (tex, tint) in KINDS.items():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sc = bpy.context.scene
@@ -19,6 +23,8 @@ for name, (tex, tint) in KINDS.items():
     # бороздки на торцах не видны сверху; на кромке — тонкая проточка посередине
     m = bpy.data.materials.new('m'); m.use_nodes = True; nt = m.node_tree; N = nt.nodes; L = nt.links.new
     bs = N['Principled BSDF']
+    metal_ = tex == 'METAL'
+    if metal_: tex = None
     if tex:
         ti = N.new('ShaderNodeTexImage'); ti.image = bpy.data.images.load(os.path.join(TEX, tex))
         tc = N.new('ShaderNodeTexCoord'); mp = N.new('ShaderNodeMapping'); mp.inputs['Scale'].default_value = (.7, .7, .7)
@@ -28,6 +34,7 @@ for name, (tex, tint) in KINDS.items():
     else:
         bs.inputs['Base Color'].default_value = (*tint, 1)
     bs.inputs['Roughness'].default_value = .35; bs.inputs['Coat Weight'].default_value = .45; bs.inputs['Coat Roughness'].default_value = .08
+    if metal_: bs.inputs['Metallic'].default_value = 1.0; bs.inputs['Roughness'].default_value = .25; bs.inputs['Coat Weight'].default_value = 0
     ob.data.materials.append(m)
     w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
     env = w.node_tree.nodes.new('ShaderNodeTexEnvironment'); env.image = bpy.data.images.load(os.path.join(TEX, 'studio.hdr'))

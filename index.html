@@ -100,8 +100,8 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .hit{cursor:pointer}
 
 /* ---------- 3D кубики ---------- */
-/* кубик — 48/1100 ширины доски (как настоящий 16-мм кубик рядом с 4-см шашкой), на телефоне не меньше 34px */
-.board-frame{--ds:max(calc(min(100cqw,100cqh * 1100 / 700) * 48 / 1100),min(34px,calc(min(100cqw,100cqh * 1100 / 700) * 80 / 1100)))}
+/* кубик — 38/1100 ширины доски, на телефоне не меньше 28px */
+.board-frame{--ds:max(calc(min(100cqw,100cqh * 1100 / 700) * 38 / 1100),min(28px,calc(min(100cqw,100cqh * 1100 / 700) * 70 / 1100)))}
 .dice3d{position:absolute;inset:0;pointer-events:none;overflow:visible}
 /* у каждого кубика своя перспектива с точкой зрения прямо над ним: лежащий кубик показывает только верхнюю грань */
 .d3{position:absolute;width:var(--ds,50px);height:var(--ds,50px);margin:calc(var(--ds,50px) / -2) 0 0 calc(var(--ds,50px) / -2);perspective:calc(var(--ds,50px) * 14);transition:opacity .25s}
@@ -260,6 +260,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 .hintmark{animation:pulse 1s ease-in-out infinite}
 /* интерактивный стол: стакан чая и сахар на фоновой картинке; горячие зоны ставит скрипт по положению фона */
 .tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.prop{position:absolute;pointer-events:none;-webkit-user-drag:none;border-radius:0!important}
 .hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
 .ripple{position:absolute;border-radius:50%;border:2px solid rgba(235,200,150,.5);pointer-events:none;
   animation:ripple 1.4s ease-out forwards}
@@ -457,7 +458,8 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
   <div class="tablefx" id="tablefx" aria-hidden="true">
     <div class="hot" id="hotTea" title="Кофе"></div>
     <div class="hot" id="hotSugar" title="Сахар"></div>
-    <div class="hot" id="hotBeads" title="Чётки"></div>
+    <img class="prop" id="propPack" alt="" draggable="false">
+    <img class="prop hot" id="hotBeads" alt="" draggable="false" title="Чётки">
   </div>
 </div>
 
@@ -642,7 +644,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='45';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='46';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -1070,6 +1072,7 @@ const PIPIDX={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]}
 // Кубики лежат на стыке половин (REST). Бросок — потянуть их пальцем на свою половину и отпустить:
 // они летят по инерции и падают в центральную полосу той половины, куда их отпустили (стопки туда не доходят, см. STACK_MAX).
 const REST=[[500,316],[500,384]];
+function restPos(){ const g=Math.max(34,dieU()*.8); REST[0]=[500,350-g]; REST[1]=[500,350+g]; return REST; }
 const ZONE={l:[90,410],r:[590,910],y:[300,400]};
 const DIE_POS=[[712,350],[788,350]];
 const frame=$('frame'), diceBox=$('dice3d');
@@ -1104,7 +1107,7 @@ function syncRest(){
   if(!G||drag||busy) return;
   if(G.phase!=='roll'&&G.phase!=='start') return;
   if(diceBox.dataset.state!=='rest'){
-    clearDice();
+    clearDice(); restPos();
     const vals=[G.dice[0]||6,G.dice[1]||5];
     vals.forEach((v,i)=>{
       const el=dieEl(v); setPos(el,REST[i]);
@@ -1119,9 +1122,11 @@ function syncRest(){
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const clampV=(v,[a,b])=>Math.max(a,Math.min(b,v));
 // куда лягут два кубика, если бросок пришёлся в точку (x,y) половины side ('l'|'r')
+// размер кубика в единицах доски (на телефоне кубик крупнее относительно доски — расставляем шире, чтобы не налезали)
+function dieU(){ const fw=frame.clientWidth||1100, px=Math.max(fw*38/1100,Math.min(28,fw*70/1100)); return px*1100/fw; }
 function landing(side,x=(ZONE[side][0]+ZONE[side][1])/2,y=350){
-  const cx=clampV(x,[ZONE[side][0]+40,ZONE[side][1]-40]), cy=clampV(y,ZONE.y);
-  const dx=rnd(34,44), dy=rnd(-22,22);
+  const u=dieU(), cx=clampV(x,[ZONE[side][0]+40+u,ZONE[side][1]-40-u]), cy=clampV(y,ZONE.y);
+  const dx=Math.max(rnd(34,44),u*.85+rnd(0,8)), dy=rnd(-22,22);
   return [[cx-dx,clampV(cy-dy,ZONE.y)],[cx+dx,clampV(cy+dy,ZONE.y)]];
 }
 // анимация: кубик летит из start в land, кувыркаясь и подпрыгивая; lift — с какой высоты падает
@@ -1549,7 +1554,25 @@ function askDraw(){
 
 /* ---------- интерактивный стол ---------- */
 // Положения в картинке стола (boards/table.webp, 2400×1500): чашка кофе с блюдцем и два кусочка сахара (см. tools/blender_table.py)
-const TEA={x:2260,y:1120,r:125}, SUGAR=[{x:1890,y:1159},{x:1862,y:1058}], BEADS={x:165,y:1060,r:180};
+const TEA={x:2260,y:1120,r:125}, SUGAR=[{x:1890,y:1159},{x:1862,y:1058}];
+// пачка и чётки — отдельные картинки (tools/blender_table.py, PROPS=1): 1950 px картинки = 1100 единиц доски.
+// Ставим вплотную к левому краю доски, пачку — у верхней четверти, чётки — у нижней.
+const PROP_K=1100/1950;
+$('propPack').src=`boards/prop-pack.png?v=${APP_VERSION}`; $('hotBeads').src=`boards/prop-beads.png?v=${APP_VERSION}`;
+function placeProps(){
+  const fr=$('frame').getBoundingClientRect(), ap=$('app').getBoundingClientRect();
+  const rot=document.documentElement.classList.contains('rot');
+  // в повёрнутой вёрстке getBoundingClientRect даёт экранные оси — переводим в оси #app
+  const L=rot?fr.top-ap.top:fr.left-ap.left, T=rot?ap.right-fr.right:fr.top-ap.top, H=rot?fr.width:fr.height;
+  const fw=rot?fr.height:fr.width, kk=fw/1100*PROP_K;
+  for(const [el,yy] of [[$('propPack'),.06],[$('hotBeads'),.52]]){
+    const w=(el.naturalWidth||1)*kk, h=(el.naturalHeight||1)*kk;
+    const x=Math.max(2,L-w-fw*.006), y=T+H*yy;           // вплотную к раме доски
+    Object.assign(el.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
+    el.hidden=L<w*.45;                                    // места совсем нет — не показываем
+  }
+}
+for(const id of ['propPack','hotBeads']) $(id).addEventListener('load',placeProps);
 function tableMap(){
   const app=$('app'), W=app.clientWidth, H=app.clientHeight, k=Math.max(W/2400,H/1500);
   return {k,ox:(W-2400*k)/2,oy:(H-1500*k)/2,W,H};
@@ -1566,7 +1589,7 @@ function placeHot(){
   };
   put($('hotTea'),at(TEA,TEA.r*1.6));
   const sx=(SUGAR[0].x+SUGAR[1].x)/2, sy=(SUGAR[0].y+SUGAR[1].y)/2; put($('hotSugar'),at({x:sx,y:sy},80));
-  put($('hotBeads'),at(BEADS,BEADS.r));
+  placeProps();
 }
 new ResizeObserver(placeHot).observe($('app'));
 function fx(cls,x,y,style){ const el=document.createElement('div'); el.className=cls; Object.assign(el.style,{left:x+'px',top:y+'px'},style||{}); $('tablefx').appendChild(el); return el; }

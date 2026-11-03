@@ -156,6 +156,7 @@ for k, (dx, dy, rz) in enumerate(((-9.5, -1.0, .3), (-10.2, 1.6, -.4))):
     bpy.ops.mesh.primitive_cube_add(size=1.6 * CM, location=(X0 + dx * CM, Y0 + dy * CM, .8 * CM)); c = bpy.context.object
     c.rotation_euler = (0, 0, rz); c.data.materials.append(sugar); bv = c.modifiers.new('b', 'BEVEL'); bv.width = .12 * CM; bv.segments = 2
 
+_before_props = set(bpy.data.objects)
 # ---------- пачка сигарет Cigaronne King Size: чёрная матовая, линия откидной крышки,
 # серебряная эмблема и KING SIZE вверху, надпись Cigaronne курсивом, белое поле предупреждения внизу ----------
 PX, PY = 1.6, -5.2                                           # слева у доски: видна и на компьютере, и на телефоне
@@ -249,6 +250,19 @@ sp2 = cu2.splines.new('POLY'); sp2.points.add(2)
 for p_, c_ in zip(sp2.points, [(tx, ty, .34 * CM * 1.6), (tail[-1][0], tail[-1][1], .3 * CM * 1.6), (cx, cy - .62, .03)]): p_.co = (*c_, 1)
 o2 = bpy.data.objects.new('cord2', cu2); sc.collection.objects.link(o2); o2.data.materials.append(cord)
 
+props = [o for o in bpy.data.objects if o not in _before_props]
+# Пачка и чётки — отдельными картинками (PROPS=1): в игре их ставят вплотную к доске на любом экране.
+# Стол рисуется без них (по умолчанию), чтобы они не «плавали» относительно доски.
+PROPS = bool(os.environ.get('PROPS'))
+if PROPS:
+    for o in bpy.data.objects:
+        if o not in props and o.type in ('MESH', 'CURVE') and o.name != 'catcher': o.hide_render = True
+    for o in leaves.all_objects: o.hide_render = True
+    bpy.ops.mesh.primitive_plane_add(size=60, location=(TW / 2, -TH / 2, 0)); ct = bpy.context.object; ct.name = 'catcher'
+    ct.is_shadow_catcher = True
+    sc.render.film_transparent = True
+else:
+    for o in props: o.hide_render = True
 # без навеса: для отдельного слоя тени (листва качается в игре)
 if os.environ.get('NOVINE'):
     for o in leaves.all_objects: o.hide_render = True
@@ -266,7 +280,16 @@ sc.render.resolution_x, sc.render.resolution_y = 2400, 1500
 sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'Medium Contrast'
 sc.render.image_settings.file_format = 'PNG'
 NV = bool(os.environ.get('NOVINE'))
-sc.render.filepath = os.path.join(ROOT, '.preview', 'blender-table%s.png' % ('-novine' if NV else ''))
+if PROPS: sc.render.image_settings.color_mode = 'RGBA'
+sc.render.filepath = os.path.join(ROOT, '.preview', 'blender-table%s.png' % ('-props' if PROPS else '-novine' if NV else ''))
 bpy.ops.render.render(write_still=True)
-if not NV: Image.open(sc.render.filepath).convert('RGB').save(os.path.join(ROOT, 'boards', 'table.webp'), 'WEBP', quality=80, method=6)
+if PROPS:
+    # вырезаем пачку (верх левого края) и чётки (низ) по непрозрачным пикселям; 1950 px картинки = 1100 единиц доски
+    im = Image.open(sc.render.filepath).convert('RGBA'); a = np.asarray(im)[..., 3]
+    for name, y0, y1 in (('pack', 0, 760), ('beads', 760, 1500)):
+        sub = a[y0:y1, :700]; ys, xs = np.nonzero(sub > 8)
+        box = (max(0, xs.min() - 6), y0 + max(0, ys.min() - 6), min(700, xs.max() + 7), y0 + min(y1 - y0, ys.max() + 7))
+        im.crop(box).save(os.path.join(ROOT, 'boards', f'prop-{name}.png'), optimize=True)
+        print('prop', name, box)
+elif not NV: Image.open(sc.render.filepath).convert('RGB').save(os.path.join(ROOT, 'boards', 'table.webp'), 'WEBP', quality=80, method=6)
 print('saved table', 'novine' if NV else '')

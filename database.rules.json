@@ -27,6 +27,31 @@
             ".write": "auth != null && !data.exists() && ((newData.child('p').val() === 0 && root.child('rooms').child($room).child('players').child('w').val() === auth.uid) || (newData.child('p').val() === 1 && root.child('rooms').child($room).child('players').child('b').val() === auth.uid))",
             ".validate": "newData.child('t').isString() && newData.child('p').isNumber()"
           }
+        },
+        "names": {
+          "$slot": {
+            ".write": "auth != null && newData.parent().parent().child('players').child($slot).val() === auth.uid",
+            ".validate": "newData.isString() && newData.val().length <= 24"
+          }
+        }
+      }
+    },
+    "players": {
+      ".read": "auth != null",
+      ".indexOn": [
+        "r"
+      ],
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.child('name').isString() && newData.child('name').val().length <= 24 && newData.child('r').isNumber() && newData.child('g').isNumber()"
+      }
+    },
+    "invites": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$from": {
+          ".write": "auth != null && (auth.uid === $from || auth.uid === $uid)",
+          ".validate": "!newData.exists() || (newData.child('room').isString() && newData.child('name').isString() && newData.child('name').val().length <= 24)"
         }
       }
     }

@@ -236,6 +236,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
 @keyframes call{0%{opacity:0;transform:translate(-50%,-30%) scale(.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}
   70%{opacity:1;transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
 @media (prefers-reduced-motion:reduce){.call{animation-duration:1.2s}}
+.menutoasts{position:fixed!important;top:max(64px,var(--sat))!important;z-index:5!important}
 .toasts{position:absolute;top:calc(clamp(32px,8.5cqh,46px) + 14px);left:50%;transform:translateX(-50%);z-index:8;display:grid;gap:8px;pointer-events:none}
 .toast{background:linear-gradient(180deg,#2a2013,#17110b);border:1px solid var(--gold);border-radius:12px;padding:9px 16px;
   box-shadow:0 10px 30px rgba(0,0,0,.6);display:flex;gap:10px;align-items:center;animation:toast 4s ease forwards;white-space:nowrap}
@@ -271,6 +272,7 @@ html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw
   animation:swirl 1.3s ease-in-out forwards}
 @keyframes swirl{from{transform:translate(-50%,-50%) rotate(0);opacity:.9}to{transform:translate(-50%,-50%) rotate(900deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){.steam,.swirl{display:none}}
+.dicesel button{display:flex;align-items:center;justify-content:center;gap:8px}.dicesel img{width:26px;height:26px}
 .opps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .opps button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:8px 10px}
 .opps button i{grid-row:span 2;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--display);font-size:20px;color:#f3d993;border:1.5px solid var(--gold);box-shadow:inset 0 2px 6px rgba(0,0,0,.5)}
@@ -307,6 +309,15 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 .coachrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .coachrow .link{background:none;border:0;color:var(--muted);padding:4px 0;text-decoration:underline;font-size:13px}
 .coachrow .primary{padding:7px 18px}
+.namerow{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
+.namerow input{flex:1;min-width:0;font:inherit;color:var(--fg);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:9px 12px;-webkit-user-select:text;user-select:text}
+.friends,.rating{display:grid;gap:6px}
+.friends div,.rating div{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+.friends div span,.rating div span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.friends small,.rating small{color:var(--muted);font-variant-numeric:tabular-nums}
+.friends button{padding:6px 12px;font-size:13px}
+.rating .me{border-color:var(--gold);background:rgba(217,181,106,.08)}
+.toast .acts{display:flex;gap:6px;margin-left:6px;pointer-events:auto}.toast .acts button{padding:5px 10px;font-size:13px}
 .nettext{margin:0;color:var(--muted);font-size:14.5px}
 .netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
@@ -428,6 +439,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 </div>
 
 <div id="menu">
+  <div class="toasts menutoasts" id="menuToasts"></div>
   <div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="micons">
     <button class="mic" id="bStats" aria-label="Статистика и достижения" title="Статистика"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></button>
@@ -462,6 +474,14 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
     <h3>Настройки</h3>
     <h4>Доска</h4>
     <div class="skins" id="skins"></div>
+    <h4>Ваше имя</h4>
+    <label class="namerow"><input id="setName" maxlength="20" autocomplete="nickname" placeholder="Для игры по сети и рейтинга"></label>
+    <h4>Кубики</h4>
+    <div class="seg dicesel" style="grid-template-columns:repeat(3,1fr)">
+      <button data-dice="bone"><img alt="" src="boards/die-5.png">Кость</button>
+      <button data-dice="wood"><img alt="" src="boards/die-wood-5.png">Дерево</button>
+      <button data-dice="amber"><img alt="" src="boards/die-amber-5.png">Янтарь</button>
+    </div>
     <h4>Время суток</h4>
     <div class="seg tod" style="grid-template-columns:repeat(4,1fr)">
       <button data-tod="auto">Как сейчас</button>
@@ -504,11 +524,16 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 <div class="sheet" id="netSheet" hidden>
   <div class="sheet-in">
     <h3>Игра по сети</h3>
+    <label class="namerow">Ваше имя <input id="netName" maxlength="20" autocomplete="nickname" placeholder="Как вас зовут?"></label>
     <p class="nettext" id="netText"></p>
     <div class="netlink" id="netLink" hidden></div>
     <div class="mrow" id="netBtns" hidden>
       <button class="primary" id="bShare">Отправить ссылку</button>
       <button id="bCopy">Скопировать</button>
+    </div>
+    <div id="friendsBox" hidden>
+      <h4>Позвать друга одним нажатием</h4>
+      <div class="friends" id="friendList"></div>
     </div>
     <button id="bNetClose">Закрыть</button>
   </div>
@@ -518,6 +543,10 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
   <div class="sheet-in">
     <h3>Статистика</h3>
     <div class="stats" id="statsGrid"></div>
+    <div id="rateBox" hidden>
+      <h4>Рейтинг по сети</h4>
+      <div class="rating" id="rateList"></div>
+    </div>
     <h4>Достижения</h4>
     <div class="achs" id="achList"></div>
     <button class="primary done" id="bStatsClose">Закрыть</button>
@@ -614,12 +643,16 @@ const SKINS={
   night:{name:'Ночь',ck:{w:CK.ivory,b:CK.onyx},tgt:'#f3d993'},
   ararat:{name:'Аревахач',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
   glass:{name:'Воровские звёзды',ck:{w:CK.ivory,b:CK.onyx},tgt:'#ffffff'},
-  yerevan:{name:'Армения',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'}
+  yerevan:{name:'Армения',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
+  pomegranate:{name:'Гранат',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
+  sevan:{name:'Севан',ck:{w:CK.beech,b:CK.walnut},tgt:'#ffffff'}
 };
+// кубики: кость (как было), светлый клён с выжженными точками, тёмный янтарь с золотыми точками
+const DICE={bone:'',wood:'wood-',amber:'amber-'};
+const diceImg=f=>`boards/die-${DICE[settings.dice]??''}${f}.png?v=${APP_VERSION}`;
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
 for(const id of ['app','menu']) $(id).style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
 $('case').style.setProperty('--lid',`url(boards/lid.webp?v=${APP_VERSION})`);
-for(let f=1;f<=6;f++){const im=new Image();im.src=`boards/die-${f}.png?v=${APP_VERSION}`;}
 for(const c of Object.keys(CK)){const im=new Image();im.src=`boards/ckside-${c}.png?v=${APP_VERSION}`;}
 for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}?v=${APP_VERSION}`;}
 
@@ -786,6 +819,7 @@ try{Object.assign(settings,JSON.parse(localStorage.getItem('nardy-settings-v1')|
 try{if(localStorage.getItem('nardy-sound')==='off')settings.sound=false;}catch(e){}
 if(!SKINS[settings.skin]) settings.skin='night';
 const saveSettings=()=>{try{localStorage.setItem('nardy-settings-v1',JSON.stringify(settings));}catch(e){}};
+for(let f=1;f<=6;f++){const im=new Image();im.src=diceImg(f);}   // кубики выбранного вида — заранее
 function ac(){
   if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null}}
   if(AC&&AC.state!=='running') AC.resume().catch(()=>{});
@@ -908,7 +942,7 @@ function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')
 
 const isHuman=pl=>mode==='pvp'||pl===(mode==='net'?G.me:0);
 const isAI=pl=>mode==='ai'&&pl===1;
-const who=pl=>mode==='net'?(pl===G.me?'Вы':'Друг'):NAME[pl];
+const who=pl=>mode==='net'?(pl===G.me?'Вы':((NET&&NET.oppName)||'Друг')):NAME[pl];
 const NAME=['Белые','Чёрные'];
 // Соперники с характером: уровень игры, манера (style: risk — гонит вперёд, safe — строит заборы) и фразы
 const LEVELS={
@@ -989,7 +1023,7 @@ function dieEl(v){
   for(const f of [1,2,3,4,5,6]){
     const [a,b]=FACE[f]; let pips='';
     for(let k=0;k<9;k++) pips+=PIPIDX[f].includes(k)?`<i class="pip${f===1?' red':''}"></i>`:'<i></i>';
-    faces+=`<div class="face${f===v?' top':''}" style="background-image:url(boards/die-${f}.png?v=${APP_VERSION});transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) / 2))">${pips}</div>`;
+    faces+=`<div class="face${f===v?' top':''}" style="background-image:url(${diceImg(f)});transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) / 2))">${pips}</div>`;
     faces+=`<div class="core" style="transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) * .47))"></div>`;
   }
   el.innerHTML=`<div class="shadow"></div><div class="mover"><div class="cube">${faces}</div></div>`;
@@ -1337,11 +1371,12 @@ function gameOver(pl){
   score[pl]+=pts; saveScore(); render();
   if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
   recordGame(pl,mars); if(G.tutor) finishTutor();
+  if(mode==='net'&&NET&&NET.ready){ NET.games=(NET.games||0)+1; netRate(pl===G.me,mars); }
   if(mode==='ai') setTimeout(()=>say(pl===1?(mars?'mars':'win'):'lose'),700);
   $('bReview').hidden=!(mode==='ai');
   $('wTitle').textContent=mode!=='pvp'?(pl===(mode==='net'?G.me:0)?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
   $('wText').textContent=(mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
-  setStatus(mode==='net'?(pl===G.me?'Вы выбросили все шашки!':'Друг выбросил все шашки.'):`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
+  setStatus(mode==='net'?(pl===G.me?'Вы выбросили все шашки!':`${who(pl)}: все шашки выброшены.`):`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
   $('over').hidden=false;
 }
 
@@ -1483,6 +1518,8 @@ function showStats(){
     .map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
   $('achList').innerHTML=ACH.map(([id,ic,t,d])=>`<div class="ach${st.ach[id]?'':' off'}"><i>${ic}</i><div>${t}<small>${d}</small></div></div>`).join('');
   $('statsSheet').hidden=false;
+  $('rateBox').hidden=true;
+  try{ if(localStorage.getItem('nardy-net-on')) showRating(); }catch(e){}
 }
 
 /* ---------- подсказка и разбор партии ---------- */
@@ -1551,6 +1588,8 @@ const NETB_fb={
   async claim(p,v){return (await this.D.runTransaction(this.r(p),cur=>cur===null?v:undefined,{applyLocally:false})).committed;},
   onValue(p,cb){return this.D.onValue(this.r(p),s=>cb(s.val()));},
   onChild(p,cb){return this.D.onChildAdded(this.r(p),s=>cb(s.key,s.val()));},
+  remove(p){return this.D.remove(this.r(p));},
+  async top(p,field,n){ const D=this.D, v=(await D.get(D.query(this.r(p),D.orderByChild(field),D.limitToLast(n)))).val()||{}; return v; },
   presence(p){
     const D=this.D, ref=this.r(p);
     return D.onValue(this.r('.info/connected'),s=>{ if(s.val()) D.onDisconnect(ref).remove().then(()=>D.set(ref,true)).catch(()=>{}); });
@@ -1574,6 +1613,8 @@ const NETB_mock={
   onValue(p,cb){let last;return this.listen(()=>{const v=JSON.stringify(this.at(this.data(),p)??null);if(v!==last){last=v;cb(JSON.parse(v));}});},
   onChild(p,cb){const seen=new Set();return this.listen(()=>{const o=this.at(this.data(),p)||{};Object.keys(o).sort((a,b)=>a-b).forEach(k=>{if(!seen.has(k)){seen.add(k);cb(k,o[k]);}});});},
   presence(p){const i=p.lastIndexOf('/');this.update(p.slice(0,i),{[p.slice(i+1)]:true});return ()=>{};},
+  async remove(p){const d=this.data(),ks=p.split('/');let o=d;for(const k of ks.slice(0,-1)){o=o&&o[k];}if(o)delete o[ks[ks.length-1]];this.save(d);},
+  async top(p,field,n){const o=this.at(this.data(),p)||{};return Object.fromEntries(Object.entries(o).sort((a,b)=>(a[1][field]||0)-(b[1][field]||0)).slice(-n));},
   fire(){this.ls.slice().forEach(l=>l());}
 };
 const MOCK=new URLSearchParams(location.search).has('mock');
@@ -1615,10 +1656,72 @@ const flipP=p=>[1000-p[0],700-p[1]];                 // поворот поля 
 const netLink=code=>`${location.origin}${location.pathname}?room=${code}${MOCK?'&mock':''}`;
 const netKey=code=>`nardy-net-${code}-${NETB.uid}`;
 
+/* друзья, приглашения, рейтинг */
+// имя игрока, профиль в players/<uid> {name, r — рейтинг Эло (с 1200), g — партий}; друзья — те, с кем играли (на этом устройстве)
+const myName=()=>(settings.name||'').trim()||'Игрок';
+const loadFriends=()=>{ try{return JSON.parse(localStorage.getItem('nardy-friends')||'{}');}catch(e){return {};} };
+const saveFriends=f=>{ try{localStorage.setItem('nardy-friends',JSON.stringify(f));}catch(e){} };
+async function myProfile(){ const p=await NETB.get(`players/${NETB.uid}`); return p||{name:myName(),r:1200,g:0}; }
+async function saveProfile(p){ p.name=myName(); p.t=Date.now(); await NETB.update(`players/${NETB.uid}`,{name:p.name,r:Math.round(p.r),g:p.g|0,t:p.t}); }
+function renderFriends(){
+  const f=loadFriends(), ids=Object.keys(f).sort((a,b)=>(f[b].last||0)-(f[a].last||0));
+  $('friendsBox').hidden=!ids.length||!NET||NET.started;
+  $('friendList').innerHTML=ids.map(id=>`<div><span>${esc(f[id].name||'Друг')}</span><button data-inv="${id}">Позвать</button></div>`).join('');
+}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('friendList').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-inv]'); if(!b||!NET) return;
+  try{ await NETB.update(`invites/${b.dataset.inv}`,{[NETB.uid]:{room:NET.room,name:myName(),t:Date.now()}}); b.textContent='Позвали ✓'; b.disabled=true; }
+  catch(err){ console.error(err); b.textContent='Не вышло'; }
+});
+$('netName').addEventListener('change',()=>{ settings.name=$('netName').value.trim().slice(0,20); saveSettings(); });
+// входящие приглашения: слушаем, только если человек уже играл по сети на этом устройстве
+let invUnsub=null;
+async function listenInvites(){
+  if(invUnsub) return;
+  try{ await NETB.init(); }catch(e){ return; }
+  invUnsub=NETB.onValue(`invites/${NETB.uid}`,v=>{
+    for(const [from,inv] of Object.entries(v||{})){
+      if(!inv||Date.now()-(inv.t||0)>15*60e3||listenInvites.shown.has(from+inv.room)) continue;
+      listenInvites.shown.add(from+inv.room);
+      const el=document.createElement('div'); el.className='toast'; el.style.animation='none'; el.style.pointerEvents='auto';
+      el.innerHTML=`<i>🎲</i><div><b>${esc(inv.name||'Друг')} зовёт сыграть</b><small>в нарды по сети</small></div><div class="acts"><button class="primary">Играть</button><button>Позже</button></div>`;
+      const [ok,no]=el.querySelectorAll('button');
+      const close=()=>{ el.remove(); NETB.remove(`invites/${NETB.uid}/${from}`).catch(()=>{}); };
+      ok.onclick=()=>{ close(); if(document.body.classList.contains('playing')&&mode!=='net'&&G&&G.phase!=='over') saveGame(); netEnter(inv.room); };
+      no.onclick=close;
+      ($('menu').hidden?$('toasts'):$('menuToasts')).appendChild(el);
+    }
+  });
+}
+listenInvites.shown=new Set();
+async function showRating(){
+  try{
+    await NETB.init();
+    const me=await myProfile(), top=await NETB.top('players','r',10);
+    const rows=Object.entries(top).sort((a,b)=>b[1].r-a[1].r);
+    if(!rows.some(([id])=>id===NETB.uid)) rows.push([NETB.uid,me]);
+    $('rateList').innerHTML=rows.map(([id,p],i)=>`<div class="${id===NETB.uid?'me':''}"><small>${i<10?i+1:'…'}</small><span>${esc(p.name||'Игрок')}${id===NETB.uid?' (вы)':''}</span><small>${Math.round(p.r||1200)} · ${p.g|0} парт.</small></div>`).join('');
+    $('rateBox').hidden=false;
+  }catch(e){ console.error(e); }
+}
+// после сетевой партии: рейтинг Эло пересчитывает каждый сам себе (K=32, за марс ×1,5)
+async function netRate(won,mars){
+  if(!NET||NET.rated===NET.games) return; NET.rated=NET.games;
+  try{
+    const me=await myProfile(), ro=NET.oppR||1200;
+    const E=1/(1+Math.pow(10,(ro-me.r)/400)), K=32*(mars?1.5:1);
+    me.r=(me.r||1200)+K*((won?1:0)-E); me.g=(me.g|0)+1; await saveProfile(me);
+    toast(won?'📈':'📉','Рейтинг: '+Math.round(me.r),`${won?'+':''}${Math.round(K*((won?1:0)-E))} за партию`);
+  }catch(e){ console.error(e); }
+}
+
 function netSheet(text,link){
+  $('netName').value=settings.name||'';
   $('netText').innerHTML=text;
   $('netLink').hidden=!link; $('netBtns').hidden=!link;
   if(link) $('netLink').textContent=link;
+  renderFriends();
   $('netSheet').hidden=false;
 }
 async function netCreate(){
@@ -1631,6 +1734,7 @@ async function netCreate(){
       const code=[...crypto.getRandomValues(new Uint8Array(6))].map(x=>AB[x%AB.length]).join('');
       try{
         await NETB.update(`rooms/${code}`,{created:Date.now(),'players/w':NETB.uid,'commit/w':chain[CHAIN]});
+        NETB.update(`rooms/${code}/names`,{w:myName()}).catch(()=>{});   // имя — отдельно: без новых правил базы просто не запишется
         localStorage.setItem(netKey(code),JSON.stringify({seed}));
         return netStart(code,'w',chain);
       }catch(e){}
@@ -1649,6 +1753,7 @@ async function netEnter(code){
       if(room.players.b) return netSheet('В этой партии уже играют двое.');
       const seed=hexOf(crypto.getRandomValues(new Uint8Array(32))); chain=await makeChain(seed);
       await NETB.update(`rooms/${code}`,{'players/b':NETB.uid,'commit/b':chain[CHAIN]});
+      NETB.update(`rooms/${code}/names`,{b:myName()}).catch(()=>{});   // имя — после места за столом (так требуют правила базы)
       localStorage.setItem(netKey(code),JSON.stringify({seed})); slot='b';
     }else{
       let saved=null; try{saved=JSON.parse(localStorage.getItem(netKey(code)));}catch(e){}
@@ -1700,6 +1805,17 @@ async function netBegin(){
     if(k>=NET.applied&&!NET.q.has(k)){ NET.q.set(k,v); netPump(); }
   }));
   NET.unsub.push(NETB.presence(`${R}/online/${NET.slot}`));
+  try{ localStorage.setItem('nardy-net-on','1'); }catch(e){}
+  listenInvites();
+  NETB.get(R).then(async room=>{
+    if(!NET) return;
+    const ouid=room&&room.players&&room.players[other]; NET.oppName=room&&room.names&&room.names[other]||'Друг';
+    if(ouid){ const f=loadFriends(); f[ouid]={name:NET.oppName,last:Date.now()}; saveFriends(f);
+      NET.unsub.push(NETB.onValue(`${R}/names/${other}`,n=>{ if(!NET||!n) return; NET.oppName=String(n).slice(0,20); const f=loadFriends(); if(f[ouid]){f[ouid].name=NET.oppName;saveFriends(f);} renderPanel(); }));
+      const op=await NETB.get(`players/${ouid}`).catch(()=>null); NET.oppR=op&&op.r||1200; }
+    myProfile().then(saveProfile).catch(()=>{});
+    renderPanel();
+  }).catch(()=>{});
   NET.unsub.push(NETB.onValue(`${R}/online/${other}`,v=>{ if(!NET) return; NET.opp=!!v; if(G) renderPanel(); }));
   NET.timer=setInterval(netPump,150);
   netAutoReveal();
@@ -1929,7 +2045,7 @@ function renderPanel(){
     $('m'+pl).textContent=`${pips(s,pl)} · вышло ${s.off[pl]}`;
     $('s'+pl).textContent=score[pl];
   }
-  if(mode==='net') for(const pl of [0,1]) $('n'+pl).textContent=pl===G.me?'Вы':'Друг'+(NET&&NET.ready&&!NET.opp?' · не в сети':'');
+  if(mode==='net') for(const pl of [0,1]) $('n'+pl).textContent=pl===G.me?'Вы':((NET&&NET.oppName)||'Друг')+(NET&&NET.oppR?` · ${Math.round(NET.oppR)}`:'')+(NET&&NET.ready&&!NET.opp?' · не в сети':'');
   else{
     $('n0').textContent=mode==='ai'?'Вы':'Белые';
     $('n1').textContent=mode==='ai'?opp()[0]:'Чёрные';
@@ -2008,6 +2124,8 @@ function timeOfDay(){
 function applyTod(){ const de=document.documentElement, t=timeOfDay(); de.classList.toggle('evening',t==='evening'); de.classList.toggle('night',t==='night'); }
 applyTod(); setInterval(applyTod,60000);
 function paintSettings(){
+  if($('setName')&&document.activeElement!==$('setName')) $('setName').value=settings.name||'';
+  document.querySelectorAll('.seg.dicesel button').forEach(b=>b.classList.toggle('on',b.dataset.dice===(settings.dice||'bone')));
   document.querySelectorAll('.seg.tod button').forEach(b=>b.classList.toggle('on',b.dataset.tod===(settings.tod||'auto')));
   document.querySelectorAll('.seg.vox button').forEach(b=>b.classList.toggle('on',settings[b.dataset.vox]!==false));
   document.querySelectorAll('.seg.amb button').forEach(b=>b.classList.toggle('on',(b.dataset.amb==='on')===(settings.ambient!==false)));
@@ -2025,6 +2143,9 @@ for(const id of ['skins','dSkins']) $(id).addEventListener('click',e=>{const b=e
 $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.level=b.dataset.lvl; saveSettings(); paintSettings(); if(G) renderPanel();});
 $('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 document.querySelectorAll('.seg.amb').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.ambient=b.dataset.amb==='on'; saveSettings(); paintSettings(); ac(); ambientSync();}));
+$('setName').addEventListener('change',()=>{ settings.name=$('setName').value.trim().slice(0,20); saveSettings(); });
+document.querySelectorAll('.seg.dicesel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.dice=b.dataset.dice; saveSettings(); paintSettings();
+  for(let f=1;f<=6;f++){const im=new Image();im.src=diceImg(f);} if(G&&(G.phase==='move'||G.phase==='roll')){ diceBox.dataset.state=''; if(G.phase==='move') placeDice(G.dice); else render(); }}));
 document.querySelectorAll('.seg.tod').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.tod=b.dataset.tod; saveSettings(); paintSettings(); applyTod();}));
 document.querySelectorAll('.seg.vox').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; const k=b.dataset.vox; settings[k]=settings[k]===false; saveSettings(); paintSettings();}));
 document.querySelectorAll('.seg.vib').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.vibro=b.dataset.vib==='on'; saveSettings(); paintSettings(); buzz(30);}));
@@ -2189,6 +2310,7 @@ showMenu();
 // первый запуск: предложить обучение (если человек ещё не играл и не отказывался)
 if(!tutorDone()&&!readSaved()&&!loadStats().games&&!new URLSearchParams(location.search).get('room')) $('tutorSheet').hidden=false;
 $('tutorStart').addEventListener('click',()=>{ $('tutorSheet').hidden=true; openCase(()=>newGame('ai',true)); });
+try{ if(localStorage.getItem('nardy-net-on')) listenInvites(); }catch(e){}
 $('tutorSkip').addEventListener('click',()=>{ $('tutorSheet').hidden=true; finishTutor(); });
 { const room=new URLSearchParams(location.search).get('room'); if(room&&/^[a-z0-9]{4,12}$/.test(room)) netEnter(room); }
 // при каждом запуске проверяем, нет ли новой версии; новая подхватывается со следующего открытия меню

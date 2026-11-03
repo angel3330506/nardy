@@ -8,12 +8,12 @@ const SHELL = [
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/apple-touch-icon.png',
-  ...['night', 'ararat', 'glass', 'yerevan'].flatMap(k => [`boards/${k}.webp?v=${V}`, `boards/${k}-thumb.webp?v=${V}`]),
+  ...['night', 'ararat', 'glass', 'yerevan', 'pomegranate', 'sevan'].flatMap(k => [`boards/${k}.webp?v=${V}`, `boards/${k}-thumb.webp?v=${V}`]),
   ...['ivory', 'onyx', 'beech', 'walnut'].map(k => `boards/ck-${k}.png?v=${V}`),
   ...['ivory', 'onyx', 'beech', 'walnut'].map(k => `boards/ckside-${k}.png?v=${V}`),
   `boards/table.webp?v=${V}`,
   `boards/lid.webp?v=${V}`, `boards/maple.webp?v=${V}`,
-  ...[1, 2, 3, 4, 5, 6].map(f => `boards/die-${f}.png?v=${V}`),
+  ...['', 'wood-', 'amber-'].flatMap(m => [1, 2, 3, 4, 5, 6].map(f => `boards/die-${m}${f}.png?v=${V}`)),
 ];
 const SOUNDS = ['duduk.m4a','duduk-intro.m4a','dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a','chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a','chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a','chips-stack-1.m4a','chips-stack-2.m4a']; // те же файлы, что SOUND_FILES в index.html
 

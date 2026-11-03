@@ -45,28 +45,41 @@ def checker(kind):
 PIPS = {1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8]}
 
 
-def die_face(v):
-    """Грань кубика сверху: скруглённые рёбра (суперэллипс), лунки-точки, закрашенные чёрным (единица — красным)."""
+def die_face(v, mat='bone'):
+    """Грань кубика сверху: скруглённые рёбра (суперэллипс), лунки-точки, закрашенные чёрным (единица — красным).
+    mat: bone — кость, wood — светлый клён с выжженными точками, amber — тёмный янтарь с золотыми точками."""
     y, x = (np.mgrid[0:N, 0:N] + .5) / N * 2 - 1
     q = (np.abs(x) ** 6 + np.abs(y) ** 6) ** (1 / 6)
     alpha = np.clip((1 - q) * N / 3, 0, 1)
     h = np.sqrt(np.clip(1 - np.clip((q - .78) / .22, 0, 1) ** 2, 0, 1)) * .25
-    alb = np.ones((N, N, 3)) * np.array((.90, .86, .76))
+    if mat == 'wood':
+        im = np.asarray(Image.open(os.path.join(TEX, 'white_maple_veneer.jpg')).convert('RGB').resize((N, N)), float) / 255
+        lum = im.mean(-1); alb = np.array((.82, .64, .42)) * (lum / lum.mean())[..., None] ** 1.4
+    elif mat == 'amber':
+        rng = np.random.default_rng(v)
+        cloud = ndi.gaussian_filter(rng.random((N, N)), 30); cloud = (cloud - cloud.min()) / (np.ptp(cloud) + 1e-6)
+        alb = np.array((.55, .22, .03)) * (.7 + .6 * cloud)[..., None]
+    else:
+        alb = np.ones((N, N, 3)) * np.array((.90, .86, .76))
+    pipcol = {'bone': ((.55, .05, .05), (.03, .025, .02)), 'wood': ((.30, .08, .03), (.12, .06, .03)), 'amber': ((.95, .78, .40), (.95, .78, .40))}[mat]
     pr = .2 if v == 1 else .15
+    metal = np.zeros((N, N))
     for k in PIPS[v]:
         cx, cy = (k % 3 - 1) * .5, (k // 3 - 1) * .5
         d = np.hypot(x - cx, y - cy) / pr
         cup = np.clip(1 - d, 0, 1)
         h -= np.sqrt(np.clip(1 - d ** 2, 0, 1)) * .09            # высверленная лунка
         paint = np.clip((.92 - d) * 25, 0, 1)
-        alb = alb * (1 - paint[..., None]) + np.array((.55, .05, .05) if v == 1 else (.03, .025, .02)) * paint[..., None]
-    return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), .6), metal=np.zeros((N, N)))
+        alb = alb * (1 - paint[..., None]) + np.array(pipcol[0] if v == 1 else pipcol[1]) * paint[..., None]
+        if mat == 'amber': metal = np.maximum(metal, paint)   # золотые точки
+    return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), .6), metal=metal, mat=np.array(['bone', 'wood', 'amber'].index(mat)))
 
 
 if __name__ == '__main__':
     out = os.path.join(os.path.dirname(__file__), '..', '.preview')
     for k in ('ivory', 'onyx', 'beech', 'walnut'):
         np.savez_compressed(os.path.join(out, f'piece-ck-{k}.npz'), **checker(k))
-    for v in range(1, 7):
-        np.savez_compressed(os.path.join(out, f'piece-die-{v}.npz'), **die_face(v))
+    for mat in ('bone', 'wood', 'amber'):
+        for v in range(1, 7):
+            np.savez_compressed(os.path.join(out, f'piece-die-{mat}-{v}.npz'), **die_face(v, mat))
     print('saved pieces')

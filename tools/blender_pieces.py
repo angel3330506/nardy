@@ -30,6 +30,9 @@ def render(name, out_png, size, die=False):
     a = np.concatenate([np.clip(alb, 0, 1) ** 2.2, alpha[..., None]], -1).astype(np.float32)
     im = bpy.data.images.new('a', n, n, alpha=True, float_buffer=True); im.colorspace_settings.name = 'Non-Color'
     im.pixels.foreach_set(a[::-1].ravel()); im.update(); im.pack()
+    mm = np.repeat(np.clip(L['metal'], 0, 1)[..., None], 3, 2); mm = np.concatenate([mm, np.ones_like(mm[..., :1])], 2).astype(np.float32)
+    mimg = bpy.data.images.new('m', n, n, alpha=True, float_buffer=True); mimg.colorspace_settings.name = 'Non-Color'
+    mimg.pixels.foreach_set(mm[::-1].ravel()); mimg.update(); mimg.pack()
     mat = bpy.data.materials.new('m'); mat.use_nodes = True; nt = mat.node_tree; N = nt.nodes; Lk = nt.links.new
     bs = N['Principled BSDF']; tc = N.new('ShaderNodeTexCoord')
     ti = N.new('ShaderNodeTexImage'); ti.image = im; ti.interpolation = 'Cubic'; Lk(tc.outputs['UV'], ti.inputs['Vector'])
@@ -37,7 +40,13 @@ def render(name, out_png, size, die=False):
     bs.inputs['Roughness'].default_value = .4 if die else .35
     bs.inputs['Coat Weight'].default_value = .6 if die else .8
     bs.inputs['Coat Roughness'].default_value = .08
-    if die or 'ivory' in name:                                # кость/пластик кубика — слегка просвечивает
+    if die == 'amber':                                        # янтарь просвечивает, точки — золото
+        bs.inputs['Subsurface Weight'].default_value = .6; bs.inputs['Subsurface Radius'].default_value = (.2, .08, .02)
+        bs.inputs['Roughness'].default_value = .12; bs.inputs['Coat Weight'].default_value = 1.0
+        mt = N.new('ShaderNodeTexImage'); mt.image = mimg; Lk(tc.outputs['UV'], mt.inputs['Vector']); Lk(mt.outputs['Color'], bs.inputs['Metallic'])
+    elif die == 'wood':
+        bs.inputs['Roughness'].default_value = .4; bs.inputs['Coat Weight'].default_value = .5
+    elif die or 'ivory' in name:                              # кость кубика — слегка просвечивает
         bs.inputs['Subsurface Weight'].default_value = .15; bs.inputs['Subsurface Radius'].default_value = (.02, .015, .01)
     tr = N.new('ShaderNodeBsdfTransparent'); mx = N.new('ShaderNodeMixShader')
     Lk(ti.outputs['Alpha'], mx.inputs['Fac']); Lk(tr.outputs['BSDF'], mx.inputs[1]); Lk(bs.outputs['BSDF'], mx.inputs[2])
@@ -64,5 +73,6 @@ def render(name, out_png, size, die=False):
 
 for k in (() if 'dice' in sys.argv else ('ivory', 'onyx', 'beech', 'walnut')):
     render(f'piece-ck-{k}', os.path.join(OUTD, f'ck-{k}.png'), 128)
-for v in range(1, 7):
-    render(f'piece-die-{v}', os.path.join(OUTD, f'die-{v}.png'), 256, die=True)
+for mat in ('bone', 'wood', 'amber'):
+    for v in range(1, 7):
+        render(f'piece-die-{mat}-{v}', os.path.join(OUTD, f'die-{v}.png' if mat == 'bone' else f'die-{mat}-{v}.png'), 256, die=mat)

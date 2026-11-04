@@ -324,7 +324,7 @@ html.evening .sky,html.night .sky{opacity:1}
 html.evening .sky{background:radial-gradient(ellipse 60% 65% at 50% 48%,rgba(255,170,90,.25),rgba(110,45,15,.55)),linear-gradient(180deg,rgba(255,140,60,.25),rgba(120,50,20,.35));mix-blend-mode:multiply}
 html.night .sky{background:radial-gradient(ellipse 50% 58% at 50% 46%,rgba(255,200,130,.0),rgba(10,16,40,.55) 70%,rgba(5,8,22,.78)),rgba(30,45,90,.35);mix-blend-mode:multiply}
 #menu .sky{z-index:1} #menu .menu-in,#menu .micons{position:relative;z-index:2}
-#menu .micons{position:fixed}
+#menu .micons{position:fixed;z-index:3}   /* значки поверх колонки кнопок */
 .sky i{position:absolute;width:5px;height:5px;border-radius:50%;background:#f8ffb0;box-shadow:0 0 10px 3px rgba(220,255,120,.7);opacity:0;mix-blend-mode:screen;display:none}
 html.night .sky i{display:block;animation:fly 9s ease-in-out infinite}
 .sky i:nth-child(1){left:6%;top:30%;animation-delay:0s!important}.sky i:nth-child(2){left:12%;top:72%;animation-delay:-2s!important}
@@ -675,7 +675,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='49';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='50';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 

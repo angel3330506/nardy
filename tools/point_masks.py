@@ -20,25 +20,33 @@ def shape_inlay(i, tip):
     return np.maximum(m, rr.oval_mask(ov[0], ov[1], 4.6, 7.2))
 
 
+def bay(i, r, d):
+    """Полукруглая «арка» у основания пункта (render_boards.field_with_bays): эллипс r×d с центром на линии поля."""
+    cx, cy = ptX(i), 40 + d
+    return polys([[(cx + r * math.cos(a), cy + d * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 64, endpoint=False)]])
+def with_bay(i, m, r, d, base):
+    """Арка + полоса от неё до основания рисунка: подсвечивается всё «гнездо» пункта, а не только сам рисунок."""
+    band = polys([[(ptX(i) - r * .96, 40 + d), (ptX(i) + r * .96, 40 + d), (ptX(i) + r * .8, base), (ptX(i) - r * .8, base)]])
+    return np.maximum(m, np.maximum(bay(i, r, d), band))
+
+
 SHAPES = {
-    'ararat': lambda i, long: shape_inlay(i, 218 if long else 150),
-    'pomegranate': lambda i, long: shape_inlay(i, 218 if long else 150),
-    'sevan': lambda i, long: shape_inlay(i, 218 if long else 150),
-    'yerevan': lambda i, long: polys([teardrop(ptX(i), True, 262 if long else 196, 42)]),
+    'ararat': lambda i, long: with_bay(i, shape_inlay(i, 218 if long else 150), 28, 16, 62),
+    'pomegranate': lambda i, long: with_bay(i, shape_inlay(i, 218 if long else 150), 28, 16, 62),
+    'sevan': lambda i, long: with_bay(i, shape_inlay(i, 218 if long else 150), 28, 16, 62),
+    'yerevan': lambda i, long: with_bay(i, polys([teardrop(ptX(i), True, 262 if long else 196, 42)]), 30, 14, 58),
     'night': lambda i, long: polys([[(ptX(i) - 33, 40), (ptX(i) + 33, 40), (ptX(i), 296)]]),
-    'glass': lambda i, long: polys([[(ptX(i) - 27, 58), (ptX(i) + 27, 58), (ptX(i), 290)]]),
+    'glass': lambda i, long: with_bay(i, polys([[(ptX(i) - 27, 58), (ptX(i) + 27, 58), (ptX(i), 290)]]), 27, 15, 58),
 }
 
 
 def glow(mask):
-    """золотистая заливка формы, светлый контур и мягкий ореол вокруг"""
+    """мягкое свечение формы: без обводки и резких краёв — заливка с размытой кромкой и плавный ореол вокруг"""
     m = np.clip(mask, 0, 1)
-    edge = np.clip(ndi.grey_dilation(m, size=5) - ndi.grey_erosion(m, size=3), 0, 1)
-    halo = ndi.gaussian_filter(ndi.grey_dilation(m, size=11), 9)
-    a = np.clip(m * .5 + edge * 1.0 + halo * .6, 0, 1)
-    col = np.zeros(m.shape + (3,))
-    col[...] = (1.0, .97, .9)                                # белое свечение с лёгким теплом, как прежняя подсветка
-    col = col * (1 - edge[..., None]) + np.array((1.0, 1.0, 1.0)) * edge[..., None]
+    fill = ndi.gaussian_filter(m, 2.2)                      # кромка размыта — граница не читается
+    halo = ndi.gaussian_filter(ndi.grey_dilation(m, size=9), 8)
+    a = np.clip(fill * .42 + halo * .26, 0, .62)            # полупрозрачно: рисунок доски просвечивает
+    col = np.zeros(m.shape + (3,)); col[...] = (1.0, .97, .9)
     return np.dstack([col, a])
 
 

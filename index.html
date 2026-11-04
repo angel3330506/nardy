@@ -291,7 +291,9 @@ html.land .menu-in{padding-right:calc(clamp(34px,calc(10 * var(--vh)),44px) + 16
 .tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
 .prop{position:absolute;pointer-events:none;-webkit-user-drag:none;border-radius:0!important;
   transform:translateX(calc(-100% - 40px)) rotate(-8deg);opacity:0;transition:transform 1s cubic-bezier(.2,.8,.2,1),opacity .6s}
-body.playing.props-in .prop{transform:none;opacity:1}
+#propCup{transform:translateX(calc(100% + 40px)) rotate(8deg)}
+body.playing.props-in .prop,body.playing.props-in #propCup{transform:none;opacity:1}
+body:not(.playing) #hotTea,body:not(.playing) #hotSugar{display:none}
 body.playing.props-in #hotBeads{transition-delay:.18s;pointer-events:auto}
 .hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
 .ripple{position:absolute;border-radius:50%;border:2px solid rgba(235,200,150,.5);pointer-events:none;
@@ -493,6 +495,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
   <div class="tablefx" id="tablefx" aria-hidden="true">
     <div class="hot" id="hotTea" title="Кофе"></div>
     <div class="hot" id="hotSugar" title="Сахар"></div>
+    <img class="prop" id="propCup" alt="" draggable="false">
     <img class="prop" id="propPack" alt="" draggable="false">
     <img class="prop hot" id="hotBeads" alt="" draggable="false" title="Чётки">
   </div>
@@ -683,7 +686,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 const $=id=>document.getElementById(id);
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='0.70';
-const APP_VERSION='54';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='55';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -1595,49 +1598,55 @@ function askDraw(){
 }
 
 /* ---------- интерактивный стол ---------- */
-// Положения в картинке стола (boards/table.webp, 2400×1500): чашка кофе с блюдцем и два кусочка сахара (см. tools/blender_table.py)
-const TEA={x:2260,y:1120,r:125}, SUGAR=[{x:1890,y:1159},{x:1862,y:1058}];
-// пачка и чётки — отдельные картинки (tools/blender_table.py, PROPS=1): 1950 px картинки = 1100 единиц доски.
-// Ставим вплотную к левому краю доски, пачку — у верхней четверти, чётки — у нижней.
-const PROP_K=1100/1950;
-$('propPack').src=`boards/prop-pack.png?v=${APP_VERSION}`; $('hotBeads').src=`boards/prop-beads.png?v=${APP_VERSION}`;
+// Пачка, чётки и кофе — отдельные картинки (tools/blender_table.py, PROPS=1): 3900 px картинки = 1100 единиц доски.
+// Ставим вплотную к доске: пачку и чётки слева, кофе справа внизу. На доску не кладём никогда.
+const PROP_K=1100/3900;
+// в картинке кофе: центр чашки, радиус кофе и два кусочка сахара (пиксели картинки)
+const CUP_PT={x:513,y:1160,r:251,sx:513,sw:1000}, SUGAR=[{x:1168,y:1363},{x:1215,y:1082}];
+let CUP=null;                                                   // где сейчас стоит чашка: {x,y,s} в осях #app
+$('propPack').src=`boards/prop-pack.png?v=${APP_VERSION}`; $('hotBeads').src=`boards/prop-beads.png?v=${APP_VERSION}`; $('propCup').src=`boards/prop-cup.png?v=${APP_VERSION}`;
 function placeProps(){
   const fr=$('frame').getBoundingClientRect(), ap=$('app').getBoundingClientRect();
+  if(!fr.width) return;
   const rot=document.documentElement.classList.contains('rot');
   // в повёрнутой вёрстке getBoundingClientRect даёт экранные оси — переводим в оси #app
   const L=rot?fr.top-ap.top:fr.left-ap.left, T=rot?ap.right-fr.right:fr.top-ap.top, H=rot?fr.width:fr.height;
-  const fw=rot?fr.height:fr.width, kk=fw/1100*PROP_K;
-  for(const [el,yy] of [[$('propPack'),.06],[$('hotBeads'),.52]]){
+  const fw=rot?fr.height:fr.width, AW=rot?ap.height:ap.width, kk=fw/1100*PROP_K, gap=Math.max(6,fw*.016);
+  for(const [el,yy] of [[$('propPack'),.05],[$('hotBeads'),.47]]){
     let w=(el.naturalWidth||1)*kk, h=(el.naturalHeight||1)*kk;
-    const room=L-fw*.018-4;                               // свободно слева от доски
+    const room=L-gap-2;                                   // свободно слева от доски
     if(w>room){ const f=Math.max(0,room)/w; w*=f; h*=f; } // не помещается — уменьшаем, на доску не кладём
-    const x=Math.max(2,L-w-fw*.018), y=T+H*yy;           // с зазором: в картинке справа ещё и тень
+    const x=L-gap-w, y=T+H*yy;                            // правый край картинки (с тенью) — с зазором от доски
     Object.assign(el.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
-    el.hidden=w<34;                                       // совсем мало места — не показываем
+    el.hidden=w<34;
   }
+  // кофе: блюдце целиком справа от доски; если места мало — уменьшаем до половины, дальше уходит за край экрана
+  const cup=$('propCup'), R=L+fw, room=AW-R-gap;
+  let s=kk; if(CUP_PT.sw*s>room) s=Math.max(kk*.5,room/CUP_PT.sw);
+  const cy=T+H*.74;
+  const x=R+gap-(CUP_PT.sx-CUP_PT.sw/2)*s, y=cy-CUP_PT.y*s;   // левый край блюдца — у доски
+  Object.assign(cup.style,{left:x+'px',top:y+'px',width:cup.naturalWidth*s+'px',height:cup.naturalHeight*s+'px'});
+  cup.hidden=room<CUP_PT.sw*s*.35;                       // видно меньше трети блюдца — не показываем
+  CUP=cup.hidden?null:{x,y,s};
 }
-for(const id of ['propPack','hotBeads']) $(id).addEventListener('load',placeProps);
+for(const id of ['propPack','hotBeads','propCup']) $(id).addEventListener('load',placeHot);
 function tableMap(){
   const app=$('app'), W=app.clientWidth, H=app.clientHeight, k=Math.max(W/2400,H/1500);
   return {k,ox:(W-2400*k)/2,oy:(H-1500*k)/2,W,H};
 }
 function placeHot(){
-  const m=tableMap(), at=(p,r)=>({x:m.ox+p.x*m.k,y:m.oy+p.y*m.k,r:r*m.k});
-  const fr=$('frame').getBoundingClientRect(), ap=$('app').getBoundingClientRect();
-  const put=(el,c)=>{
-    // зона спрятана, если её закрывает доска или она за краем экрана
-    const inBoard=document.documentElement.classList.contains('rot')?false:(c.x+ap.left>fr.left&&c.x+ap.left<fr.right&&c.y+ap.top>fr.top&&c.y+ap.top<fr.bottom);
-    const off=c.x<0||c.y<0||c.x>m.W||c.y>m.H;
-    el.hidden=inBoard||off;
+  placeProps();
+  const m=tableMap();
+  const put=(el,c)=>{                                    // зона спрятана, если чашки нет или точка за краем экрана
+    el.hidden=!c||c.x<0||c.y<0||c.x>m.W||c.y>m.H; if(el.hidden) return;
     Object.assign(el.style,{left:c.x-c.r+'px',top:c.y-c.r+'px',width:c.r*2+'px',height:c.r*2+'px'});
   };
-  put($('hotTea'),at(TEA,TEA.r*1.6));
-  const sx=(SUGAR[0].x+SUGAR[1].x)/2, sy=(SUGAR[0].y+SUGAR[1].y)/2; put($('hotSugar'),at({x:sx,y:sy},80));
-  placeProps();
+  const t=teaPos(); put($('hotTea'),t&&{x:t.x,y:t.y,r:t.r*1.6});
+  put($('hotSugar'),CUP&&{x:CUP.x+(SUGAR[0].x+SUGAR[1].x)/2*CUP.s,y:CUP.y+(SUGAR[0].y+SUGAR[1].y)/2*CUP.s,r:Math.max(22,260*CUP.s)});
 }
-new ResizeObserver(placeHot).observe($('app'));
+new ResizeObserver(placeHot).observe($('app')); new ResizeObserver(placeHot).observe($('frame'));
 function fx(cls,x,y,style){ const el=document.createElement('div'); el.className=cls; Object.assign(el.style,{left:x+'px',top:y+'px'},style||{}); $('tablefx').appendChild(el); return el; }
-function teaPos(){ const m=tableMap(); return {x:m.ox+TEA.x*m.k,y:m.oy+TEA.y*m.k,r:TEA.r*m.k}; }
+function teaPos(){ return CUP&&{x:CUP.x+CUP_PT.x*CUP.s,y:CUP.y+CUP_PT.y*CUP.s,r:CUP_PT.r*CUP.s}; }
 function ripples(t,n=3){ for(let i=0;i<n;i++) setTimeout(()=>{ const d=t.r*1.7; const el=fx('ripple',t.x,t.y,{width:d+'px',height:d+'px'}); setTimeout(()=>el.remove(),1500); },i*220); }
 function steamUp(t,n=4){ for(let i=0;i<n;i++) setTimeout(()=>{ const el=fx('steam',t.x+(Math.random()-.5)*t.r*.8,t.y-t.r*.2,{'--dx':(Math.random()-.5)*40+'px','--rot':(Math.random()-.5)*30+'deg'}); setTimeout(()=>el.remove(),3300); },i*260); }
 function clink(times=3){
@@ -1655,14 +1664,14 @@ function plop(delay){
 }
 // чашка: помешали ложечкой — звон, круги по кофе, пар
 $('hotTea').addEventListener('click',()=>{
-  const t=teaPos(); clink(3); buzz(8);
+  const t=teaPos(); if(!t) return; clink(3); buzz(8);
   const sw=fx('swirl',t.x,t.y,{width:t.r*1.4+'px',height:t.r*1.4+'px'}); setTimeout(()=>sw.remove(),1400);
   ripples(t,3); steamUp(t,5);
 });
 // сахар: кусочек летит в чашку и булькает
 $('hotSugar').addEventListener('click',e=>{
-  const t=teaPos(), m=tableMap(), s0=SUGAR[Math.random()*2|0], x0=m.ox+s0.x*m.k, y0=m.oy+s0.y*m.k;
-  const c=fx('sugarcube',x0,y0,{width:22*m.k/.45+'px',height:22*m.k/.45+'px'});
+  const t=teaPos(); if(!t) return; const s0=SUGAR[Math.random()*2|0], x0=CUP.x+s0.x*CUP.s, y0=CUP.y+s0.y*CUP.s;
+  const c=fx('sugarcube',x0,y0,{width:125*CUP.s+'px',height:125*CUP.s+'px'});
   const D=650, dx=t.x-x0, dy=t.y-y0;
   c.animate([{transform:'translate(-50%,-50%) rotate(0) scale(1)'},
              {transform:`translate(calc(-50% + ${dx*.5}px),calc(-50% + ${dy*.5-90}px)) rotate(200deg) scale(1.25)`,offset:.5},
@@ -2391,7 +2400,7 @@ function unlockOrientation(){
   try{screen.orientation.unlock();}catch(e){}
   try{if(document.fullscreenElement&&!isStandalone())document.exitFullscreen();}catch(e){}
 }
-function showGame(){ setTimeout(placeHot,60); document.body.classList.remove('props-in'); setTimeout(()=>document.body.classList.add('props-in'),900); document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
+function showGame(){ setTimeout(placeHot,60); document.body.classList.remove('props-in'); setTimeout(()=>{ placeHot(); document.body.classList.add('props-in'); },900); document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
 function showMenu(){
   document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false;
   const v=readSaved();

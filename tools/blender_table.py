@@ -72,7 +72,7 @@ sc.collection.objects.unlink(proto)
 def cover(x, y):                                              # навес гуще у верхнего края и по бокам, к середине редеет
     return min(1, max(0, 1.1 - y / (TH * .6)) ** 1.3 + max(0, 1 - x / (TW * .2)) ** 2 * .8 + max(0, 1 - (TW - x) / (TW * .2)) ** 2 * .7)
 SUN = (math.radians(26), math.radians(-14))                   # солнце чуть сверху-слева: тени сдвинуты вниз-вправо
-from mathutils import Euler, Vector
+from mathutils import Euler, Vector, Matrix
 SD = Euler((SUN[0], SUN[1], 0)).to_matrix() @ Vector((0, 0, -1))   # куда светит солнце
 def above(x, y, z):                                           # точка на высоте z, тень от которой падает в (x, −y)
     k = z / -SD.z
@@ -126,7 +126,8 @@ porcelain = pmat('porc', **{'Base Color': (.93, .93, .94, 1), 'Roughness': .18, 
 gold = pmat('gold', **{'Base Color': (.9, .66, .3, 1), 'Metallic': 1.0, 'Roughness': .25})
 silver = pmat('silver', **{'Base Color': (.88, .88, .86, 1), 'Metallic': 1.0, 'Roughness': .18})
 sugar = pmat('sugar', **{'Base Color': (.97, .96, .93, 1), 'Roughness': .7, 'Subsurface Weight': .3})
-X0, Y0 = 22.6, -11.2                                         # правый нижний угол стола, у края доски
+_before_props = set(bpy.data.objects)                         # всё, что дальше, — отдельные картинки-предметы (PROPS=1)
+X0, Y0 = 19.8, -11.5                                          # кофе справа внизу; в игре ставится вплотную к правому краю доски
 lathe('saucer', [(0, 0), (4.0, 0), (5.6, .6), (6.3, 1.2), (6.4, 1.35)], porcelain, (X0, Y0, 0), solid=.25)
 lathe('rim', [(6.25, 1.36), (6.45, 1.36), (6.45, 1.46), (6.25, 1.46), (6.25, 1.36)], gold, (X0, Y0, 0), cap=False)
 # чашка армянского кофе: фарфор, золотой ободок, ручка; кофе с плотной пенкой
@@ -134,29 +135,29 @@ lathe('cup', [(1.6, 0), (2.2, .3), (2.9, 1.6), (3.25, 3.4), (3.4, 5.2), (3.45, 5
 lathe('cuprim', [(3.36, 5.58), (3.5, 5.58), (3.5, 5.7), (3.36, 5.7), (3.36, 5.58)], gold, (X0, Y0, 1.0 * CM), cap=False)
 foam = bpy.data.materials.new('foam'); foam.use_nodes = True; fn = foam.node_tree.nodes; fb = fn['Principled BSDF']
 noise = fn.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 60; noise.inputs['Detail'].default_value = 8
-ramp = fn.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].color = (.035, .016, .008, 1); ramp.color_ramp.elements[1].color = (.17, .09, .04, 1)
+ramp = fn.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].color = (.05, .025, .012, 1); ramp.color_ramp.elements[1].color = (.30, .17, .08, 1)
 foam.node_tree.links.new(noise.outputs['Fac'], ramp.inputs['Fac']); foam.node_tree.links.new(ramp.outputs['Color'], fb.inputs['Base Color'])
 fb.inputs['Roughness'].default_value = .35; fb.inputs['Coat Weight'].default_value = .5
 bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=3.22 * CM, depth=.3 * CM, location=(X0, Y0, (1.0 + 4.7) * CM)); bpy.context.object.data.materials.append(foam)
 bpy.ops.mesh.primitive_torus_add(major_radius=1.25 * CM, minor_radius=.28 * CM, location=(X0 + 4.3 * CM, Y0, 4.0 * CM), rotation=(math.radians(90), 0, 0))
 h_ = bpy.context.object; h_.scale = (1, 1.25, 1); h_.data.materials.append(porcelain)
 # чайная ложечка: вытянутая чаша и тонкая ручка с утолщением на конце
-ang = math.radians(35); ux, uy = math.cos(ang), math.sin(ang)
-bx, by = X0 - 4.0 * CM * ux, Y0 - 4.0 * CM * uy               # чаша ложки на блюдце, ручка лежит на краю и уходит наружу
-bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(bx, by, 1.55 * CM)); bowl = bpy.context.object
-bowl.scale = (1.5 * CM, .95 * CM, .32 * CM); bowl.rotation_euler = (0, 0, ang); bowl.data.materials.append(silver)
+ang = math.radians(-120);                                     # ложечка лежит на блюдце, ручкой вверх-вправо, от доски
+ux, uy = math.cos(ang), math.sin(ang)
+bx, by = X0 - 5.0 * CM * ux, Y0 - 5.0 * CM * uy               # чаша ложки на блюдце, ручка лежит на краю и уходит наружу
+bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(bx, by, 1.0 * CM)); bowl = bpy.context.object
+bowl.scale = (1.25 * CM, .8 * CM, .28 * CM); bowl.rotation_euler = (0, 0, ang); bowl.data.materials.append(silver)
 for p_ in bowl.data.polygons: p_.use_smooth = True
 hl = 9.5 * CM
-bpy.ops.mesh.primitive_cylinder_add(radius=.17 * CM, depth=hl, location=(bx - ux * (1.4 * CM + hl / 2), by - uy * (1.4 * CM + hl / 2), 1.95 * CM))
+bpy.ops.mesh.primitive_cylinder_add(radius=.17 * CM, depth=hl, location=(bx - ux * (1.15 * CM + hl / 2), by - uy * (1.15 * CM + hl / 2), 1.95 * CM))
 hd = bpy.context.object; hd.rotation_euler = (math.radians(90), math.radians(-1.5), ang + math.radians(90)); hd.data.materials.append(silver)
 hd.rotation_mode = 'XYZ'
-bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(bx - ux * (1.4 * CM + hl), by - uy * (1.4 * CM + hl), 2.1 * CM)); tip = bpy.context.object
+bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=(bx - ux * (1.15 * CM + hl), by - uy * (1.15 * CM + hl), 2.1 * CM)); tip = bpy.context.object
 tip.scale = (.9 * CM, .45 * CM, .14 * CM); tip.rotation_euler = (0, 0, ang); tip.data.materials.append(silver)
-for k, (dx, dy, rz) in enumerate(((-9.5, -1.0, .3), (-10.2, 1.6, -.4))):
+for k, (dx, dy, rz) in enumerate(((8.4, -2.6, .3), (9.0, 1.0, -.4))):   # сахар — справа от блюдца
     bpy.ops.mesh.primitive_cube_add(size=1.6 * CM, location=(X0 + dx * CM, Y0 + dy * CM, .8 * CM)); c = bpy.context.object
     c.rotation_euler = (0, 0, rz); c.data.materials.append(sugar); bv = c.modifiers.new('b', 'BEVEL'); bv.width = .12 * CM; bv.segments = 2
 
-_before_props = set(bpy.data.objects)
 # ---------- пачка сигарет Cigaronne King Size: чёрная матовая, линия откидной крышки,
 # серебряная эмблема и KING SIZE вверху, надпись Cigaronne курсивом, белое поле предупреждения внизу ----------
 PX, PY = 1.6, -5.2                                           # слева у доски: видна и на компьютере, и на телефоне
@@ -207,71 +208,95 @@ face.scale = (pw * .985, ph * .985, 1); face.rotation_euler = (0, 0, math.radian
 # серебряные метки «X» на боковой грани видны чуть-чуть — опускаем
 
 # ---------- чётки: чёрный оникс, серебряные разделители, серебряный конус и ажурный армянский крест ----------
-RX, RY = 1.45, -10.2                                         # слева у доски, под пачкой: петля вверху, крест — вниз
-onyx = pmat('onyx', **{'Base Color': (.004, .004, .005, 1), 'Roughness': .12, 'Specular IOR Level': .35, 'Coat Weight': .35, 'Coat Roughness': .05})
-silver2 = pmat('silver2', **{'Base Color': (.86, .86, .84, 1), 'Metallic': 1.0, 'Roughness': .22})
-oxid = pmat('oxid', **{'Base Color': (.12, .12, .12, 1), 'Metallic': 1.0, 'Roughness': .55})   # чернёное серебро в углублениях
-cord = pmat('cord', **{'Base Color': (.04, .04, .045, 1), 'Roughness': .6})
-BR = .135                                                    # радиус бусины (~7 мм)
-def sphere(x, y, r, mat, z=None):
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=r, location=(x, y, r if z is None else z), segments=28, ring_count=14)
+# Лежат на столе как брошенные: петля неровная, бусины чуть разного размера, крест повёрнут по ходу нити.
+RX, RY = 1.55, -10.25                                         # слева у доски, под пачкой
+onyx = pmat('onyx', **{'Base Color': (.006, .006, .007, 1), 'Roughness': .05, 'IOR': 1.55, 'Coat Weight': 1.0, 'Coat Roughness': .02})
+silver2 = pmat('silver2', **{'Base Color': (.9, .9, .88, 1), 'Metallic': 1.0, 'Roughness': .16})
+oxid = pmat('oxid', **{'Base Color': (.1, .1, .1, 1), 'Metallic': 1.0, 'Roughness': .5})   # чернёное серебро в углублениях
+cord = pmat('cord', **{'Base Color': (.03, .03, .035, 1), 'Roughness': .55})
+BR = .15                                                     # радиус бусины (~8 мм)
+def sphere(x, y, r, mat, z=None, seg=48):
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=r, location=(x, y, r if z is None else z), segments=seg, ring_count=seg // 2)
     o = bpy.context.object; o.data.materials.append(mat)
     for p_ in o.data.polygons: p_.use_smooth = True
     return o
-# петля — вытянутая вверх капля, бусины плотно друг к другу
-# бусины расставляем по длине кривой, вплотную, но не внахлёст
-curve = [(RX + .74 * math.sin(t) * (1 - .25 * math.cos(t)), RY + 1.05 + 1.35 * math.cos(t) + .05 * math.sin(3 * t)) for t in np.linspace(0, 2 * math.pi, 721)]
+# неровная петля: эллипс плюс пара гармоник и лёгкий поворот; низ петли (t = π) — место конуса
+def loop_pt(t):
+    x = .80 * math.sin(t) + .07 * math.sin(2 * t) + .05 * math.cos(3 * t) - .04 * math.sin(4 * t)
+    y = 1.40 * math.cos(t) + .09 * math.sin(2 * t) + .05 * math.cos(3 * t)
+    r_ = math.radians(-9); return (RX + x * math.cos(r_) - y * math.sin(r_), RY + 1.2 + x * math.sin(r_) + y * math.cos(r_))
+curve = [loop_pt(t) for t in np.linspace(math.pi, 3 * math.pi, 1441)]   # начинаем снизу
 seg = np.hypot(np.diff([c[0] for c in curve]), np.diff([c[1] for c in curve])); cum = np.concatenate([[0], np.cumsum(seg)])
-nb = int(cum[-1] / (BR * 2.08)); nb -= nb % 2
-loop = [curve[int(np.searchsorted(cum, cum[-1] * k / nb))] for k in range(nb)]
+nb = int(cum[-1] / (BR * 2.1)); nb -= nb % 2
+loop = [curve[int(np.searchsorted(cum, cum[-1] * (k + .5) / nb))] for k in range(nb)]   # k=0 и k=nb-1 — по бокам от конуса
+gap = (cum[-1] / nb) / 2                                      # конус садится в разрыв внизу петли
 for k, (x, y) in enumerate(loop):
-    if k == nb // 2: continue                                 # внизу петли — серебряный конус
-    if k in (nb // 6, nb // 3, nb - nb // 3, nb - nb // 6):  # серебряные разделители-рондели
-        bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=BR * .82, depth=BR * .7, location=(x, y, BR))
+    if k in (nb // 5, 2 * nb // 5, nb - 1 - 2 * nb // 5, nb - 1 - nb // 5):   # серебряные разделители-рондели
+        bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=BR * .78, depth=BR * .62, location=(x, y, BR * .8))
         o = bpy.context.object; nx, ny = loop[(k + 1) % nb][0] - loop[k - 1][0], loop[(k + 1) % nb][1] - loop[k - 1][1]
         o.rotation_euler = (math.radians(90), 0, math.atan2(ny, nx) + math.pi / 2); o.data.materials.append(silver2)
-        bv = o.modifiers.new('b', 'BEVEL'); bv.width = BR * .12; bv.segments = 3
+        bv = o.modifiers.new('b', 'BEVEL'); bv.width = BR * .16; bv.segments = 4
         for p_ in o.data.polygons: p_.use_smooth = True
     else:
-        sphere(x, y, BR, onyx)
-cu = bpy.data.curves.new('cord', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = BR * .12
-sp = cu.splines.new('POLY'); sp.points.add(len(loop)); sp.use_cyclic_u = True
-for p_, (x, y) in zip(sp.points, loop + [loop[0]]): p_.co = (x, y, BR, 1)
+        sphere(x, y, BR * rnd.uniform(.95, 1.04), onyx)
+cu = bpy.data.curves.new('cord', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = BR * .1; cu.bevel_resolution = 3
+sp = cu.splines.new('POLY'); sp.points.add(len(loop) - 1)
+for p_, (x, y) in zip(sp.points, loop): p_.co = (x, y, BR * .75, 1)
 cd = bpy.data.objects.new('cord', cu); sc.collection.objects.link(cd); cd.data.materials.append(cord)
-# конус-«щиток»: серебряный треугольник с чернёным орнаментом
-bx, by = loop[nb // 2]
-def prism(pts, z0, h, mat, name):
-    crv = bpy.data.curves.new(name, 'CURVE'); crv.dimensions = '2D'; crv.fill_mode = 'BOTH'; crv.extrude = h / 2; crv.bevel_depth = h * .15
-    s_ = crv.splines.new('POLY'); s_.points.add(len(pts) - 1); s_.use_cyclic_u = True
-    for p_, (x, y) in zip(s_.points, pts): p_.co = (x, y, 0, 1)
-    o = bpy.data.objects.new(name, crv); sc.collection.objects.link(o); o.location = (0, 0, z0 + h / 2); o.data.materials.append(mat); return o
-cw, ch = .2, .27
-prism([(bx - cw, by + .04), (bx + cw, by + .04), (bx, by - ch)], 0, BR * 1.6, silver2, 'cone')
-prism([(bx - cw * .55, by - .01), (bx + cw * .55, by - .01), (bx, by - ch * .62)], BR * 1.6, .004, oxid, 'cone_in')
-sphere(bx, by + .08, BR * .45, silver2, BR * 1.7)
-# под конусом — серебряная бусина и ушко
-sphere(bx, by - ch - .13, BR * .7, silver2)
-bpy.ops.mesh.primitive_torus_add(major_radius=.07, minor_radius=.018, location=(bx, by - ch - .28, .03)); bpy.context.object.data.materials.append(silver2)
+# подвеска строится вниз от точки (0, 0) и потом поворачивается целиком
+bx, by = curve[0]
+_before_pend = set(bpy.data.objects)
+def prism(pts, z0, h, mat, name, bev=.18):
+    """Плоская пластина по контуру pts толщиной h, с фаской по краю (сетка, а не кривая: без полос на вогнутых углах)."""
+    import bmesh
+    me = bpy.data.meshes.new(name); bm = bmesh.new()
+    f = bm.faces.new([bm.verts.new((x, y, 0)) for x, y in pts]); bm.normal_update()
+    if f.normal.z < 0: f.normal_flip()
+    ex = bmesh.ops.extrude_face_region(bm, geom=[f]); bmesh.ops.translate(bm, verts=[v for v in ex['geom'] if isinstance(v, bmesh.types.BMVert)], vec=(0, 0, h))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(name, me); sc.collection.objects.link(o); o.location = (0, 0, z0)
+    bv = o.modifiers.new('b', 'BEVEL'); bv.width = h * bev; bv.segments = 3; bv.limit_method = 'ANGLE'; bv.harden_normals = False
+    o.modifiers.new('t', 'TRIANGULATE'); o.data.materials.append(mat); return o
+cw, ch = .21, .30                                             # конус-«щиток»: серебряный треугольник с чернёным орнаментом
+prism([(bx - cw, by + .03), (bx + cw, by + .03), (bx, by - ch)], 0, BR * 1.3, silver2, 'cone', .25)
+prism([(bx - cw * .58, by - .02), (bx + cw * .58, by - .02), (bx, by - ch * .66)], BR * 1.3, .004, oxid, 'cone_in')
+prism([(bx - cw * .3, by - .05), (bx + cw * .3, by - .05), (bx, by - ch * .45)], BR * 1.3 + .004, .004, silver2, 'cone_in2')
+sphere(bx, by - ch - .075, BR * .62, silver2)                  # серебряная бусина и ушко под конусом
+bpy.ops.mesh.primitive_torus_add(major_radius=.075, minor_radius=.02, location=(bx, by - ch - .215, .03), major_segments=48, minor_segments=16)
+bpy.context.object.data.materials.append(silver2)
+for p_ in bpy.context.object.data.polygons: p_.use_smooth = True
 # армянский крест: ветви расширяются и раздваиваются завитками; ажурный — внутри чернёный узор, в центре розетка
-cx, cy = bx, by - ch - .35 - .62
+cx, cy = bx, by - ch - .285 - .58
 def arm_pts(L, w0, w1):
-    return [(-w0, w0), (-w1, L * .80), (-w1 * 1.3, L), (-w1 * .35, L * .88), (0, L * .97), (w1 * .35, L * .88), (w1 * 1.3, L), (w1, L * .80), (w0, w0)]
+    return [(-w0, w0), (-w1, L * .78), (-w1 * 1.35, L), (-w1 * .4, L * .87), (0, L * .97), (w1 * .4, L * .87), (w1 * 1.35, L), (w1, L * .78), (w0, w0)]
+ARMS = ((0, .50), (-90, .44), (180, .68), (90, .44))          # верх (к ушку), право, низ — длиннее, лево
 def cross_outline(k):
+    # внешний контур — с раздвоенными концами; внутренние слои — вложенные гладкие лопасти (иначе зубцы концов
+    # оказываются посреди ветвей); k — насколько слой утоплен внутрь от края
     out = []
-    for ang, L in ((0, .52 * k), (-90, .46 * k), (180, .70 * k), (90, .46 * k)):   # верх (к ушку), право, низ — длиннее, лево
+    for ang, L in ARMS:
         ca, sa = math.cos(math.radians(ang)), math.sin(math.radians(ang))
-        out += [(cx + x * ca - y * sa, cy + x * sa + y * ca) for x, y in arm_pts(L, .085 * k, .15 * k)][:-1]
+        if k >= 1: pts = arm_pts(L, .085, .15)
+        else:
+            d = (1 - k) * .16; w0, w1 = max(.012, .085 - d * .55), max(.02, .15 - d * .75)
+            pts = [(-w0, w0), (-w1, L * .80 - d * .6), (0, L * .88 - d * .6), (w1, L * .80 - d * .6), (w0, w0)]
+        out += [(cx + x * ca - y * sa, cy + x * sa + y * ca) for x, y in pts][:-1]
     return out
-# слои, как у ажурного креста на фото: серебряный край, чернёная полоса, серебряная филигрань, снова чернь, серебряный центр
-for k_, z_, h_, m_ in ((1.0, 0, .045, silver2), (.84, .045, .003, oxid), (.70, .048, .006, silver2), (.56, .054, .003, oxid), (.40, .057, .008, silver2)):
+# слои: толстый серебряный край, чернёная полоса, серебряная филигрань, снова чернь, выпуклый серебряный центр
+for k_, z_, h_, m_ in ((1.0, 0, .06, silver2), (.84, .06, .003, oxid), (.72, .063, .008, silver2), (.58, .071, .003, oxid), (.44, .074, .012, silver2)):
     prism(cross_outline(k_), z_, h_, m_, 'cross%.2f' % k_)
-for k in range(8):                                                # розетка в центре
+for k in range(8):                                            # розетка в центре
     a_ = k * math.pi / 4
-    sphere(cx + .075 * math.cos(a_), cy + .075 * math.sin(a_), .022, silver2, .07)
-sphere(cx, cy, .04, silver2, .072)
-for ang in (0, 90, 180, 270):                                     # бусинки-зерно на концах ветвей
-    a_ = math.radians(ang + 90); L = (.52 if ang == 0 else .70 if ang == 180 else .46) * .86
-    sphere(cx + L * math.cos(a_), cy + L * math.sin(a_), .028, silver2, .06)
+    sphere(cx + .08 * math.cos(a_), cy + .08 * math.sin(a_), .024, silver2, .09, 24)
+sphere(cx, cy, .045, silver2, .09, 32)
+for ang, L in ARMS:                                           # бусинки-зерно на концах ветвей
+    a_ = math.radians(ang + 90); L *= .86
+    sphere(cx + L * math.cos(a_), cy + L * math.sin(a_), .03, silver2, .075, 24)
+# вся подвеска чуть повёрнута — лежит, как упала
+piv = bpy.data.objects.new('pend', None); sc.collection.objects.link(piv); piv.location = (bx, by, 0)
+for o in set(bpy.data.objects) - _before_pend - {piv}:
+    o.parent = piv; o.matrix_parent_inverse = Matrix.Translation((-bx, -by, 0))
+piv.rotation_euler = (0, 0, math.radians(14))
 
 props = [o for o in bpy.data.objects if o not in _before_props]
 # Пачка и чётки — отдельными картинками (PROPS=1): в игре их ставят вплотную к доске на любом экране.
@@ -296,6 +321,17 @@ so = bpy.data.objects.new('sun', sun); sc.collection.objects.link(so); so.rotati
 world = bpy.data.worlds.new('w'); sc.world = world; world.use_nodes = True
 world.node_tree.nodes['Background'].inputs['Color'].default_value = (.5, .62, .75, 1)   # небо — холодная заливка теней
 world.node_tree.nodes['Background'].inputs['Strength'].default_value = .9
+if PROPS:
+    # в отражениях глянца (оникс, серебро, фарфор) вокруг — тёплый тёмный стол, а не голубое небо,
+    # и мягкий блик от большого окна сверху-слева (виден только в отражениях, освещение не меняет)
+    wn = world.node_tree.nodes; wl = world.node_tree.links; bg = wn['Background']; out = wn['World Output']
+    bg2 = wn.new('ShaderNodeBackground'); bg2.inputs['Color'].default_value = (.16, .11, .07, 1); bg2.inputs['Strength'].default_value = 1.0
+    lp = wn.new('ShaderNodeLightPath'); mx = wn.new('ShaderNodeMixShader')
+    wl.new(lp.outputs['Is Glossy Ray'], mx.inputs['Fac']); wl.new(bg.outputs['Background'], mx.inputs[1]); wl.new(bg2.outputs['Background'], mx.inputs[2])
+    wl.new(mx.outputs['Shader'], out.inputs['Surface'])
+    win = bpy.data.lights.new('window', 'SUN'); win.energy = 3.0; win.angle = math.radians(16); win.color = (1, .97, .92)
+    wo = bpy.data.objects.new('window', win); sc.collection.objects.link(wo); wo.rotation_euler = (math.radians(24), math.radians(-18), 0)
+    wo.visible_diffuse = False; wo.visible_transmission = False; wo.visible_volume_scatter = False; wo.visible_shadow = False
 cam = bpy.data.cameras.new('cam'); cam.type = 'ORTHO'; cam.ortho_scale = TW
 co = bpy.data.objects.new('cam', cam); sc.collection.objects.link(co); sc.camera = co; co.location = (TW / 2, -TH / 2, 30)
 sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = int(os.environ.get('SAMPLES', 128)); sc.cycles.max_bounces = 10; sc.cycles.transmission_bounces = 10; sc.cycles.use_denoising = True
@@ -305,14 +341,30 @@ sc.render.image_settings.file_format = 'PNG'
 NV = bool(os.environ.get('NOVINE'))
 if PROPS: sc.render.image_settings.color_mode = 'RGBA'
 sc.render.filepath = os.path.join(ROOT, '.preview', 'blender-table%s.png' % ('-props' if PROPS else '-novine' if NV else ''))
-bpy.ops.render.render(write_still=True)
 if PROPS:
-    # вырезаем пачку (верх левого края) и чётки (низ) по непрозрачным пикселям; 1950 px картинки = 1100 единиц доски
-    im = Image.open(sc.render.filepath).convert('RGBA'); a = np.asarray(im)[..., 3]
-    for name, y0, y1 in (('pack', 0, 700), ('beads', 700, 1500)):
-        sub = a[y0:y1, :700]; ys, xs = np.nonzero(sub > 8)
-        box = (max(0, xs.min() - 6), y0 + max(0, ys.min() - 6), min(700, xs.max() + 7), y0 + min(y1 - y0, ys.max() + 7))
-        im.crop(box).save(os.path.join(ROOT, 'boards', f'prop-{name}.png'), optimize=True)
-        print('prop', name, box)
-elif not NV: Image.open(sc.render.filepath).convert('RGB').save(os.path.join(ROOT, 'boards', 'table.webp'), 'WEBP', quality=80, method=6)
+    # предметы рендерим вдвое крупнее (для чётких экранов) и только нужные куски кадра:
+    # слева — пачка и чётки, справа внизу — кофе с сахаром. 3900 px картинки = 1100 единиц доски.
+    sc.render.resolution_percentage = 200; sc.render.use_border = True; sc.render.use_crop_to_border = True
+    for part, (x0, x1, y0, y1), cuts in (('left', (0, .3, 0, 1), (('pack', 0, 1460), ('beads', 1460, 3000))),
+                                          ('right', (.68, 1, 0, .62), (('cup', 0, 9999),))):
+        sc.render.border_min_x, sc.render.border_max_x, sc.render.border_min_y, sc.render.border_max_y = x0, x1, y0, y1
+        sc.render.filepath = os.path.join(ROOT, '.preview', f'blender-props-{part}.png')
+        bpy.ops.render.render(write_still=True)
+        im = Image.open(sc.render.filepath).convert('RGBA'); px = np.asarray(im).copy()
+        px[..., 3][px[..., 3] < 10] = 0; im = Image.fromarray(px); a = px[..., 3]   # убираем шум ловца теней
+        for name, cy0, cy1 in cuts:
+            cy1 = min(cy1, a.shape[0])
+            from PIL import ImageFilter
+            mk = np.asarray(Image.fromarray(((a[cy0:cy1] > 30) * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(5)))   # без одиночных «светлячков»
+            ys, xs = np.nonzero(mk)
+            box = (max(0, xs.min() - 12), cy0 + max(0, ys.min() - 12), min(a.shape[1], xs.max() + 13), cy0 + min(cy1 - cy0, ys.max() + 13))
+            im.crop(box).save(os.path.join(ROOT, 'boards', f'prop-{name}.png'), optimize=True)
+            # точка в картинке-предмете → для чашки нужны центр кофе и сахар (в пикселях картинки)
+            ox, oy = x0 * 4800 + box[0], (1 - y1) * 3000 + box[1]
+            px_ = lambda X, Y: (round(X * 200 - ox), round(-Y * 200 - oy))
+            print('prop', name, im.crop(box).size, box)
+            if name == 'cup': print('cup centre', px_(X0, Y0), 'sugar', [px_(X0 + dx * CM, Y0 + dy * CM) for dx, dy in ((8.4, -2.6), (9.0, 1.0))])
+else:
+    bpy.ops.render.render(write_still=True)
+if not PROPS and not NV: Image.open(sc.render.filepath).convert('RGB').save(os.path.join(ROOT, 'boards', 'table.webp'), 'WEBP', quality=80, method=6)
 print('saved table', 'novine' if NV else '')

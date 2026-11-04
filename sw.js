@@ -1,5 +1,5 @@
 // Офлайн-кэш: страница, доски, звуки и шрифты кэшируются при установке.
-const V = '54';                 // = APP_VERSION в index.html
+const V = '55';                 // = APP_VERSION в index.html
 const VERSION = 'nardy-v' + V;
 const SHELL = [
   './',
@@ -12,7 +12,7 @@ const SHELL = [
   ...['ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold'].map(k => `boards/ck-${k}.png?v=${V}`),
   ...['ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold'].map(k => `boards/ckside-${k}.png?v=${V}`),
   `boards/table.webp?v=${V}`,
-  ...['night', 'ararat', 'glass', 'yerevan', 'pomegranate', 'sevan'].flatMap(k => ['long', 'short'].map(t => `boards/pt-${k}-${t}.png?v=${V}`)), `boards/prop-pack.png?v=${V}`, `boards/prop-beads.png?v=${V}`,
+  ...['night', 'ararat', 'glass', 'yerevan', 'pomegranate', 'sevan'].flatMap(k => ['long', 'short'].map(t => `boards/pt-${k}-${t}.png?v=${V}`)), `boards/prop-pack.png?v=${V}`, `boards/prop-beads.png?v=${V}`, `boards/prop-cup.png?v=${V}`,
   `boards/lid.webp?v=${V}`, `boards/walnut-plank.webp?v=${V}`,
   ...['', 'wood-', 'amber-'].flatMap(m => [1, 2, 3, 4, 5, 6].map(f => `boards/die-${m}${f}.png?v=${V}`)),
 ];

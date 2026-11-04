@@ -206,49 +206,72 @@ bpy.ops.mesh.primitive_plane_add(size=1, location=(PX, PY, pd + .002)); face = b
 face.scale = (pw * .985, ph * .985, 1); face.rotation_euler = (0, 0, math.radians(-5)); face.data.materials.append(fm_)
 # серебряные метки «X» на боковой грани видны чуть-чуть — опускаем
 
-# ---------- чётки с армянским крестом: бусины на нитке, кисточка-крест ----------
-RX, RY = 1.6, -11.6                                          # слева у доски, под пачкой
-amber = pmat('amber', **{'Base Color': (.10, .03, .008, 1), 'Roughness': .1, 'Coat Weight': 1.0, 'Coat Roughness': .03})   # тёмный янтарь
-silver2 = pmat('silver2', **{'Base Color': (.82, .82, .8, 1), 'Metallic': 1.0, 'Roughness': .28})
-cord = pmat('cord', **{'Base Color': (.25, .05, .03, 1), 'Roughness': .7})
-nb = 33
-pts = []
-for k in range(nb):                                           # петля, брошенная небрежно: эллипс с изгибом
-    t = 2 * math.pi * k / nb
-    pts.append((RX + .85 * math.cos(t) + .12 * math.sin(2 * t), RY + 1.3 * math.sin(t) - .15 * math.cos(3 * t)))   # вытянутая вдоль края доски петля
-for x, y in pts:
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=.34 * CM * 1.6, location=(x, y, .34 * CM * 1.6), segments=24, ring_count=12)
-    bd = bpy.context.object; bd.data.materials.append(amber)
-    for p_ in bd.data.polygons: p_.use_smooth = True
-cu = bpy.data.curves.new('cord', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = .05 * CM * 1.6
-sp = cu.splines.new('POLY'); sp.points.add(len(pts)); sp.use_cyclic_u = True
-for p_, (x, y) in zip(sp.points, pts + [pts[0]]): p_.co = (x, y, .34 * CM * 1.6, 1)
+# ---------- чётки: чёрный оникс, серебряные разделители, серебряный конус и ажурный армянский крест ----------
+RX, RY = 1.45, -10.2                                         # слева у доски, под пачкой: петля вверху, крест — вниз
+onyx = pmat('onyx', **{'Base Color': (.004, .004, .005, 1), 'Roughness': .12, 'Specular IOR Level': .35, 'Coat Weight': .35, 'Coat Roughness': .05})
+silver2 = pmat('silver2', **{'Base Color': (.86, .86, .84, 1), 'Metallic': 1.0, 'Roughness': .22})
+oxid = pmat('oxid', **{'Base Color': (.12, .12, .12, 1), 'Metallic': 1.0, 'Roughness': .55})   # чернёное серебро в углублениях
+cord = pmat('cord', **{'Base Color': (.04, .04, .045, 1), 'Roughness': .6})
+BR = .135                                                    # радиус бусины (~7 мм)
+def sphere(x, y, r, mat, z=None):
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=r, location=(x, y, r if z is None else z), segments=28, ring_count=14)
+    o = bpy.context.object; o.data.materials.append(mat)
+    for p_ in o.data.polygons: p_.use_smooth = True
+    return o
+# петля — вытянутая вверх капля, бусины плотно друг к другу
+# бусины расставляем по длине кривой, вплотную, но не внахлёст
+curve = [(RX + .74 * math.sin(t) * (1 - .25 * math.cos(t)), RY + 1.05 + 1.35 * math.cos(t) + .05 * math.sin(3 * t)) for t in np.linspace(0, 2 * math.pi, 721)]
+seg = np.hypot(np.diff([c[0] for c in curve]), np.diff([c[1] for c in curve])); cum = np.concatenate([[0], np.cumsum(seg)])
+nb = int(cum[-1] / (BR * 2.08)); nb -= nb % 2
+loop = [curve[int(np.searchsorted(cum, cum[-1] * k / nb))] for k in range(nb)]
+for k, (x, y) in enumerate(loop):
+    if k == nb // 2: continue                                 # внизу петли — серебряный конус
+    if k in (nb // 6, nb // 3, nb - nb // 3, nb - nb // 6):  # серебряные разделители-рондели
+        bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=BR * .82, depth=BR * .7, location=(x, y, BR))
+        o = bpy.context.object; nx, ny = loop[(k + 1) % nb][0] - loop[k - 1][0], loop[(k + 1) % nb][1] - loop[k - 1][1]
+        o.rotation_euler = (math.radians(90), 0, math.atan2(ny, nx) + math.pi / 2); o.data.materials.append(silver2)
+        bv = o.modifiers.new('b', 'BEVEL'); bv.width = BR * .12; bv.segments = 3
+        for p_ in o.data.polygons: p_.use_smooth = True
+    else:
+        sphere(x, y, BR, onyx)
+cu = bpy.data.curves.new('cord', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = BR * .12
+sp = cu.splines.new('POLY'); sp.points.add(len(loop)); sp.use_cyclic_u = True
+for p_, (x, y) in zip(sp.points, loop + [loop[0]]): p_.co = (x, y, BR, 1)
 cd = bpy.data.objects.new('cord', cu); sc.collection.objects.link(cd); cd.data.materials.append(cord)
-# хвост: две бусины и серебряный армянский крест (концы с «ласточкиными хвостами»)
-tx, ty = pts[nb // 4]
-tail = [(tx + .05, ty + .35 * k) for k in range(1, 3)]
-for x, y in tail:
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=.3 * CM * 1.6, location=(x, y, .3 * CM * 1.6)); bpy.context.object.data.materials.append(amber)
-cx, cy = tx + .05, ty + 1.45
-# армянский крест: ветви расширяются к концам и раздваиваются завитками; плоский серебряный, с ушком сверху
+# конус-«щиток»: серебряный треугольник с чернёным орнаментом
+bx, by = loop[nb // 2]
+def prism(pts, z0, h, mat, name):
+    crv = bpy.data.curves.new(name, 'CURVE'); crv.dimensions = '2D'; crv.fill_mode = 'BOTH'; crv.extrude = h / 2; crv.bevel_depth = h * .15
+    s_ = crv.splines.new('POLY'); s_.points.add(len(pts) - 1); s_.use_cyclic_u = True
+    for p_, (x, y) in zip(s_.points, pts): p_.co = (x, y, 0, 1)
+    o = bpy.data.objects.new(name, crv); sc.collection.objects.link(o); o.location = (0, 0, z0 + h / 2); o.data.materials.append(mat); return o
+cw, ch = .2, .27
+prism([(bx - cw, by + .04), (bx + cw, by + .04), (bx, by - ch)], 0, BR * 1.6, silver2, 'cone')
+prism([(bx - cw * .55, by - .01), (bx + cw * .55, by - .01), (bx, by - ch * .62)], BR * 1.6, .004, oxid, 'cone_in')
+sphere(bx, by + .08, BR * .45, silver2, BR * 1.7)
+# под конусом — серебряная бусина и ушко
+sphere(bx, by - ch - .13, BR * .7, silver2)
+bpy.ops.mesh.primitive_torus_add(major_radius=.07, minor_radius=.018, location=(bx, by - ch - .28, .03)); bpy.context.object.data.materials.append(silver2)
+# армянский крест: ветви расширяются и раздваиваются завитками; ажурный — внутри чернёный узор, в центре розетка
+cx, cy = bx, by - ch - .35 - .62
 def arm_pts(L, w0, w1):
-    """контур одной ветви вдоль +y: от центра к раздвоенному концу"""
-    return [(-w0, w0), (-w1, L * .82), (-w1 * 1.25, L), (-w1 * .35, L * .9), (0, L * .97), (w1 * .35, L * .9), (w1 * 1.25, L), (w1, L * .82), (w0, w0)]
-outline = []
-# крест лежит длинной ветвью от чёток (к +y), ушко — на короткой ветви у бусин
-for ang, L in ((0, .62), (-90, .42), (180, .5), (90, .42)):   # +y, вправо, −y, влево; ветви стыкуются в углах (±w0, ±w0)
-    ca, sa = math.cos(math.radians(ang)), math.sin(math.radians(ang))
-    outline += [(x * ca - y * sa, x * sa + y * ca) for x, y in arm_pts(L, .07, .13)][:-1]
-crv = bpy.data.curves.new('cross', 'CURVE'); crv.dimensions = '2D'; crv.fill_mode = 'BOTH'; crv.extrude = .02; crv.bevel_depth = .006
-spl = crv.splines.new('POLY'); spl.points.add(len(outline) - 1); spl.use_cyclic_u = True
-for p_, (x, y) in zip(spl.points, outline): p_.co = (x, y, 0, 1)
-cr = bpy.data.objects.new('cross', crv); sc.collection.objects.link(cr); cr.location = (cx, cy, .03); cr.data.materials.append(silver2)
-bpy.ops.mesh.primitive_torus_add(major_radius=.06, minor_radius=.015, location=(cx, cy - .56, .03)); bpy.context.object.data.materials.append(silver2)
-# нитка от хвоста к ушку
-cu2 = bpy.data.curves.new('cord2', 'CURVE'); cu2.dimensions = '3D'; cu2.bevel_depth = .05 * CM * 1.6
-sp2 = cu2.splines.new('POLY'); sp2.points.add(2)
-for p_, c_ in zip(sp2.points, [(tx, ty, .34 * CM * 1.6), (tail[-1][0], tail[-1][1], .3 * CM * 1.6), (cx, cy - .62, .03)]): p_.co = (*c_, 1)
-o2 = bpy.data.objects.new('cord2', cu2); sc.collection.objects.link(o2); o2.data.materials.append(cord)
+    return [(-w0, w0), (-w1, L * .80), (-w1 * 1.3, L), (-w1 * .35, L * .88), (0, L * .97), (w1 * .35, L * .88), (w1 * 1.3, L), (w1, L * .80), (w0, w0)]
+def cross_outline(k):
+    out = []
+    for ang, L in ((0, .52 * k), (-90, .46 * k), (180, .70 * k), (90, .46 * k)):   # верх (к ушку), право, низ — длиннее, лево
+        ca, sa = math.cos(math.radians(ang)), math.sin(math.radians(ang))
+        out += [(cx + x * ca - y * sa, cy + x * sa + y * ca) for x, y in arm_pts(L, .085 * k, .15 * k)][:-1]
+    return out
+# слои, как у ажурного креста на фото: серебряный край, чернёная полоса, серебряная филигрань, снова чернь, серебряный центр
+for k_, z_, h_, m_ in ((1.0, 0, .045, silver2), (.84, .045, .003, oxid), (.70, .048, .006, silver2), (.56, .054, .003, oxid), (.40, .057, .008, silver2)):
+    prism(cross_outline(k_), z_, h_, m_, 'cross%.2f' % k_)
+for k in range(8):                                                # розетка в центре
+    a_ = k * math.pi / 4
+    sphere(cx + .075 * math.cos(a_), cy + .075 * math.sin(a_), .022, silver2, .07)
+sphere(cx, cy, .04, silver2, .072)
+for ang in (0, 90, 180, 270):                                     # бусинки-зерно на концах ветвей
+    a_ = math.radians(ang + 90); L = (.52 if ang == 0 else .70 if ang == 180 else .46) * .86
+    sphere(cx + L * math.cos(a_), cy + L * math.sin(a_), .028, silver2, .06)
 
 props = [o for o in bpy.data.objects if o not in _before_props]
 # Пачка и чётки — отдельными картинками (PROPS=1): в игре их ставят вплотную к доске на любом экране.
@@ -286,7 +309,7 @@ bpy.ops.render.render(write_still=True)
 if PROPS:
     # вырезаем пачку (верх левого края) и чётки (низ) по непрозрачным пикселям; 1950 px картинки = 1100 единиц доски
     im = Image.open(sc.render.filepath).convert('RGBA'); a = np.asarray(im)[..., 3]
-    for name, y0, y1 in (('pack', 0, 760), ('beads', 760, 1500)):
+    for name, y0, y1 in (('pack', 0, 700), ('beads', 700, 1500)):
         sub = a[y0:y1, :700]; ys, xs = np.nonzero(sub > 8)
         box = (max(0, xs.min() - 6), y0 + max(0, ys.min() - 6), min(700, xs.max() + 7), y0 + min(y1 - y0, ys.max() + 7))
         im.crop(box).save(os.path.join(ROOT, 'boards', f'prop-{name}.png'), optimize=True)

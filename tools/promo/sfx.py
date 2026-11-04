@@ -30,7 +30,8 @@ def whoosh(dur, f0, f1, rise=.45):   # шорох воздуха: шум с пл
 def pop():                     # «буль» появления значка
     n = int(.22 * SR); t = np.arange(n) / SR
     f = 520 + 520 * (1 - np.exp(-t * 30)); ph = 2 * np.pi * np.cumsum(f) / SR
-    return np.sin(ph) * env(n, .004, .07) * .55 + tap() [:n] * .0 + np.pad(tap(), (0, max(0, n - len(tap()))))[:n] * .4
+    tp = tap(); tp = np.pad(tp, (0, max(0, n - len(tp))))[:n]
+    return np.sin(ph) * env(n, .004, .07) * .55 + tp * .4
 def thump(dur=.6, f=48):        # низкий удар
     n = int(dur * SR); t = np.arange(n) / SR
     fr = f * (1 + 1.5 * np.exp(-t * 18)); ph = 2 * np.pi * np.cumsum(fr) / SR

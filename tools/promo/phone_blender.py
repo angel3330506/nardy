@@ -56,9 +56,8 @@ scr = bpy.data.materials.new('screen'); scr.use_nodes = True; nt = scr.node_tree
 img = bpy.data.images.load(os.path.join(UI, '0001.jpg')); img.source = 'SEQUENCE'
 tx = nt.nodes.new('ShaderNodeTexImage'); tx.image = img; tx.interpolation = 'Cubic'
 tx.image_user.frame_duration = N; tx.image_user.frame_start = 1; tx.image_user.frame_offset = 0; tx.image_user.use_auto_refresh = True
-nt.links.new(tx.outputs['Color'], bs.inputs['Emission Color']); bs.inputs['Emission Strength'].default_value = 1.0
-bs.inputs['Base Color'].default_value = (0, 0, 0, 1); bs.inputs['Roughness'].default_value = .03
-bs.inputs['Coat Weight'].default_value = .12; bs.inputs['Coat Roughness'].default_value = .02; bs.inputs['Specular IOR Level'].default_value = .08
+nt.nodes.remove(bs); em_ = nt.nodes.new('ShaderNodeEmission'); em_.inputs['Strength'].default_value = 1.0   # экран без бликов и отражений
+nt.links.new(tx.outputs['Color'], em_.inputs['Color']); nt.links.new(em_.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
 
 phone = bpy.data.objects.new('phone', None); sc.collection.objects.link(phone)
 parts = []
@@ -92,6 +91,7 @@ if TEX and os.path.exists(os.path.join(TEX, 'studio.hdr')):
     wl.new(lp.outputs['Is Camera Ray'], mx.inputs['Fac']); wl.new(bg2.outputs['Background'], mx.inputs[1]); wl.new(bg.outputs['Background'], mx.inputs[2])
     wl.new(mx.outputs['Shader'], wn['World Output'].inputs['Surface'])
 rng = np.random.default_rng(5)
+BG = []
 NARDY = os.environ.get('NARDY', '/home/user/nardy')
 def tex_plane(name, path, size, loc, rot_z, rough=.6, emit=0.0):
     m = bpy.data.materials.new(name); m.use_nodes = True; nt_ = m.node_tree; b_ = nt_.nodes['Principled BSDF']
@@ -99,7 +99,7 @@ def tex_plane(name, path, size, loc, rot_z, rough=.6, emit=0.0):
     nt_.links.new(t_.outputs['Color'], b_.inputs['Base Color']); b_.inputs['Roughness'].default_value = rough
     if emit: nt_.links.new(t_.outputs['Color'], b_.inputs['Emission Color']); b_.inputs['Emission Strength'].default_value = emit
     bpy.ops.mesh.primitive_plane_add(size=1, location=loc); o = bpy.context.object; o.scale = (size[0], size[1], 1); o.rotation_euler = (0, 0, rot_z)
-    o.data.materials.append(m); o.visible_glossy = False; return o
+    o.data.materials.append(m); o.visible_glossy = False; BG.append(o); return o
 # стол: та же столешница, что в игре; доска «Арарат» лежит на нём наискосок
 tex_plane('table', os.path.join(NARDY, 'boards', 'table.webp'), (96, 60), (0, 0, -40), math.radians(90), emit=.35)
 tex_plane('board', os.path.join(NARDY, 'boards', 'ararat.webp'), (33, 21), (2.5, -3, -39.9), math.radians(97), rough=.35, emit=.3)
@@ -111,7 +111,7 @@ for wi, (y0, z0, sag) in enumerate(((19, -16, 4), (-6, -20, 5), (-24, -14, 3.5))
     for k in range(9):
         u = k / 8; x = -22 + 44 * u; y = y0 + sag * (1 - (2 * u - 1) ** 2) * -1 + rng.uniform(-.6, .6)
         bpy.ops.mesh.primitive_uv_sphere_add(radius=.32, location=(x, y, z0 + rng.uniform(-1, 1)), segments=16, ring_count=8)
-        bpy.context.object.data.materials.append(warm); bpy.context.object.visible_glossy = False; bpy.context.object.visible_shadow = False
+        bpy.context.object.data.materials.append(warm); bpy.context.object.visible_glossy = False; bpy.context.object.visible_shadow = False; BG.append(bpy.context.object)
 
 # ---------- свет: большой мягкий сверху-слева, контровые по краям рамки ----------
 def area(name, loc, rot, size, energy, col=(1, 1, 1), shape='RECTANGLE', sy=None):
@@ -128,8 +128,8 @@ area('top', (0, 0, 22), (0, 0, 0), 14, 350, (1, .97, .94))
 cam = bpy.data.cameras.new('cam'); cam.lens = 50; cam.sensor_fit = 'VERTICAL'; cam.sensor_height = 36
 cam.dof.use_dof = True; cam.dof.aperture_fstop = 0.14
 co = bpy.data.objects.new('cam', cam); sc.collection.objects.link(co); sc.camera = co
-D0 = 10.0                    # расстояние, при котором телефон целиком (~80% высоты кадра)
-DL = 16.4                    # то же для горизонтального положения (~90% ширины)
+D0 = 16.4                    # расстояние, при котором телефон целиком (~80% высоты кадра)
+DL = 27.8                    # то же для горизонтального положения (~90% ширины)
 
 # ---------- анимация ----------
 T = dict(menu=2.35, share=3.45, more=4.55, home=5.75, add=6.95, newic=7.8, icon=10.8, rot=11.6, play=13.55, end=16.2)
@@ -171,14 +171,30 @@ for o in (phone, co):
         for kp in fc.keyframe_points: kp.interpolation = 'LINEAR'
 
 # ---------- рендер ----------
-sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = int(os.environ.get('SAMPLES', 24))
+# MODE=plate — один раз фон (стол, доска, гирлянда) широким объективом и в высоком разрешении;
+# MODE=phone — каждый кадр только телефон на прозрачном фоне (фон в сцене есть: свет и отражения в рамке остаются)
+MODE = os.environ.get('MODE', 'phone')
+import json
+json.dump([[f, *cam_at((f - 1) / FPS)] for f in range(1, N + 1)], open(os.path.join(OUT, 'cam.json') if os.path.isdir(OUT) else OUT + 'cam.json', 'w'))
+sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = int(os.environ.get('SAMPLES', 5))
 sc.cycles.use_denoising = True; sc.cycles.denoiser = 'OPENIMAGEDENOISE'; sc.cycles.max_bounces = 6; sc.cycles.glossy_bounces = 3; sc.cycles.transmission_bounces = 2
 sc.cycles.caustics_reflective = False; sc.cycles.caustics_refractive = False; sc.cycles.use_adaptive_sampling = True
-sc.render.use_motion_blur = True; sc.render.motion_blur_shutter = .45
-sc.render.resolution_x, sc.render.resolution_y = int(os.environ.get('W', 1080)), int(os.environ.get('H', 1920))
-sc.render.fps = FPS; sc.frame_start = int(os.environ.get('START', 1)); sc.frame_end = int(os.environ.get('END', N))
-sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'
-sc.render.image_settings.file_format = 'JPEG'; sc.render.image_settings.quality = 94
-sc.render.filepath = os.path.join(OUT, '')
-bpy.ops.render.render(animation=True)
+sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'None'; sc.render.fps = FPS
+if MODE == 'plate':
+    for o in parts: o.hide_render = True
+    co.animation_data_clear(); cam.animation_data_clear() if cam.animation_data else None
+    co.location = (0, 0, D0); cam.lens = 35; cam.dof.focus_distance = D0
+    sc.render.resolution_x, sc.render.resolution_y = 2160, 3840; sc.cycles.samples = int(os.environ.get('SAMPLES', 64))
+    sc.frame_start = sc.frame_end = 1; sc.render.use_motion_blur = False
+    sc.render.image_settings.file_format = 'PNG'; sc.render.filepath = os.path.join(OUT, 'plate.png')
+    bpy.ops.render.render(write_still=True)
+else:
+    for o in BG: o.visible_camera = False
+    sc.render.film_transparent = True
+    sc.render.use_motion_blur = True; sc.render.motion_blur_shutter = .45
+    sc.render.resolution_x, sc.render.resolution_y = int(os.environ.get('W', 1080)), int(os.environ.get('H', 1920))
+    sc.frame_start = int(os.environ.get('START', 1)); sc.frame_end = int(os.environ.get('END', N))
+    sc.render.image_settings.file_format = 'PNG'; sc.render.image_settings.color_mode = 'RGBA'; sc.render.image_settings.compression = 30
+    sc.render.filepath = os.path.join(OUT, '')
+    bpy.ops.render.render(animation=True)
 print('done')

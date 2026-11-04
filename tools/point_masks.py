@@ -35,10 +35,10 @@ def glow(mask):
     m = np.clip(mask, 0, 1)
     edge = np.clip(ndi.grey_dilation(m, size=5) - ndi.grey_erosion(m, size=3), 0, 1)
     halo = ndi.gaussian_filter(ndi.grey_dilation(m, size=11), 9)
-    a = np.clip(m * .7 + edge * 1.0 + halo * .75, 0, 1)
+    a = np.clip(m * .5 + edge * 1.0 + halo * .6, 0, 1)
     col = np.zeros(m.shape + (3,))
-    col[...] = (1.0, .74, .28)                               # тёплое золото — видно и на светлой инкрустации, и на тёмном дереве
-    col = col * (1 - edge[..., None]) + np.array((1.0, .92, .62)) * edge[..., None]
+    col[...] = (1.0, .97, .9)                                # белое свечение с лёгким теплом, как прежняя подсветка
+    col = col * (1 - edge[..., None]) + np.array((1.0, 1.0, 1.0)) * edge[..., None]
     return np.dstack([col, a])
 
 

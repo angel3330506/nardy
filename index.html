@@ -686,7 +686,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 const $=id=>document.getElementById(id);
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='0.70';
-const APP_VERSION='55';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='56';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -2291,6 +2291,17 @@ function render(){
   const human=isHuman(G.turn)&&G.phase==='move'&&!busy&&!G.auto;
   const srcs=new Set(human?G.steps.map(x=>x.src):[]);
   const T=skin().tgt;
+  // подсветка пунктов, куда можно пойти, — под шашками: светится сам рисунок пункта этой доски
+  // (boards/pt-<доска>-<long|short>.png, tools/point_masks.py), шашки, что уже стоят, остаются сверху
+  if(human&&G.sel!=null){
+    if(!G.targets) G.targets=movesFrom(curCtx(),G.sel);
+    for(const [to] of G.targets){
+      if(to==='off') continue;
+      const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di);
+      const kind=SHORT_MID.has(settings.skin)&&di%6!==0&&di%6!==5?'short':'long';
+      h+=`<image class="tgt" href="boards/pt-${settings.skin}-${kind}.png?v=${APP_VERSION}" x="${px-40}" y="40" width="80" height="330" ${top?'':'transform="translate(0 700) scale(1 -1)"'} pointer-events="none"/>`;
+    }
+  }
   for(let i=0;i<24;i++){
     let n=s.n[i]; if(!n) continue;
     const pl=s.o[i];
@@ -2320,11 +2331,7 @@ function render(){
         const y=(G.turn===0)!==!!G.flip?40:360;
         h+=`<rect class="tgt" x="1018" y="${y}" width="66" height="300" rx="12" fill="rgba(243,217,147,.12)" stroke="${T}" stroke-width="2.5" pointer-events="none"/>`;
       }else{
-        // подсвечиваем весь пункт — светящийся клин от края доски до острия, число — там, куда ляжет шашка
-        // подсвечивается сам рисунок пункта этой доски (boards/pt-<доска>-<long|short>.png, tools/point_masks.py)
-        const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di);
-        const kind=SHORT_MID.has(settings.skin)&&di%6!==0&&di%6!==5?'short':'long';
-        h+=`<image class="tgt" href="boards/pt-${settings.skin}-${kind}.png?v=${APP_VERSION}" x="${px-40}" y="40" width="80" height="330" ${top?'':'transform="translate(0 700) scale(1 -1)"'} pointer-events="none"/>`;
+        // сам пункт подсвечен выше, под шашками; здесь — число там, куда ляжет шашка
         const n=s.n[to]; const [x,y]=slotXY(to,n,n+1);
         h+=`<circle cx="${x}" cy="${y}" r="17" fill="rgba(20,14,8,.55)" stroke="${T}" stroke-width="1.5" pointer-events="none"/>`;
         h+=`<text x="${x}" y="${y+6.5}" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="18" fill="${T}" pointer-events="none">${sum}</text>`;

@@ -109,6 +109,7 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .status b{color:var(--gold-hi);font-weight:500}
 .go{flex:0 0 auto;padding:clamp(4px,1.2cqh,8px) 14px;border-radius:999px;font-size:.95em;white-space:nowrap}
 .tgt{animation:pulse 1.1s ease-in-out infinite}
+.ptglow{mix-blend-mode:screen}
 @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
 .hit{cursor:pointer}
 
@@ -288,7 +289,10 @@ html.land .menu-in{padding-right:calc(clamp(34px,calc(10 * var(--vh)),44px) + 16
 .hintmark{animation:pulse 1s ease-in-out infinite}
 /* интерактивный стол: стакан чая и сахар на фоновой картинке; горячие зоны ставит скрипт по положению фона */
 .tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
-.prop{position:absolute;pointer-events:none;-webkit-user-drag:none;border-radius:0!important}
+.prop{position:absolute;pointer-events:none;-webkit-user-drag:none;border-radius:0!important;
+  transform:translateX(calc(-100% - 40px)) rotate(-8deg);opacity:0;transition:transform 1s cubic-bezier(.2,.8,.2,1),opacity .6s}
+body.playing.props-in .prop{transform:none;opacity:1}
+body.playing.props-in #hotBeads{transition-delay:.18s;pointer-events:auto}
 .hot{position:absolute;border-radius:50%;pointer-events:auto;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
 .ripple{position:absolute;border-radius:50%;border:2px solid rgba(235,200,150,.5);pointer-events:none;
   animation:ripple 1.4s ease-out forwards}
@@ -397,6 +401,8 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
           <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stop-color="#f6dc96"/><stop offset=".5" stop-color="#b08638"/><stop offset="1" stop-color="#ecca7a"/>
           </linearGradient>
+          <linearGradient id="gTgtT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe6a0" stop-opacity=".75"/><stop offset="1" stop-color="#ffe6a0" stop-opacity=".22"/></linearGradient>
+          <linearGradient id="gTgtB" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffe6a0" stop-opacity=".75"/><stop offset="1" stop-color="#ffe6a0" stop-opacity=".22"/></linearGradient>
           <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
@@ -675,7 +681,9 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='51';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+// GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
+const GAME_VERSION='0.70';
+const APP_VERSION='52';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -2300,9 +2308,12 @@ function render(){
         const y=(G.turn===0)!==!!G.flip?40:360;
         h+=`<rect class="tgt" x="1018" y="${y}" width="66" height="300" rx="12" fill="rgba(243,217,147,.12)" stroke="${T}" stroke-width="2.5" pointer-events="none"/>`;
       }else{
+        // подсвечиваем весь пункт — светящийся клин от края доски до острия, число — там, куда ляжет шашка
+        const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di), y0=top?40:660, y1=top?318:382;
+        h+=`<path class="tgt ptglow" d="M${px-33} ${y0}L${px+33} ${y0}L${px} ${y1}Z" fill="url(#gTgt${top?'T':'B'})" stroke="${T}" stroke-width="2.6" filter="url(#glow)" stroke-linejoin="round" pointer-events="none"/>`;
         const n=s.n[to]; const [x,y]=slotXY(to,n,n+1);
-        h+=`<circle class="tgt" cx="${x}" cy="${y}" r="27" fill="rgba(20,14,8,.35)" stroke="${T}" stroke-width="2.5" stroke-dasharray="6 5" pointer-events="none"/>`;
-        h+=`<text x="${x}" y="${y+7}" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="20" fill="${T}" pointer-events="none">${sum}</text>`;
+        h+=`<circle cx="${x}" cy="${y}" r="17" fill="rgba(20,14,8,.55)" stroke="${T}" stroke-width="1.5" pointer-events="none"/>`;
+        h+=`<text x="${x}" y="${y+6.5}" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="18" fill="${T}" pointer-events="none">${sum}</text>`;
       }
     }
   }
@@ -2375,7 +2386,7 @@ function unlockOrientation(){
   try{screen.orientation.unlock();}catch(e){}
   try{if(document.fullscreenElement&&!isStandalone())document.exitFullscreen();}catch(e){}
 }
-function showGame(){ setTimeout(placeHot,60); document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
+function showGame(){ setTimeout(placeHot,60); document.body.classList.remove('props-in'); setTimeout(()=>document.body.classList.add('props-in'),900); document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
 function showMenu(){
   document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false;
   const v=readSaved();
@@ -2627,7 +2638,7 @@ $('tutorSkip').addEventListener('click',()=>{ $('tutorSheet').hidden=true; finis
 { const room=new URLSearchParams(location.search).get('room'); if(room&&/^[a-z0-9]{4,12}$/.test(room)) netEnter(room); }
 // при каждом запуске проверяем, нет ли новой версии; новая подхватывается со следующего открытия меню
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});
-$('appVer').textContent='Версия 0.'+APP_VERSION;   // до выхода 1.0 — «0.номер сборки»
+$('appVer').textContent='Версия '+GAME_VERSION;
 })();
 </script>
 </body>

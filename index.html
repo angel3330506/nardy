@@ -686,7 +686,11 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 const $=id=>document.getElementById(id);
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='0.70';
-const APP_VERSION='56';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='57';   // совпадает с V в sw.js: номер сборки (имя кэша)
+// AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
+// поэтому после обновления заново качается лишь то, что изменилось
+/*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"1ea30827","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"88a9464c","boards/pt-ararat-short.png":"ce14bdc5","boards/pt-glass-long.png":"82d2e0eb","boards/pt-glass-short.png":"82d2e0eb","boards/pt-night-long.png":"c48dcd25","boards/pt-night-short.png":"c48dcd25","boards/pt-pomegranate-long.png":"88a9464c","boards/pt-pomegranate-short.png":"ce14bdc5","boards/pt-sevan-long.png":"88a9464c","boards/pt-sevan-short.png":"ce14bdc5","boards/pt-yerevan-long.png":"68bf8236","boards/pt-yerevan-short.png":"86e8b913","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"34c082e5","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
+const av=p=>p+'?v='+(AV[p]||APP_VERSION);
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -750,12 +754,11 @@ const SKINS={
 const SHORT_MID=new Set(['ararat','yerevan','pomegranate','sevan']);
 // кубики: кость (как было), светлый клён с выжженными точками, тёмный янтарь с золотыми точками
 const DICE={bone:'',wood:'wood-',amber:'amber-'};
-const diceImg=f=>`boards/die-${DICE[settings.dice]??''}${f}.png?v=${APP_VERSION}`;
+const diceImg=f=>`${av(`boards/die-${DICE[settings.dice]??''}${f}.png`)}`;
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
-for(const id of ['app','menu']) $(id).style.setProperty('--table',`url(boards/table.webp?v=${APP_VERSION})`);
-$('case').style.setProperty('--lid',`url(boards/lid.webp?v=${APP_VERSION})`);
-for(const c of Object.keys(CK)){const im=new Image();im.src=`boards/ckside-${c}.png?v=${APP_VERSION}`;}
-for(const k of [...Object.keys(SKINS),...Object.keys(CK).map(c=>'ck-'+c)]){const im=new Image();im.src=`boards/${k}.${k.startsWith('ck-')?'png':'webp'}?v=${APP_VERSION}`;}
+for(const id of ['app','menu']) $(id).style.setProperty('--table',`url(${av(`boards/table.webp`)})`);
+$('case').style.setProperty('--lid',`url(${av(`boards/lid.webp`)})`);
+for(const c of Object.keys(CK)){const im=new Image();im.src=`${av(`boards/ckside-${c}.png`)}`;}
 
 /* ---------- правила ---------- */
 const P=(pl,p)=>pl===0?p:(p+12)%24;
@@ -921,7 +924,9 @@ try{if(localStorage.getItem('nardy-sound')==='off')settings.sound=false;}catch(e
 if(!SKINS[settings.skin]) settings.skin='night';
 const saveSettings=()=>{try{localStorage.setItem('nardy-settings-v1',JSON.stringify(settings));}catch(e){}};
 for(let f=1;f<=6;f++){const im=new Image();im.src=diceImg(f);}   // кубики выбранного вида — заранее
-for(const k of ['long','short']){const im=new Image();im.src=`boards/pt-${settings.skin}-${k}.png?v=${APP_VERSION}`;}
+// грузим только выбранную доску; остальные не тянем разом при запуске — они отнимали канал у нужной (их тихо докачивает sw.js)
+{const im=new Image();im.src=av(`boards/${settings.skin}.webp`);}
+for(const k of ['long','short']){const im=new Image();im.src=`${av(`boards/pt-${settings.skin}-${k}.png`)}`;}
 function ac(){
   if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null}}
   if(AC&&AC.state!=='running') AC.resume().catch(()=>{});
@@ -1604,7 +1609,7 @@ const PROP_K=1100/3900;
 // в картинке кофе: центр чашки, радиус кофе и два кусочка сахара (пиксели картинки)
 const CUP_PT={x:513,y:1160,r:251,sx:513,sw:1000}, SUGAR=[{x:1168,y:1363},{x:1215,y:1082}];
 let CUP=null;                                                   // где сейчас стоит чашка: {x,y,s} в осях #app
-$('propPack').src=`boards/prop-pack.png?v=${APP_VERSION}`; $('hotBeads').src=`boards/prop-beads.png?v=${APP_VERSION}`; $('propCup').src=`boards/prop-cup.png?v=${APP_VERSION}`;
+$('propPack').src=`${av(`boards/prop-pack.webp`)}`; $('hotBeads').src=`${av(`boards/prop-beads.webp`)}`; $('propCup').src=`${av(`boards/prop-cup.webp`)}`;
 function placeProps(){
   const fr=$('frame').getBoundingClientRect(), ap=$('app').getBoundingClientRect();
   if(!fr.width) return;
@@ -2264,17 +2269,17 @@ function checker(x,y,pl,cnt,ck=skin().ck){
   const c=pl?ck.b:ck.w;
   return `<g transform="translate(${x},${y})">
     <circle cx="2" cy="4" r="30" fill="rgba(0,0,0,.42)"/>
-    <image href="boards/ck-${c.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>
+    <image href="${av(`boards/ck-${c.img}.png`)}" x="-30" y="-30" width="60" height="60"/>
     ${cnt?`<circle r="11" fill="${c.cntBg}"/><text y="5.5" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="15" fill="${c.cntFg}">${cnt}</text>`:''}
   </g>`;
 }
 function buildStatic(){
   const k=settings.skin, sk=SKINS[k];
-  $('case').style.setProperty('--inside',`url(boards/${k}.webp?v=${APP_VERSION})`);   // под крышкой в меню — выбранная доска
-  $('lStatic').innerHTML=`<image href="boards/${k}.webp?v=${APP_VERSION}" x="0" y="0" width="1100" height="700"/>`;
+  $('case').style.setProperty('--inside',`url(${av(`boards/${k}.webp`)})`);   // под крышкой в меню — выбранная доска
+  $('lStatic').innerHTML=`<image href="${av(`boards/${k}.webp`)}" x="0" y="0" width="1100" height="700"/>`;
   const ck=skin().ck;
-  $('chip0').innerHTML=`<image href="boards/ck-${ck.w.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
-  $('chip1').innerHTML=`<image href="boards/ck-${ck.b.img}.png?v=${APP_VERSION}" x="-30" y="-30" width="60" height="60"/>`;
+  $('chip0').innerHTML=`<image href="${av(`boards/ck-${ck.w.img}.png`)}" x="-30" y="-30" width="60" height="60"/>`;
+  $('chip1').innerHTML=`<image href="${av(`boards/ck-${ck.b.img}.png`)}" x="-30" y="-30" width="60" height="60"/>`;
   if(!$('lHit').innerHTML) buildHit();
 }
 function buildHit(){
@@ -2299,7 +2304,7 @@ function render(){
       if(to==='off') continue;
       const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di);
       const kind=SHORT_MID.has(settings.skin)&&di%6!==0&&di%6!==5?'short':'long';
-      h+=`<image class="tgt" href="boards/pt-${settings.skin}-${kind}.png?v=${APP_VERSION}" x="${px-40}" y="40" width="80" height="330" ${top?'':'transform="translate(0 700) scale(1 -1)"'} pointer-events="none"/>`;
+      h+=`<image class="tgt" href="${av(`boards/pt-${settings.skin}-${kind}.png`)}" x="${px-40}" y="40" width="80" height="330" ${top?'':'transform="translate(0 700) scale(1 -1)"'} pointer-events="none"/>`;
     }
   }
   for(let i=0;i<24;i++){
@@ -2320,7 +2325,7 @@ function render(){
     const c=s.off[pl]-(flyHide==='off'&&G.turn===pl?1:0), cc=pl?ck.b:ck.w;
     for(let k=0;k<c;k++){
       const [x,y]=traySlot(pl,k);
-      h+=`<image href="boards/ckside-${cc.img}.png?v=${APP_VERSION}" x="${x-30}" y="${y-8.5}" width="60" height="17"/>`;   // шашка стоит на ребре — рендер Blender
+      h+=`<image href="${av(`boards/ckside-${cc.img}.png`)}" x="${x-30}" y="${y-8.5}" width="60" height="17"/>`;   // шашка стоит на ребре — рендер Blender
     }
   }
   if(human&&G.sel!=null){
@@ -2437,7 +2442,7 @@ function buildSkinPicker(){
     let pv='';
     for(let n=0;n<5;n++){const [x,y]=slotXY(0,n,5);pv+=checker(x,y,0,0,sk.ck);}
     for(let n=0;n<5;n++){const [x,y]=slotXY(12,n,5);pv+=checker(x,y,1,0,sk.ck);}
-    h+=`<button class="skin" data-skin="${k}"><svg viewBox="0 0 1100 700"><image href="boards/${k}-thumb.webp?v=${APP_VERSION}" x="0" y="0" width="1100" height="700"/>${pv}</svg><span>${sk.name}</span></button>`;
+    h+=`<button class="skin" data-skin="${k}"><svg viewBox="0 0 1100 700"><image href="${av(`boards/${k}-thumb.webp`)}" x="0" y="0" width="1100" height="700"/>${pv}</svg><span>${sk.name}</span></button>`;
   }
   $('skins').innerHTML=h; $('dSkins').innerHTML=h;
 }

@@ -358,7 +358,7 @@ if PROPS:
             mk = np.asarray(Image.fromarray(((a[cy0:cy1] > 30) * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(5)))   # без одиночных «светлячков»
             ys, xs = np.nonzero(mk)
             box = (max(0, xs.min() - 12), cy0 + max(0, ys.min() - 12), min(a.shape[1], xs.max() + 13), cy0 + min(cy1 - cy0, ys.max() + 13))
-            im.crop(box).save(os.path.join(ROOT, 'boards', f'prop-{name}.png'), optimize=True)
+            im.crop(box).save(os.path.join(ROOT, 'boards', f'prop-{name}.webp'), 'WEBP', quality=88, method=6, alpha_quality=90)
             # точка в картинке-предмете → для чашки нужны центр кофе и сахар (в пикселях картинки)
             ox, oy = x0 * 4800 + box[0], (1 - y1) * 3000 + box[1]
             px_ = lambda X, Y: (round(X * 200 - ox), round(-Y * 200 - oy))

@@ -683,7 +683,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 const $=id=>document.getElementById(id);
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='0.70';
-const APP_VERSION='52';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='53';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -743,6 +743,8 @@ const SKINS={
   pomegranate:{name:'Гранат',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
   sevan:{name:'Севан',ck:{w:CK.beech,b:CK.walnut},tgt:'#ffffff'}
 };
+// доски, где средние пункты короче крайних
+const SHORT_MID=new Set(['ararat','yerevan','pomegranate','sevan']);
 // кубики: кость (как было), светлый клён с выжженными точками, тёмный янтарь с золотыми точками
 const DICE={bone:'',wood:'wood-',amber:'amber-'};
 const diceImg=f=>`boards/die-${DICE[settings.dice]??''}${f}.png?v=${APP_VERSION}`;
@@ -916,6 +918,7 @@ try{if(localStorage.getItem('nardy-sound')==='off')settings.sound=false;}catch(e
 if(!SKINS[settings.skin]) settings.skin='night';
 const saveSettings=()=>{try{localStorage.setItem('nardy-settings-v1',JSON.stringify(settings));}catch(e){}};
 for(let f=1;f<=6;f++){const im=new Image();im.src=diceImg(f);}   // кубики выбранного вида — заранее
+for(const k of ['long','short']){const im=new Image();im.src=`boards/pt-${settings.skin}-${k}.png?v=${APP_VERSION}`;}
 function ac(){
   if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null}}
   if(AC&&AC.state!=='running') AC.resume().catch(()=>{});
@@ -1606,9 +1609,9 @@ function placeProps(){
   const fw=rot?fr.height:fr.width, kk=fw/1100*PROP_K;
   for(const [el,yy] of [[$('propPack'),.06],[$('hotBeads'),.52]]){
     let w=(el.naturalWidth||1)*kk, h=(el.naturalHeight||1)*kk;
-    const room=L-fw*.008-4;                               // свободно слева от доски
+    const room=L-fw*.018-4;                               // свободно слева от доски
     if(w>room){ const f=Math.max(0,room)/w; w*=f; h*=f; } // не помещается — уменьшаем, на доску не кладём
-    const x=Math.max(2,L-w-fw*.008), y=T+H*yy;
+    const x=Math.max(2,L-w-fw*.018), y=T+H*yy;           // с зазором: в картинке справа ещё и тень
     Object.assign(el.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
     el.hidden=w<34;                                       // совсем мало места — не показываем
   }
@@ -2309,8 +2312,10 @@ function render(){
         h+=`<rect class="tgt" x="1018" y="${y}" width="66" height="300" rx="12" fill="rgba(243,217,147,.12)" stroke="${T}" stroke-width="2.5" pointer-events="none"/>`;
       }else{
         // подсвечиваем весь пункт — светящийся клин от края доски до острия, число — там, куда ляжет шашка
-        const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di), y0=top?40:660, y1=top?318:382;
-        h+=`<path class="tgt ptglow" d="M${px-33} ${y0}L${px+33} ${y0}L${px} ${y1}Z" fill="url(#gTgt${top?'T':'B'})" stroke="${T}" stroke-width="2.6" filter="url(#glow)" stroke-linejoin="round" pointer-events="none"/>`;
+        // подсвечивается сам рисунок пункта этой доски (boards/pt-<доска>-<long|short>.png, tools/point_masks.py)
+        const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di);
+        const kind=SHORT_MID.has(settings.skin)&&di%6!==0&&di%6!==5?'short':'long';
+        h+=`<image class="tgt" href="boards/pt-${settings.skin}-${kind}.png?v=${APP_VERSION}" x="${px-40}" y="40" width="80" height="330" ${top?'':'transform="translate(0 700) scale(1 -1)"'} pointer-events="none"/>`;
         const n=s.n[to]; const [x,y]=slotXY(to,n,n+1);
         h+=`<circle cx="${x}" cy="${y}" r="17" fill="rgba(20,14,8,.55)" stroke="${T}" stroke-width="1.5" pointer-events="none"/>`;
         h+=`<text x="${x}" y="${y+6.5}" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="18" fill="${T}" pointer-events="none">${sum}</text>`;

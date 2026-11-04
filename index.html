@@ -675,7 +675,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='50';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='51';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -2627,7 +2627,7 @@ $('tutorSkip').addEventListener('click',()=>{ $('tutorSheet').hidden=true; finis
 { const room=new URLSearchParams(location.search).get('room'); if(room&&/^[a-z0-9]{4,12}$/.test(room)) netEnter(room); }
 // при каждом запуске проверяем, нет ли новой версии; новая подхватывается со следующего открытия меню
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});
-$('appVer').textContent='Версия '+APP_VERSION;
+$('appVer').textContent='Версия 0.'+APP_VERSION;   // до выхода 1.0 — «0.номер сборки»
 })();
 </script>
 </body>

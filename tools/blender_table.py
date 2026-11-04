@@ -133,11 +133,32 @@ lathe('rim', [(6.25, 1.36), (6.45, 1.36), (6.45, 1.46), (6.25, 1.46), (6.25, 1.3
 # чашка армянского кофе: фарфор, золотой ободок, ручка; кофе с плотной пенкой
 lathe('cup', [(1.6, 0), (2.2, .3), (2.9, 1.6), (3.25, 3.4), (3.4, 5.2), (3.45, 5.6)], porcelain, (X0, Y0, 1.0 * CM), solid=.22)
 lathe('cuprim', [(3.36, 5.58), (3.5, 5.58), (3.5, 5.7), (3.36, 5.7), (3.36, 5.58)], gold, (X0, Y0, 1.0 * CM), cap=False)
-foam = bpy.data.materials.new('foam'); foam.use_nodes = True; fn = foam.node_tree.nodes; fb = fn['Principled BSDF']
-noise = fn.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 60; noise.inputs['Detail'].default_value = 8
-ramp = fn.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].color = (.05, .025, .012, 1); ramp.color_ramp.elements[1].color = (.30, .17, .08, 1)
-foam.node_tree.links.new(noise.outputs['Fac'], ramp.inputs['Fac']); foam.node_tree.links.new(ramp.outputs['Color'], fb.inputs['Base Color'])
-fb.inputs['Roughness'].default_value = .35; fb.inputs['Coat Weight'].default_value = .5
+# чёрный армянский кофе (сурч), без пены: почти чёрная гладкая жидкость с зеркальным бликом;
+# у самой стенки — тонкий коричневатый ободок (там слой тонкий и просвечивает) и пара мелких пузырьков
+foam = bpy.data.materials.new('coffee'); foam.use_nodes = True; fn = foam.node_tree.nodes; fl = foam.node_tree.links; fb = fn['Principled BSDF']
+tco = fn.new('ShaderNodeTexCoord'); sep = fn.new('ShaderNodeSeparateXYZ'); fl.new(tco.outputs['Generated'], sep.inputs[0])
+def math_(op, a, b=None):
+    m = fn.new('ShaderNodeMath'); m.operation = op
+    fl.new(a, m.inputs[0]) if not isinstance(a, float) else m.inputs[0].__setattr__('default_value', a)
+    if b is not None: fl.new(b, m.inputs[1]) if not isinstance(b, float) else m.inputs[1].__setattr__('default_value', b)
+    return m.outputs[0]
+dx = math_('SUBTRACT', sep.outputs['X'], .5); dy = math_('SUBTRACT', sep.outputs['Y'], .5)
+r = math_('MULTIPLY', math_('SQRT', math_('ADD', math_('MULTIPLY', dx, dx), math_('MULTIPLY', dy, dy))), 2.0)
+rim = fn.new('ShaderNodeMapRange'); rim.inputs['From Min'].default_value = .90; rim.inputs['From Max'].default_value = .995; rim.clamp = True; fl.new(r, rim.inputs['Value'])
+noise = fn.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 40; noise.inputs['Detail'].default_value = 4
+fl.new(tco.outputs['Generated'], noise.inputs['Vector'])
+mx = fn.new('ShaderNodeMix'); mx.data_type = 'RGBA'; mx.inputs['A'].default_value = (.010, .0055, .0032, 1); mx.inputs['B'].default_value = (.15, .075, .03, 1)
+fr = math_('MULTIPLY', math_('POWER', rim.outputs[0], 2.2), math_('ADD', math_('MULTIPLY', noise.outputs['Fac'], .6), .55))
+fl.new(fr, mx.inputs['Factor']); fl.new(mx.outputs['Result'], fb.inputs['Base Color'])
+fb.inputs['Roughness'].default_value = .04; fb.inputs['IOR'].default_value = 1.34; fb.inputs['Specular IOR Level'].default_value = .6
+# мелкие пузырьки у стенки
+vor = fn.new('ShaderNodeTexVoronoi'); vor.inputs['Scale'].default_value = 90; fl.new(tco.outputs['Generated'], vor.inputs['Vector'])
+bub = fn.new('ShaderNodeMapRange'); bub.inputs['From Min'].default_value = .0; bub.inputs['From Max'].default_value = .16
+bub.inputs['To Min'].default_value = 1; bub.inputs['To Max'].default_value = 0; bub.clamp = True; fl.new(vor.outputs['Distance'], bub.inputs['Value'])
+near = fn.new('ShaderNodeMapRange'); near.inputs['From Min'].default_value = .86; near.inputs['From Max'].default_value = .97; near.clamp = True; fl.new(r, near.inputs['Value'])
+h = math_('MULTIPLY', math_('MULTIPLY', bub.outputs[0], near.outputs[0]), math_('GREATER_THAN', vor.outputs['Color'] if False else noise.outputs['Fac'], .55))
+bump = fn.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = .6; bump.inputs['Distance'].default_value = .03
+fl.new(h, bump.inputs['Height']); fl.new(bump.outputs['Normal'], fb.inputs['Normal'])
 bpy.ops.mesh.primitive_cylinder_add(vertices=96, radius=3.22 * CM, depth=.3 * CM, location=(X0, Y0, (1.0 + 4.7) * CM)); bpy.context.object.data.materials.append(foam)
 bpy.ops.mesh.primitive_torus_add(major_radius=1.25 * CM, minor_radius=.28 * CM, location=(X0 + 4.3 * CM, Y0, 4.0 * CM), rotation=(math.radians(90), 0, 0))
 h_ = bpy.context.object; h_.scale = (1, 1.25, 1); h_.data.materials.append(porcelain)
@@ -345,8 +366,10 @@ if PROPS:
     # предметы рендерим вдвое крупнее (для чётких экранов) и только нужные куски кадра:
     # слева — пачка и чётки, справа внизу — кофе с сахаром. 3900 px картинки = 1100 единиц доски.
     sc.render.resolution_percentage = 200; sc.render.use_border = True; sc.render.use_crop_to_border = True
+    PARTS = os.environ.get('PARTS', 'left,right').split(',')
     for part, (x0, x1, y0, y1), cuts in (('left', (0, .3, 0, 1), (('pack', 0, 1460), ('beads', 1460, 3000))),
                                           ('right', (.68, 1, 0, .62), (('cup', 0, 9999),))):
+        if part not in PARTS: continue
         sc.render.border_min_x, sc.render.border_max_x, sc.render.border_min_y, sc.render.border_max_y = x0, x1, y0, y1
         sc.render.filepath = os.path.join(ROOT, '.preview', f'blender-props-{part}.png')
         bpy.ops.render.render(write_still=True)

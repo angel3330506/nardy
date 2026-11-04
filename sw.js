@@ -1,5 +1,5 @@
 // Офлайн-кэш: страница, доски, звуки и шрифты кэшируются при установке.
-const V = '48';                 // = APP_VERSION в index.html
+const V = '49';                 // = APP_VERSION в index.html
 const VERSION = 'nardy-v' + V;
 const SHELL = [
   './',
@@ -12,7 +12,7 @@ const SHELL = [
   ...['ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold'].map(k => `boards/ck-${k}.png?v=${V}`),
   ...['ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold'].map(k => `boards/ckside-${k}.png?v=${V}`),
   `boards/table.webp?v=${V}`, `boards/prop-pack.png?v=${V}`, `boards/prop-beads.png?v=${V}`,
-  `boards/lid.webp?v=${V}`, `boards/maple.webp?v=${V}`,
+  `boards/lid.webp?v=${V}`, `boards/walnut-plank.webp?v=${V}`,
   ...['', 'wood-', 'amber-'].flatMap(m => [1, 2, 3, 4, 5, 6].map(f => `boards/die-${m}${f}.png?v=${V}`)),
 ];
 const SOUNDS = ['duduk.m4a','duduk-intro.m4a','dice-throw-1.m4a','dice-throw-2.m4a','dice-throw-3.m4a','chip-lay-1.m4a','chip-lay-2.m4a','chip-lay-3.m4a','chips-collide-1.m4a','chips-collide-2.m4a','chips-collide-3.m4a','chips-stack-1.m4a','chips-stack-2.m4a']; // те же файлы, что SOUND_FILES в index.html

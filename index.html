@@ -192,13 +192,28 @@ border-radius:12px;opacity:0}
 html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw)) + min(calc(92 * var(--vw)),400px) / 2))}
 .mbtns{display:grid;gap:10px}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.plq{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;border-radius:6px;padding:13px 14px;
-  background:#c9a37a url(boards/maple.webp) center/cover;color:#3a200b;font-weight:700;font-size:17px;text-shadow:0 1px 0 rgba(255,240,215,.5);
-  box-shadow:inset 0 2px 1px rgba(255,240,215,.55),inset 0 -3px 2px rgba(70,35,10,.45),inset 2px 0 1px rgba(255,240,215,.25),inset -2px 0 1px rgba(70,35,10,.3),0 6px 12px rgba(0,0,0,.5)}
-.plq:hover:not(:disabled){filter:brightness(1.06)}
-.plq:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 3px 4px rgba(70,35,10,.45),0 3px 6px rgba(0,0,0,.5)}
-.plq.main{font-size:20px;padding:17px 14px}
-.plq .cap{font-size:12px;font-weight:500;opacity:.75}
+.plq{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;border-radius:8px;padding:12px 16px;
+  background:#3a2112 url(boards/walnut-plank.webp) center/cover;color:#f3e3c0;font-family:var(--display);font-weight:400;font-size:21px;letter-spacing:.03em;
+  text-shadow:0 1px 2px rgba(0,0,0,.7);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,230,190,.18),0 8px 18px rgba(0,0,0,.55);
+  transition:transform .15s,box-shadow .15s,filter .15s}
+.plq::before{content:"";position:absolute;inset:5px;border-radius:5px;border:1px solid rgba(217,181,106,.55);pointer-events:none}   /* инкрустация */
+.plq::after{content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;background:linear-gradient(180deg,rgba(255,240,215,.10),transparent 45%,rgba(0,0,0,.18))}   /* лак */
+.plq:hover:not(:disabled){filter:brightness(1.12)}
+.plq:active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 4px 10px rgba(0,0,0,.55)}
+.plq.main{font-size:25px;padding:15px 16px}
+.plq.main::before{border-color:rgba(243,217,147,.9)}
+.plq .cap{font-family:var(--body);font-size:12px;letter-spacing:.02em;color:#d9c49b;opacity:.9}
+/* низкий экран (телефон боком): всё ужимается по высоте, значки — столбиком справа, мимо кнопок */
+html.land .mside{gap:calc(1.8 * var(--vh));padding-top:calc(4 * var(--vh))}
+html.land .mbtns,html.land .mrow{gap:calc(1.8 * var(--vh))}
+html.land .plq{padding:calc(1.8 * var(--vh)) 12px;font-size:clamp(15px,calc(4.2 * var(--vh)),21px)}
+html.land .plq.main{padding:calc(2.4 * var(--vh)) 12px;font-size:clamp(17px,calc(5 * var(--vh)),25px)}
+html.land .plq .cap{font-size:clamp(10px,calc(2.6 * var(--vh)),12px)}
+html.land .mtitle{font-size:clamp(32px,calc(10 * var(--vh)),84px);margin:0}
+html.land .scoreline{font-size:clamp(10px,calc(2.6 * var(--vh)),13px)}
+html.land .micons{flex-direction:column}
+html.land .mic{width:clamp(34px,calc(10 * var(--vh)),44px)!important;height:clamp(34px,calc(10 * var(--vh)),44px)!important}
+html.land .menu-in{padding-right:calc(clamp(34px,calc(10 * var(--vh)),44px) + 16px)}
 .micons{position:fixed;top:max(12px,var(--sat));right:max(14px,var(--sar));display:flex;gap:10px;z-index:2}
 .mic{width:44px;height:44px;border-radius:50%;padding:0;display:grid;place-items:center;border:1px solid rgba(217,181,106,.35);
   background:rgba(20,12,6,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#ecd6a6}
@@ -429,8 +444,9 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
       </div>
 
       <h4>Музыка</h4>
-      <div class="seg vox" style="grid-template-columns:1fr">
-        <button data-vox="music">Дудук при старте</button>
+      <div class="seg mus">
+        <button data-mus="on">Дудук при старте</button>
+        <button data-mus="off">Без музыки</button>
       </div>
       <div id="dLevelBox">
         <h4>Соперник</h4>
@@ -560,8 +576,9 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
       <button data-vib="off">Выключена</button>
     </div>
     <h4>Музыка</h4>
-    <div class="seg vox" style="grid-template-columns:1fr">
-      <button data-vox="music">Дудук при старте</button>
+    <div class="seg mus">
+      <button data-mus="on">Дудук при старте</button>
+      <button data-mus="off">Без музыки</button>
     </div>
     <p class="hint">Дудук: запись «Sound of Armenian Duduk», автор איליה מעזיה, Wikimedia Commons, CC BY-SA 4.0. <a href="privacy.html" target="_blank" style="color:var(--gold-hi)">Конфиденциальность</a></p>
     <button class="link" id="sBug" style="background:none;border:0;color:var(--muted);text-decoration:underline;font-size:13px;align-self:flex-start">Сообщить об ошибке</button>
@@ -658,7 +675,7 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
-const APP_VERSION='48';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
+const APP_VERSION='49';   // совпадает с VERSION в sw.js; добавляется к адресам картинок, чтобы новые доски не брались из старого кэша
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
 
@@ -1580,10 +1597,12 @@ function placeProps(){
   const L=rot?fr.top-ap.top:fr.left-ap.left, T=rot?ap.right-fr.right:fr.top-ap.top, H=rot?fr.width:fr.height;
   const fw=rot?fr.height:fr.width, kk=fw/1100*PROP_K;
   for(const [el,yy] of [[$('propPack'),.06],[$('hotBeads'),.52]]){
-    const w=(el.naturalWidth||1)*kk, h=(el.naturalHeight||1)*kk;
-    const x=Math.max(2,L-w-fw*.006), y=T+H*yy;           // вплотную к раме доски
+    let w=(el.naturalWidth||1)*kk, h=(el.naturalHeight||1)*kk;
+    const room=L-fw*.008-4;                               // свободно слева от доски
+    if(w>room){ const f=Math.max(0,room)/w; w*=f; h*=f; } // не помещается — уменьшаем, на доску не кладём
+    const x=Math.max(2,L-w-fw*.008), y=T+H*yy;
     Object.assign(el.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
-    el.hidden=L<w*.45;                                    // места совсем нет — не показываем
+    el.hidden=w<34;                                       // совсем мало места — не показываем
   }
 }
 for(const id of ['propPack','hotBeads']) $(id).addEventListener('load',placeProps);
@@ -2410,7 +2429,7 @@ function paintSettings(){
   if($('setName')&&document.activeElement!==$('setName')) $('setName').value=settings.name||'';
   document.querySelectorAll('.seg.dicesel button').forEach(b=>b.classList.toggle('on',b.dataset.dice===(settings.dice||'bone')));
   document.querySelectorAll('.seg.tod button').forEach(b=>b.classList.toggle('on',b.dataset.tod===(settings.tod||'auto')));
-  document.querySelectorAll('.seg.vox button').forEach(b=>b.classList.toggle('on',settings[b.dataset.vox]!==false));
+  document.querySelectorAll('.seg.mus button').forEach(b=>b.classList.toggle('on',(b.dataset.mus==='on')===(settings.music!==false)));
   document.querySelectorAll('.seg.amb button').forEach(b=>b.classList.toggle('on',(b.dataset.amb==='on')===(settings.ambient!==false)));
   document.querySelectorAll('.seg.vib button').forEach(b=>b.classList.toggle('on',(b.dataset.vib==='on')===(settings.vibro!==false)));
   document.querySelectorAll('#dSkins .skin').forEach(b=>b.classList.toggle('on',b.dataset.skin===settings.skin));
@@ -2432,7 +2451,7 @@ $('cksets').addEventListener('click',e=>{const b=e.target.closest('button'); if(
 document.querySelectorAll('.seg.dicesel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.dice=b.dataset.dice; saveSettings(); paintSettings();
   for(let f=1;f<=6;f++){const im=new Image();im.src=diceImg(f);} if(G&&(G.phase==='move'||G.phase==='roll')){ diceBox.dataset.state=''; if(G.phase==='move') placeDice(G.dice); else render(); }}));
 document.querySelectorAll('.seg.tod').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.tod=b.dataset.tod; saveSettings(); paintSettings(); applyTod();}));
-document.querySelectorAll('.seg.vox').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; const k=b.dataset.vox; settings[k]=settings[k]===false; saveSettings(); paintSettings();}));
+document.querySelectorAll('.seg.mus').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.music=b.dataset.mus==='on'; saveSettings(); paintSettings();}));
 document.querySelectorAll('.seg.vib').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.vibro=b.dataset.vib==='on'; saveSettings(); paintSettings(); buzz(30);}));
 $('sounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 $('bSettings').addEventListener('click',()=>{ if(!$('skins').innerHTML) buildSkinPicker(); paintSettings(); $('settings').hidden=false; });

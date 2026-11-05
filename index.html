@@ -755,7 +755,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='75';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='76';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/leafshade.webp":"8666bd89","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -1827,6 +1827,8 @@ async function snapScreen(){
 }
 // картинки к сообщению: сжимаем в браузере до 1280 px по длинной стороне, JPEG — чтобы влезло в базу
 const BUGPICS=[];
+// сообщения об ошибках дублируются в Telegram через Google Apps Script (tools/telegram/Code.gs) — адрес веб-приложения:
+const BUG_HOOK='';
 function drawBugPics(){ $('bugPics').innerHTML=BUGPICS.map((u,i)=>`<div><img src="${u}" alt=""><button data-i="${i}" aria-label="Убрать">✕</button></div>`).join(''); }
 $('bugPics').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; BUGPICS.splice(+b.dataset.i,1); drawBugPics(); });
 function shrinkImage(file){ return new Promise((res,rej)=>{ const url=URL.createObjectURL(file), im=new Image();
@@ -1852,9 +1854,12 @@ $('bugSend').addEventListener('click',async()=>{
   try{
     await NETB.init();
     const img=$('bugShot').checked?await bugShot:null;
-    await NETB.push('reports',{text:text.slice(0,1500),name:myName(),v:APP_VERSION,ua:navigator.userAgent.slice(0,200),t:Date.now(),
+    const rep={text:text.slice(0,1500),name:myName(),v:APP_VERSION,ua:navigator.userAgent.slice(0,200),t:Date.now(),
       state:G?JSON.stringify({mode,phase:G.phase,turn:G.turn,dice:G.dice,rem:G.rem,key:key(G.s),level:G.level,skin:settings.skin}).slice(0,2000):'',
-      ...(img&&img.length<900000?{img}:{}), ...(BUGPICS.length?{pics:BUGPICS.slice(0,3)}:{})});
+      ...(img&&img.length<900000?{img}:{}), ...(BUGPICS.length?{pics:BUGPICS.slice(0,3)}:{})};
+    // в Telegram — без ожидания ответа (text/plain: без CORS-предзапроса); в базу — как раньше
+    if(BUG_HOOK&&!MOCK) fetch(BUG_HOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(rep)}).catch(()=>{});
+    await NETB.push('reports',rep);
     $('bugSheet').hidden=true; toast('mail','Спасибо!','сообщение отправлено');
   }catch(e){ console.error(e); $('bugSend').disabled=false; $('bugSend').textContent='Не отправилось — ещё раз'; }
 });

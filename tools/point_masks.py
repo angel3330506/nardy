@@ -45,7 +45,7 @@ def glow(mask):
     m = np.clip(mask, 0, 1)
     fill = ndi.gaussian_filter(m, 2.2)                      # кромка размыта — граница не читается
     halo = ndi.gaussian_filter(ndi.grey_dilation(m, size=9), 8)
-    a = np.clip(fill * .42 + halo * .26, 0, .62)            # полупрозрачно: рисунок доски просвечивает
+    a = np.clip(fill * .6 + halo * .34, 0, .8)            # полупрозрачно: рисунок доски просвечивает
     col = np.zeros(m.shape + (3,)); col[...] = (1.0, .97, .9)
     return np.dstack([col, a])
 

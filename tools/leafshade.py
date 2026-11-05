@@ -29,6 +29,8 @@ for y0, y1 in bands:
     for y in range(y0, y1 + 1):
         t = (y - y0 + 1) / (y1 - y0 + 2); out[y] = top * (1 - t) + bot * t
 out = ndi.gaussian_filter(out, 1.5)
-Image.fromarray((out * 255).astype(np.uint8)).resize((1200, 750), Image.LANCZOS).save('boards/leafshade.webp', 'WEBP', quality=82, method=6)
+# тень = чёрный с прозрачностью (1 − освещённость): обычное наложение, без mix-blend-mode
+sh = Image.fromarray((out * 255).astype(np.uint8)).resize((1200, 750), Image.LANCZOS); A = 255 - np.asarray(sh)
+Image.fromarray(np.dstack([np.zeros_like(A)] * 3 + [A]), 'RGBA').save('boards/leafshade.webp', 'WEBP', quality=85, method=6, alpha_quality=90)
 Image.fromarray((out * 255).astype(np.uint8)).resize((960, 600)).save('.preview/leaf-s.png')
 print('leafshade ok')

@@ -88,7 +88,7 @@ button.primary:hover:not(:disabled){background:linear-gradient(180deg,#f0d38f,#c
 /* Доска — отдельная неподвижная картинка со своей тенью (свой слой, рисуется один раз). Раньше тень-фильтр висела
    на всей рамке и пересчитывалась на каждом кадре полёта шашки — на слабых телефонах это и давало рывки. */
 .board-img{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none;
-  filter:drop-shadow(0 12px 30px rgba(0,0,0,.6));transform:translateZ(0)}
+  filter:drop-shadow(0 var(--side,6px) 0 #2a180c) drop-shadow(0 12px 30px rgba(0,0,0,.6));transform:translateZ(0)}   /* снизу — боковина доски: она толстая */
 /* подсветка пунктов — свой слой под шашками; мигает он целиком (только прозрачность — без перерисовки) */
 svg#tgts{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;will-change:opacity}
 svg#tgts:not(:empty){animation:pulse 1.1s ease-in-out infinite}
@@ -177,13 +177,21 @@ html.rot #app{padding:max(6px,var(--sar)) max(10px,var(--sab)) max(8px,var(--sal
 html.land .menu-in{flex-direction:row;justify-content:center;gap:calc(6 * var(--vw))}
 .case{position:relative;height:min(calc(52 * var(--vh)),calc(calc(78 * var(--vw)) * 700 / 550));aspect-ratio:550/700;flex:0 0 auto;transform-style:preserve-3d;perspective:1800px;   /* перспектива — на самих нардах: на общем контейнере она склеила бы кнопки в один слой с нардами под тенями */
  
-  filter:drop-shadow(0 22px 26px rgba(0,0,0,.6)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+  filter:drop-shadow(0 var(--side,6px) 0 #2a180c) drop-shadow(0 22px 26px rgba(0,0,0,.6)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
 html.land .case{height:min(calc(76 * var(--vh)),calc(calc(42 * var(--vw)) * 700 / 550))}
 .case .half{position:absolute;inset:0;background:var(--inside) left/auto 100% no-repeat;   /* крышка откидывается вправо: под ней левая половина доски, на её обороте — правая */
 border-radius:12px;opacity:0}
 .case .lid{position:absolute;inset:0;transform-origin:right center;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
 .case .lid .front,.case .lid .back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.case .lid .front{background:var(--lid) center/100% 100% no-repeat}
+.case .lid .front{background:var(--lid) center/100% 100% no-repeat;transform:translateZ(var(--T,18px))}
+/* толщина крышки: деревянные торцы (левый — со стороны раскрытия, верхний и нижний), видны, пока крышка откидывается */
+.case .slab{position:absolute;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(255,220,170,.10) 45%,rgba(0,0,0,.45)),#4a2a14 url(boards/walnut-plank.webp) center/cover;
+  box-shadow:inset 0 0 0 1px rgba(20,10,4,.55)}
+.case .lid .sl{left:0;top:1.5%;bottom:1.5%;width:var(--T,18px);transform-origin:left center;transform:rotateY(-90deg)}
+.case .lid .st{left:1.5%;right:1.5%;top:0;height:var(--T,18px);transform-origin:center top;transform:rotateX(90deg);
+  background:linear-gradient(180deg,rgba(255,225,180,.16),rgba(0,0,0,.25)),#4a2a14 url(boards/walnut-plank.webp) center/cover}
+.case .lid .sb{left:1.5%;right:1.5%;bottom:0;height:var(--T,18px);transform-origin:center bottom;transform:rotateX(-90deg);
+  background:linear-gradient(0deg,rgba(0,0,0,.2),rgba(0,0,0,.5)),#3a2010 url(boards/walnut-plank.webp) center/cover}
 .case .lid .back{background:var(--inside) right/auto 100% no-repeat;transform:rotateY(180deg);border-radius:12px}
 .case.open .lid{transform:rotateY(180deg)}
 /* прозрачная плёнка поверх доски: браузеры (например, Яндекс) не принимают её за картинку и не показывают свои кнопки «найти/сохранить» */
@@ -556,7 +564,7 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
   <div class="menu-in">
     <div class="case" id="case">
       <div class="half" id="caseIn"></div>
-      <div class="lid"><div class="front"></div><div class="back" id="caseBack"></div></div>
+      <div class="lid"><div class="slab sl"></div><div class="slab st"></div><div class="slab sb"></div><div class="front"></div><div class="back" id="caseBack"></div></div>
     </div>
     <div class="mside">
       <h1 class="mtitle">Нарды</h1>
@@ -743,7 +751,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='68';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='70';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/leafshade.webp":"89c5bdc0","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -1025,7 +1033,7 @@ function synthKnock(vol=.5,delay=0){
 // раскрыли доску: щелчок застёжки и мягкий удар крышки о стол
 function sOpen(){
   const a=settings.sound&&ac(); if(!a) return;
-  if(settings.music!==false) play('intro',.45,.35,true);
+  if(settings.music!==false){ const n=play('intro',.45,.35,true); if(n) MUSIC.push(n); }
   synthKnock(.35,0); synthKnock(.3,.07);
   const t=a.currentTime+.32, o=a.createOscillator(), g=a.createGain();
   o.type='sine'; o.frequency.setValueAtTime(110,t); o.frequency.exponentialRampToValueAtTime(55,t+.25);
@@ -1034,6 +1042,8 @@ function sOpen(){
 }
 /* атмосфера дворика: шелест листвы, птицы, изредка ложечка о стакан — всё синтезируется, без файлов */
 const AMB={on:false,nodes:[],timers:[]};
+const MUSIC=[];   // что сейчас играет из музыки (дудук) — «Без музыки» глушит это сразу
+function musicStop(){ while(MUSIC.length){ try{ MUSIC.pop().stop(); }catch(e){} } }
 function ambientStop(){ AMB.on=false; AMB.timers.forEach(clearTimeout); AMB.timers=[]; AMB.nodes.forEach(n=>{try{n.stop();}catch(e){}}); AMB.nodes=[]; }
 function ambientSync(){
   const want=settings.sound&&settings.ambient!==false&&document.body.classList.contains('playing')&&!document.hidden;
@@ -1058,12 +1068,20 @@ function ambientSync(){
       for(const m of [1,2.76]){ const o=a.createOscillator(), gg=a.createGain(); o.frequency.value=fr*m;
         gg.gain.setValueAtTime(.012/m,t); gg.gain.exponentialRampToValueAtTime(.0001,t+.45); o.connect(gg).connect(a.destination); o.start(t); o.stop(t+.5); } }
     AMB.timers.push(setTimeout(spoon,45000+Math.random()*75000)); };
-  const duduk=()=>{ if(!AMB.on) return; const n=play('duduk',.28,0,true); if(n) AMB.nodes.push(n); AMB.timers.push(setTimeout(duduk,(n?90:20)*1000+Math.random()*150000)); };
+  const duduk=()=>{ if(!AMB.on) return; const n=settings.music!==false&&play('duduk',.28,0,true); if(n){ AMB.nodes.push(n); MUSIC.push(n); } AMB.timers.push(setTimeout(duduk,(n?90:20)*1000+Math.random()*150000)); };
   AMB.timers.push(setTimeout(duduk,25000+Math.random()*30000));
   gust(); AMB.timers.push(setTimeout(bird,2500)); AMB.timers.push(setTimeout(spoon,20000+Math.random()*30000));
 }
 document.addEventListener('visibilitychange',()=>ambientSync());
-const buzz=ms=>{ try{ if(settings.vibro!==false&&navigator.vibrate) navigator.vibrate(ms); }catch(e){} };
+// Вибрация. Android: Vibration API. iPhone: Safari не даёт вибрировать из веба, но с iOS 18 переключатель
+// <input switch> при нажатии даёт системный тактильный отклик — нажимаем такой переключатель незаметно.
+const HAPTIC=(()=>{ try{ const l=document.createElement('label'), i=document.createElement('input');
+  i.type='checkbox'; i.setAttribute('switch',''); l.appendChild(i);
+  l.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
+  document.body.appendChild(l); return l; }catch(e){ return null; } })();
+const buzz=ms=>{ if(settings.vibro===false) return;
+  try{ if(navigator.vibrate&&navigator.vibrate(ms)) return; }catch(e){}
+  try{ HAPTIC&&HAPTIC.click(); }catch(e){} };
 function synthClack(){
   const a=settings.sound&&ac(); if(!a) return; const t=a.currentTime;
   const o=a.createOscillator(), g=a.createGain();
@@ -1714,6 +1732,9 @@ function placeHot(){
   put($('hotSugar'),CUP&&{x:CUP.x+(SUGAR[0].x+SUGAR[1].x)/2*CUP.s,y:CUP.y+(SUGAR[0].y+SUGAR[1].y)/2*CUP.s,r:Math.max(22,260*CUP.s)});
 }
 new ResizeObserver(placeHot).observe($('app')); new ResizeObserver(placeHot).observe($('frame'));
+// толщина нард: крышка ~7% ширины половинки, видимая боковина снизу ~1.6% высоты
+new ResizeObserver(()=>{ const c=$('case'); c.style.setProperty('--T',c.offsetWidth*.075+'px'); c.style.setProperty('--side',Math.max(3,c.offsetHeight*.016)+'px'); }).observe($('case'));
+new ResizeObserver(()=>{ $('frame').style.setProperty('--side',Math.max(3,$('frame').offsetHeight*.014)+'px'); }).observe($('frame'));
 function fx(cls,x,y,style){ const el=document.createElement('div'); el.className=cls; Object.assign(el.style,{left:x+'px',top:y+'px'},style||{}); $('tablefx').appendChild(el); return el; }
 function teaPos(){ return CUP&&{x:CUP.x+CUP_PT.x*CUP.s,y:CUP.y+CUP_PT.y*CUP.s,r:CUP_PT.r*CUP.s}; }
 function ripples(t,n=3){ for(let i=0;i<n;i++) setTimeout(()=>{ const d=t.r*1.7; const el=fx('ripple',t.x,t.y,{width:d+'px',height:d+'px'}); setTimeout(()=>el.remove(),1500); },i*220); }
@@ -2558,7 +2579,7 @@ $('cksets').addEventListener('click',e=>{const b=e.target.closest('button'); if(
 document.querySelectorAll('.seg.dicesel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.dice=b.dataset.dice; saveSettings(); paintSettings();
   for(let f=1;f<=6;f++){const im=new Image();im.src=diceImg(f);} if(G&&(G.phase==='move'||G.phase==='roll')){ diceBox.dataset.state=''; if(G.phase==='move') placeDice(G.dice); else render(); }}));
 document.querySelectorAll('.seg.tod').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.tod=b.dataset.tod; saveSettings(); paintSettings(); applyTod();}));
-document.querySelectorAll('.seg.mus').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.music=b.dataset.mus==='on'; saveSettings(); paintSettings();}));
+document.querySelectorAll('.seg.mus').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.music=b.dataset.mus==='on'; if(!settings.music) musicStop(); saveSettings(); paintSettings();}));
 document.querySelectorAll('.seg.vib').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.vibro=b.dataset.vib==='on'; saveSettings(); paintSettings(); buzz(30);}));
 $('sounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 $('bSettings').addEventListener('click',()=>{ if(!$('skins').innerHTML) buildSkinPicker(); paintSettings(); $('settings').hidden=false; });

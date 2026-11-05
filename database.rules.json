@@ -58,7 +58,12 @@
     "reports": {
       "$id": {
         ".write": "auth != null && !data.exists()",
-        ".validate": "newData.child('text').isString() && newData.child('text').val().length <= 1500 && (!newData.child('img').exists() || (newData.child('img').isString() && newData.child('img').val().length < 900000))"
+        ".validate": "newData.child('text').isString() && newData.child('text').val().length <= 1500 && (!newData.child('img').exists() || (newData.child('img').isString() && newData.child('img').val().length < 900000)) && (!newData.child('pics').exists() || !newData.child('pics').child('3').exists())",
+        "pics": {
+          "$n": {
+            ".validate": "newData.isString() && newData.val().length < 400000"
+          }
+        }
       }
     }
   }

@@ -147,7 +147,7 @@ r = math_('MULTIPLY', math_('SQRT', math_('ADD', math_('MULTIPLY', dx, dx), math
 rim = fn.new('ShaderNodeMapRange'); rim.inputs['From Min'].default_value = .90; rim.inputs['From Max'].default_value = .995; rim.clamp = True; fl.new(r, rim.inputs['Value'])
 noise = fn.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 40; noise.inputs['Detail'].default_value = 4
 fl.new(tco.outputs['Generated'], noise.inputs['Vector'])
-mx = fn.new('ShaderNodeMix'); mx.data_type = 'RGBA'; mx.inputs['A'].default_value = (.010, .0055, .0032, 1); mx.inputs['B'].default_value = (.15, .075, .03, 1)
+mx = fn.new('ShaderNodeMix'); mx.data_type = 'RGBA'; mx.inputs['A'].default_value = (.0035, .002, .0012, 1); mx.inputs['B'].default_value = (.15, .075, .03, 1)
 fr = math_('MULTIPLY', math_('POWER', rim.outputs[0], 2.2), math_('ADD', math_('MULTIPLY', noise.outputs['Fac'], .6), .55))
 fl.new(fr, mx.inputs['Factor']); fl.new(mx.outputs['Result'], fb.inputs['Base Color'])
 fb.inputs['Roughness'].default_value = .04; fb.inputs['IOR'].default_value = 1.34; fb.inputs['Specular IOR Level'].default_value = .6
@@ -353,6 +353,20 @@ if PROPS:
     win = bpy.data.lights.new('window', 'SUN'); win.energy = 3.0; win.angle = math.radians(16); win.color = (1, .97, .92)
     wo = bpy.data.objects.new('window', win); sc.collection.objects.link(wo); wo.rotation_euler = (math.radians(24), math.radians(-18), 0)
     wo.visible_diffuse = False; wo.visible_transmission = False; wo.visible_volume_scatter = False; wo.visible_shadow = False
+    # мягкое «окно» прямо над чашкой: видно только в отражениях — на чёрной глади кофе появляется живой блик
+    em = bpy.data.materials.new('winrefl'); em.use_nodes = True; en = em.node_tree.nodes; en.remove(en['Principled BSDF'])
+    es = en.new('ShaderNodeEmission'); es.inputs['Color'].default_value = (1, .96, .9, 1)
+    # мягкое пятно: яркость спадает от центра к краям (сферический градиент), без жёсткой рамки
+    gt = en.new('ShaderNodeTexGradient'); gt.gradient_type = 'SPHERICAL'; tc_ = en.new('ShaderNodeTexCoord'); mp_ = en.new('ShaderNodeMapping')
+    mp_.inputs['Location'].default_value = (-.5, -.5, 0); mp_.inputs['Scale'].default_value = (2, 2, 1)
+    em.node_tree.links.new(tc_.outputs['Generated'], mp_.inputs['Vector']); em.node_tree.links.new(mp_.outputs['Vector'], gt.inputs['Vector'])
+    pw_ = en.new('ShaderNodeMath'); pw_.operation = 'POWER'; pw_.inputs[1].default_value = 2.2
+    em.node_tree.links.new(gt.outputs['Fac'], pw_.inputs[0])
+    st_ = en.new('ShaderNodeMath'); st_.operation = 'MULTIPLY'; st_.inputs[1].default_value = 1.6
+    em.node_tree.links.new(pw_.outputs[0], st_.inputs[0]); em.node_tree.links.new(st_.outputs[0], es.inputs['Strength'])
+    em.node_tree.links.new(es.outputs[0], en['Material Output'].inputs[0])
+    bpy.ops.mesh.primitive_plane_add(size=1, location=(X0 - .42, Y0 + .38, 9)); wp = bpy.context.object; wp.scale = (.95, .7, 1)
+    wp.data.materials.append(em); wp.visible_camera = False; wp.visible_diffuse = False; wp.visible_shadow = False
 cam = bpy.data.cameras.new('cam'); cam.type = 'ORTHO'; cam.ortho_scale = TW
 co = bpy.data.objects.new('cam', cam); sc.collection.objects.link(co); sc.camera = co; co.location = (TW / 2, -TH / 2, 30)
 sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = int(os.environ.get('SAMPLES', 128)); sc.cycles.max_bounces = 10; sc.cycles.transmission_bounces = 10; sc.cycles.use_denoising = True

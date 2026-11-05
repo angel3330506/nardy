@@ -33,6 +33,10 @@
             ".write": "auth != null && newData.parent().parent().child('players').child($slot).val() === auth.uid",
             ".validate": "newData.isString() && newData.val().length <= 24"
           }
+        },
+        "head2": {
+          ".write": "auth != null && !data.exists()",
+          ".validate": "newData.isBoolean()"
         }
       }
     },

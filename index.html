@@ -601,6 +601,11 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
       <button data-auto="on">Если ход один — сам</button>
       <button data-auto="off">Всегда сам ходить</button>
     </div>
+    <h4>С головы за ход</h4>
+    <div class="seg headsel">
+      <button data-head="1">Одна шашка — по правилам</button>
+      <button data-head="2">Две шашки — быстрее</button>
+    </div>
     <h4>Шашки</h4>
     <div class="seg ckset" id="cksets"></div>
     <h4>Ваше имя</h4>
@@ -722,7 +727,7 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
     <ul>
       <li>У каждого <b>15 шашек</b> на «голове». Белые начинают справа снизу, чёрные — слева сверху. Обе стороны идут против часовой стрелки.</li>
       <li><b>Бить нельзя.</b> Пункт с хотя бы одной чужой шашкой закрыт.</li>
-      <li>С головы за ход снимается <b>одна шашка</b>. Исключение — первый бросок 6‑6, 4‑4 или 3‑3: можно снять две.</li>
+      <li>С головы за ход снимается <b>одна шашка</b>. Исключение — первый бросок 6‑6, 4‑4 или 3‑3: можно снять две. Для быстрой игры в настройках можно разрешить снимать <b>по две шашки</b> всегда.</li>
       <li>Дубль играется <b>четыре раза</b>. Если можно сыграть оба кубика, играть обязательно оба; если только один — большой.</li>
       <li>Кубики можно сыграть <b>одной шашкой подряд</b>: при 2‑2 — пойти одной на 4, 6 или 8, при 4‑5 — сразу на 9. Промежуточные пункты должны быть свободны.</li>
       <li>Нельзя ставить <b>заграждение из 6 шашек подряд</b>, если впереди него нет ни одной шашки соперника.</li>
@@ -755,7 +760,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='80';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='81';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/leafshade.webp":"8666bd89","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -964,7 +969,7 @@ function aiChoose(level){
     let exp=0;
     for(let a=1;a<=6;a++) for(let b=a;b<=6;b++){
       const w=a===b?1:2, rem=a===b?[a,a,a,a]:[a,b];
-      const hl=(G.first[opp]&&a===b&&(a===3||a===4||a===6))?2:1;
+      const hl=headLim(G.first[opp],a,b);
       const replies=enumerate({s:c.e.s,pl:opp,rem,headUsed:0,headLimit:hl});
       let worst=replies.length?1e9:VV(c.e.s,pl);
       for(const o of replies){const v=VV(o.s,pl);if(v<worst)worst=v;}
@@ -1113,7 +1118,7 @@ function saveGame(){
   try{
     if(G.phase==='over'||G.phase==='start'){localStorage.removeItem('nardy-game-v1');return;}
     const phase=G.phase==='rolling'?'roll':G.phase;
-    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,first:G.first,level:G.level,turns:G.turns,undos:G.undos,tour:G.tour,rec:G.rec}));
+    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,head2:!!G.head2,first:G.first,level:G.level,turns:G.turns,undos:G.undos,tour:G.tour,rec:G.rec}));
   }catch(e){}
 }
 function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')||'null');}catch(e){return null;}}
@@ -1154,6 +1159,8 @@ function say(kind,chance=1){
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(say.t); say.t=setTimeout(()=>el.classList.remove('show'),3800);
 }
+// с головы за ход: по правилам одна (две — только первым броском 6-6, 4-4, 3-3); в быстрой игре (настройка) — две всегда
+const headLim=(first,a,b)=>(G&&G.head2)||(first&&a===b&&(a===3||a===4||a===6))?2:1;
 function curCtx(){return {s:G.s,pl:G.turn,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit};}
 function refreshSteps(){G.steps=G.phase==='move'?legalSteps(curCtx(),new Map()):[];G.targets=null;}
 
@@ -1168,7 +1175,7 @@ function newGame(m,tutor,tour){
   if(m) mode=m;
   loadScore();
   const lvl=tour?TOUR[tourStage()]:tutor?'easy':settings.level;
-  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:lvl,turns:[0,0],undos:0,mistakes:[],tour:!!tour};   // сложность закреплена за партией
+  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,head2:!!settings.head2,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:lvl,turns:[0,0],undos:0,mistakes:[],tour:!!tour};   // сложность закреплена за партией
   if(tutor) G.tutor={};
   $('coach').hidden=true;
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
@@ -1181,7 +1188,7 @@ function resumeGame(){
   const v=readSaved(); if(!v){newGame(mode);return;}
   clearTimers();
   mode=v.mode; loadScore();
-  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level,turns:v.turns||[0,0],undos:v.undos||0,mistakes:[],tour:!!v.tour,rec:v.rec||[]};
+  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,head2:!!v.head2,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level,turns:v.turns||[0,0],undos:v.undos||0,mistakes:[],tour:!!v.tour,rec:v.rec||[]};
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML='';
   showGame();
   if(G.phase==='move') placeDice(G.dice); else clearDice();
@@ -1404,7 +1411,7 @@ function rolled(a,b,land,after,instant){
     G.dice=[a,b]; G.diceAt=land;
     G.rem=a===b?[a,a,a,a]:[a,b];
     G.headUsed=0;
-    G.headLimit=(G.first[G.turn]&&a===b&&(a===3||a===4||a===6))?2:1;
+    G.headLimit=headLim(G.first[G.turn],a,b);
     G.first[G.turn]=false;
     G.phase='move'; G.hist=[]; G.sel=null; G.hint=null; G.usedHint=false;
     G.turns[G.turn]=(G.turns[G.turn]||0)+1; noteDouble(G.turn,a,b);
@@ -1524,7 +1531,7 @@ function explainMove(src,t){
   for(const d of ctx.rem) for(const v of [...sums]) sums.add(v+d);
   if(!sums.has(dist)) return `На ${dist} не сходить: на кубиках ${ctx.rem.join(', ')}.`;
   if(own(ctx.s,t,opp)) return 'Пункт занят соперником — туда ходить нельзя.';
-  if(from===0&&ctx.headUsed>=ctx.headLimit) return 'С головы за ход снимается только одна шашка (две — лишь при первом броске 6‑6, 4‑4 или 3‑3).';
+  if(from===0&&ctx.headUsed>=ctx.headLimit) return ctx.headLimit>=2?'С головы за ход снимается не больше двух шашек.':'С головы за ход снимается только одна шашка (две — лишь при первом броске 6‑6, 4‑4 или 3‑3).';
   let why=null;
   const go=(c,pos,acc)=>{
     if(acc===dist) return true;
@@ -2052,6 +2059,7 @@ if(MOCK) window.__t={                                   // ручки для а�
   st:()=>({over:!$('over').hidden,mist:G&&G.mistakes&&G.mistakes.map(m=>m.loss|0).join(','),phase:G&&G.phase,turn:G&&G.turn,me:G&&G.me,rem:G&&G.rem,steps:G&&G.steps.length,hist:G&&G.hist.length,key:G&&key(G.s),k:NET&&NET.k,pend:G&&(G.netPend||G.autoPending),busy,auto:G&&G.auto,dead:NET&&NET.dead,hold:NET&&NET.hold,status:$('status').textContent}),
   roll:()=>doRoll(),
   move:()=>{const st=G.steps[0];doMove([st]);},
+  head:()=>{const st=G.steps.find(x=>x.from===0); if(!st||G.auto||busy) return false; applyPath([st]); return true;}, hu:()=>G.headUsed,
   undo:()=>undo(),
   end:()=>humanEnd(),
   best:()=>{const b=bestEnd(curCtx()); b&&b.path.length&&applyPath(b.path.slice(0,1));},
@@ -2162,10 +2170,10 @@ async function netCreate(){
     for(let t=0;t<5;t++){
       const code=[...crypto.getRandomValues(new Uint8Array(6))].map(x=>AB[x%AB.length]).join('');
       try{
-        await NETB.update(`rooms/${code}`,{created:Date.now(),'players/w':NETB.uid,'commit/w':chain[CHAIN]});
+        await NETB.update(`rooms/${code}`,{created:Date.now(),'players/w':NETB.uid,'commit/w':chain[CHAIN],...(settings.head2?{head2:true}:{})});
         NETB.update(`rooms/${code}/names`,{w:myName()}).catch(()=>{});   // имя — отдельно: без новых правил базы просто не запишется
         localStorage.setItem(netKey(code),JSON.stringify({seed}));
-        return netStart(code,'w',chain);
+        return netStart(code,'w',chain,!!settings.head2);
       }catch(e){}
     }
     throw new Error('no room');
@@ -2189,7 +2197,7 @@ async function netEnter(code){
       if(!saved) return netSheet('Эту партию начали на другом устройстве или в другом браузере — продолжить её здесь нельзя.');
       chain=await makeChain(saved.seed);
     }
-    netStart(code,slot,chain);
+    netStart(code,slot,chain,!!room.head2);
   }catch(e){ console.error(e); netSheet('Не удалось подключиться к серверу игры. Проверьте интернет и откройте ссылку ещё раз.'); }
 }
 function netLeave(){
@@ -2200,13 +2208,13 @@ function netLeave(){
 }
 function netFresh(){
   return {s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,turns:[0,0],undos:0,mistakes:[],
-    me:NET.me,flip:NET.me===1,netPend:false,ro:false};
+    me:NET.me,flip:NET.me===1,netPend:false,ro:false,head2:!!NET.head2};
 }
-function netStart(code,slot,chain){
+function netStart(code,slot,chain,head2){
   netLeave(); clearTimers();
   mode='net'; score=[0,0];
   NET={room:code,slot,me:slot==='w'?0:1,chain,commit:[null,null],rv:[[],[]],k:0,applied:0,q:new Map(),seen:0,
-       ready:false,started:false,send:Promise.resolve(),unsub:[],hold:false,opp:false,dead:false,mine:new Set()};
+       ready:false,started:false,send:Promise.resolve(),unsub:[],hold:false,opp:false,dead:false,mine:new Set(),head2:!!head2};
   G=netFresh(); busy=false; flyHide=null; $('over').hidden=true; $('lFx').innerHTML=''; clearDice(); buildHit();
   history.replaceState(null,'',`?room=${code}${MOCK?'&mock':''}`);
   try{localStorage.setItem('nardy-net-last',code);}catch(e){}
@@ -2611,6 +2619,7 @@ function buildCksets(){
     return `<button data-ck="${k}"${lock?' disabled title="Пройдите турнир двора"':''}>${imgs}${v[0]}${lock?' '+ic('lock'):''}</button>`; }).join('');
 }
 function paintSettings(){
+  document.querySelectorAll('.seg.headsel button').forEach(b=>b.classList.toggle('on',(b.dataset.head==='2')===!!settings.head2));
   document.querySelectorAll('.seg.autosel button').forEach(b=>b.classList.toggle('on',(b.dataset.auto==='on')===(settings.automove!==false)));
   if(!$('cksets').innerHTML) buildCksets();
   document.querySelectorAll('#cksets button').forEach(b=>b.classList.toggle('on',b.dataset.ck===(settings.ckset||'skin')));
@@ -2634,6 +2643,7 @@ $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(
 $('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 document.querySelectorAll('.seg.amb').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.ambient=b.dataset.amb==='on'; saveSettings(); paintSettings(); ac(); ambientSync();}));
 $('setName').addEventListener('change',()=>{ settings.name=$('setName').value.trim().slice(0,20); saveSettings(); });
+document.querySelectorAll('.seg.headsel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.head2=b.dataset.head==='2'; saveSettings(); paintSettings();}));
 document.querySelectorAll('.seg.autosel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.automove=b.dataset.auto==='on'; saveSettings(); paintSettings();}));
 $('cksets').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b||b.disabled) return; settings.ckset=b.dataset.ck; saveSettings(); paintSettings(); buildStatic(); if(G) render();});
 document.querySelectorAll('.seg.dicesel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.dice=b.dataset.dice; saveSettings(); paintSettings();

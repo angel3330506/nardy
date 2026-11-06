@@ -210,6 +210,11 @@ border-radius:12px;opacity:0}
 #menu.opening .case{transform:translateX(-50%)}
 html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw)) + min(calc(92 * var(--vw)),400px) / 2))}
 .mbtns{display:grid;gap:10px}
+/* вид нард: длинные / короткие — переключатель под названием */
+.varsel{display:grid;grid-template-columns:1fr 1fr;padding:4px;gap:4px;border-radius:999px;background:rgba(20,12,6,.55);border:1px solid rgba(217,181,106,.35);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.45)}
+.varsel button{border:0;border-radius:999px;background:transparent;color:#cdb98f;font-family:var(--display);font-size:clamp(15px,calc(2.6 * var(--vh)),19px);padding:7px 10px;letter-spacing:.03em}
+.varsel button.on{background:linear-gradient(180deg,#f3d993,#c99a45);color:#2a170a;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .mrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .drawer .mrow:has(#dResign[hidden]){grid-template-columns:1fr}.drawer [hidden]{display:none!important}
 .plq{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;border-radius:8px;padding:12px 16px;
@@ -576,6 +581,7 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
     </div>
     <div class="mside">
       <h1 class="mtitle">Нарды</h1>
+      <div class="varsel" role="radiogroup" aria-label="Вид нард"><button data-var="long">Длинные</button><button data-var="short">Короткие</button></div>
       <div class="mbtns">
         <button class="plq main" id="mContinue" hidden>Продолжить партию<span class="cap" id="contCap"></span></button>
         <button class="plq" id="mAi">Играть с соперником<span class="cap" id="lvlCap"></span></button>
@@ -746,6 +752,14 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
       <li><b>По сети:</b> «Играть с другом по сети» → отправьте ссылку другу. Каждый видит доску со своей стороны. Кубики честные: бросок складывается из случайных чисел обоих телефонов, подменить его нельзя.</li>
       <li>Как ходить: нажмите на шашку, затем на подсвеченный пункт. Цифра на пункте — на сколько вы идёте. Выброс — нажатие на лоток справа.</li>
     </ul>
+    <h3 style="margin-top:18px">Короткие нарды</h3>
+    <ul>
+      <li>Шашки сразу расставлены: <b>2 + 5 + 3 + 5</b>. Белые идут к дому справа сверху, чёрные — навстречу, к дому справа снизу.</li>
+      <li>Пункт, где стоят <b>две и больше</b> чужих шашки, закрыт. На пункт с <b>одной</b> чужой шашкой можно встать — она <b>сбита</b> и уходит на <b>бар</b> (середина доски).</li>
+      <li>Пока у вас есть шашка на баре, сначала нужно <b>ввести её</b> в дом соперника: на 1–6-й пункт по кубику. Закрыт — ход пропадает.</li>
+      <li>Голов и запрета на заграждение здесь нет. Дубли, обязательный ход и выброс — как в длинных.</li>
+      <li>Победа — 1 очко, <b>марс</b> (у соперника ничего не выброшено) — 2, <b>кокс</b> (и при этом его шашка на баре или в вашем доме) — 3.</li>
+    </ul>
     <button class="primary done" id="bRulesClose">Понятно</button>
   </div>
 </div>
@@ -769,7 +783,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='82';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='83';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/leafshade.webp":"8666bd89","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -802,11 +816,20 @@ const isTop=i=>i>=12;
 // Стопка не длиннее STACK_MAX от края: центральная полоса доски (y 250…450) всегда свободна для кубиков.
 // До 3 шашек — вплотную, дальше стопка сжимается, а с 5 шашек на верхней появляется счётчик.
 const STACK_MAX=150, COUNT_FROM=5;
+// короткие нарды: шашки идут навстречу друг другу, сбитые стоят на баре (середина доски)
+const SH=()=>!!(G&&G.v==='short');
+// в сетевой партии чёрные видят доску со своей стороны: в длинных — поворот на 180°, в коротких — зеркально сверху вниз
+// (так дом у каждого справа, как у белых)
+const flipXY=p=>SH()?[p[0],700-p[1]]:[1000-p[0],700-p[1]];
+const dispIdx=i=>G&&G.flip?(SH()?23-i:(i+12)%24):i;
+function barSlot(pl,k){ const p=[500,pl===0?415+k*44:285-k*44]; return G&&G.flip?flipXY(p):p; }
 function slotXY(i,k,n){
+  if(i==='bar') return barSlot(G.turn,k);
   const sp=n>3?STACK_MAX/(n-1):60;
   const x=ptX(i), p=isTop(i)?[x,70+k*sp]:[x,630-k*sp];
-  return G&&G.flip?[1000-p[0],700-p[1]]:p;          // в сетевой партии чёрные видят доску повёрнутой
+  return G&&G.flip?flipXY(p):p;
 }
+const cntAt=(s,i,pl=G.turn)=>i==='bar'?(s.bar?s.bar[pl]:0):s.n[i];
 function traySlot(pl,k){ const y=pl===0?50+k*18+7:650-k*18-7; return [1055,G&&G.flip?700-y:y]; }
 
 /* ---------- скины досок ---------- */
@@ -844,12 +867,14 @@ $('case').style.setProperty('--lid',`url(${av(`boards/lid.webp`)})`);
 for(const c of Object.keys(CK)){const im=new Image();im.src=`${av(`boards/ckside-${c}.png`)}`;}
 
 /* ---------- правила ---------- */
-const P=(pl,p)=>pl===0?p:(p+12)%24;
-const clone=s=>({o:s.o.slice(),n:s.n.slice(),off:s.off.slice()});
-function key(s){let k='';for(let i=0;i<24;i++)k+=s.n[i]?(s.o[i]?'b':'w')+s.n[i].toString(16):'.';return k+s.off[0]+','+s.off[1];}
+// p — пункт глазами игрока (0 — откуда он идёт, 18…23 — его дом), i — пункт на доске
+const P=(pl,p)=>pl===0?p:SH()?23-p:(p+12)%24;
+const Pinv=(pl,i)=>pl===0?i:SH()?23-i:(i+12)%24;
+const clone=s=>({o:s.o.slice(),n:s.n.slice(),off:s.off.slice(),...(s.bar?{bar:s.bar.slice()}:{})});
+function key(s){let k='';for(let i=0;i<24;i++)k+=s.n[i]?(s.o[i]?'b':'w')+s.n[i].toString(16):'.';return k+s.off[0]+','+s.off[1]+(s.bar&&(s.bar[0]||s.bar[1])?'|'+s.bar[0]+','+s.bar[1]:'');}
 const own=(s,i,pl)=>s.n[i]>0&&s.o[i]===pl;
 function homeCount(s,pl){let c=s.off[pl];for(let p=18;p<24;p++){const i=P(pl,p);if(own(s,i,pl))c+=s.n[i];}return c;}
-function pips(s,pl){let c=0;for(let p=0;p<24;p++){const i=P(pl,p);if(own(s,i,pl))c+=s.n[i]*(24-p);}return c;}
+function pips(s,pl){let c=s.bar?s.bar[pl]*25:0;for(let p=0;p<24;p++){const i=P(pl,p);if(own(s,i,pl))c+=s.n[i]*(24-p);}return c;}
 function violatesBlock(s,pl,to){
   const opp=1-pl, q=P(opp,P(pl,to));
   const held=x=>own(s,P(opp,x),pl);
@@ -860,7 +885,28 @@ function violatesBlock(s,pl,to){
   for(let p=hi+1;p<24;p++) if(own(s,P(opp,p),opp)) return false;
   return true;
 }
+// короткие: сначала вводим шашки с бара (from = −1); на пункт с 2+ чужими нельзя, одиночную чужую — сбиваем на бар
+function tryStepShort(s,pl,from,d){
+  const opp=1-pl;
+  if(s.bar[pl]>0&&from!==-1) return null;
+  if(from===-1&&!s.bar[pl]) return null;
+  if(from>=0&&!own(s,P(pl,from),pl)) return null;
+  const to=from+d;
+  if(to<24){
+    const j=P(pl,to);
+    if(s.n[j]>=2&&s.o[j]===opp) return null;
+    const ns=clone(s);
+    if(from===-1) ns.bar[pl]--; else ns.n[P(pl,from)]--;
+    if(ns.n[j]===1&&ns.o[j]===opp){ ns.n[j]=0; ns.bar[opp]++; }
+    ns.n[j]++; ns.o[j]=pl;
+    return ns;
+  }
+  if(homeCount(s,pl)!==15) return null;
+  if(to>24){ for(let p=18;p<from;p++) if(own(s,P(pl,p),pl)) return null; }
+  const ns=clone(s); ns.n[P(pl,from)]--; ns.off[pl]++; return ns;
+}
 function tryStep(s,pl,from,d,ctx){
+  if(s.bar) return tryStepShort(s,pl,from,d);
   const i=P(pl,from);
   if(!own(s,i,pl)) return null;
   if(from===0&&ctx.headUsed>=ctx.headLimit) return null;
@@ -877,13 +923,14 @@ function tryStep(s,pl,from,d,ctx){
   const ns=clone(s); ns.n[i]--; ns.off[pl]++; return ns;
 }
 function removeOne(a,d){const b=a.slice();b.splice(b.indexOf(d),1);return b;}
-function nextCtx(ctx,st){return {s:st.ns,pl:ctx.pl,rem:removeOne(ctx.rem,st.d),headUsed:ctx.headUsed+(st.from===0?1:0),headLimit:ctx.headLimit};}
+function nextCtx(ctx,st){return {s:st.ns,pl:ctx.pl,rem:removeOne(ctx.rem,st.d),headUsed:ctx.headUsed+(st.from===0&&!ctx.s.bar?1:0),headLimit:ctx.headLimit};}
 function ctxKey(c){return key(c.s)+'|'+c.rem.join('')+'|'+c.headUsed;}
 function rawSteps(ctx){
   const out=[];const ds=[...new Set(ctx.rem)];
-  for(const d of ds) for(let f=0;f<24;f++){
+  const f0=ctx.s.bar?(ctx.s.bar[ctx.pl]?-1:0):0, f1=ctx.s.bar&&ctx.s.bar[ctx.pl]?-1:23;
+  for(const d of ds) for(let f=f0;f<=f1;f++){
     const ns=tryStep(ctx.s,ctx.pl,f,d,ctx);
-    if(ns) out.push({from:f,d,ns,to:f+d<24?P(ctx.pl,f+d):'off',src:P(ctx.pl,f)});
+    if(ns) out.push({from:f,d,ns,to:f+d<24?P(ctx.pl,f+d):'off',src:f<0?'bar':P(ctx.pl,f)});
   }
   return out;
 }
@@ -935,7 +982,32 @@ function evaluate(s,pl){
   const h=P(pl,0); if(own(s,h,pl)) sc-=s.n[h]*0.4;
   return sc;
 }
-const V=(s,pl)=>evaluate(s,pl)-evaluate(s,1-pl);
+// короткие нарды: очки (pips), занятые пункты (особенно в доме и подряд — «прайм»), открытые одиночки под боем
+function evaluateShort(s,pl){
+  const opp=1-pl; let sc=-pips(s,pl)+s.off[pl]*3;
+  // где стоят чужие шашки (в их системе счёта) — кто может бить мои одиночки
+  const oppQ=[]; if(s.bar[opp]) oppQ.push(-1);
+  for(let i=0;i<24;i++) if(own(s,i,opp)) oppQ.push(Pinv(opp,i));
+  const race=!s.bar[0]&&!s.bar[1]&&noContact(s);
+  let run=0;
+  for(let p=0;p<24;p++){
+    const i=P(pl,p);
+    if(own(s,i,pl)&&s.n[i]>=2){ run++; sc+=(p>=18?5.5:p>=12?2.5:1.2)+run*run*0.8; if(s.n[i]>4) sc-=(s.n[i]-4)*1.2; }
+    else{ run=0;
+      if(own(s,i,pl)&&s.n[i]===1&&!race){
+        const q=Pinv(opp,i); let shots=0;
+        for(const oq of oppQ){ const dd=q-oq; if(dd>=1&&dd<=6) shots+=2; else if(dd>=7&&dd<=12) shots+=.7; }
+        if(shots) sc-=(2+Math.min(shots,8)*1.1)*(0.55+(p+1)/26);
+      }
+    }
+  }
+  if(s.bar[opp]){ // соперник на баре: чем закрытее мой дом, тем больнее ему
+    let closed=0; for(let p=18;p<24;p++){ const i=P(pl,p); if(own(s,i,pl)&&s.n[i]>=2) closed++; }
+    sc+=s.bar[opp]*(4+closed*2.2);
+  }
+  return sc;
+}
+const V=(s,pl)=>s.bar?evaluateShort(s,pl)-evaluateShort(s,1-pl):evaluate(s,pl)-evaluate(s,1-pl);
 function enumerate(ctx){
   const memo=new Map(), ends=new Map(), seen=new Set();
   (function dfs(c,path){
@@ -951,21 +1023,25 @@ function enumerate(ctx){
 }
 // гонка: шашки уже разошлись (ни одна не должна обгонять чужие) — важны только очки и выброс
 function noContact(s){
+  if(s.bar){ if(s.bar[0]||s.bar[1]) return false;
+    // белые идут вверх по номерам пунктов, чёрные — вниз: контакта нет, если все белые уже выше всех чёрных
+    let wMin=24,bMax=-1; for(let i=0;i<24;i++){ if(own(s,i,0)&&i<wMin)wMin=i; if(own(s,i,1)&&i>bMax)bMax=i; } return wMin>bMax; }
   for(let q=0;q<24;q++){ const i=P(0,q); if(own(s,i,1)){ for(let r=q+1;r<24;r++) if(own(s,P(0,r),0)) return false; } }
   return true;
 }
 function aiChoose(level){
   const pl=G.turn, ends=enumerate(curCtx());
   if(!ends.length) return [];
+  const EV=G.v==='short'?((s,p)=>V(s,p)):evaluate;
   if(level==='easy'){
     // Арам: азартный — любит продвигать шашки, мало думает о заборах
     let best=null,bv=-1e9;
-    for(const e of ends){const v=evaluate(e.s,pl)-pips(e.s,pl)*.6+Math.random()*14;if(v>bv){bv=v;best=e;}}
+    for(const e of ends){const v=EV(e.s,pl)-pips(e.s,pl)*.6+Math.random()*14;if(v>bv){bv=v;best=e;}}
     return best.path;
   }
-  if(level!=='hard'){
+  if(level!=='hard'&&level!=='expert'){   // дядя Ашот — лучший ход «на глаз»; бабушка и варпет считают ответы соперника
     let best=null,bv=-1e9;
-    for(const e of ends){const v=evaluate(e.s,pl)+Math.random()*0.8;if(v>bv){bv=v;best=e;}}
+    for(const e of ends){const v=EV(e.s,pl)+Math.random()*0.8;if(v>bv){bv=v;best=e;}}
     return best.path;
   }
   // сильный: лучшие 4 варианта проверяем на все 21 бросок соперника; мастер — 8 вариантов и чувство гонки
@@ -1115,7 +1191,7 @@ const sOff=()=>{ if(!play('off',.9)&&!play('place',.7)) synthClack(); };
 const sRoll=()=>{ if(!play('roll',1,.28)) setTimeout(synthRattle,280); };
 
 /* ---------- состояние ---------- */
-let mode='ai', score=[0,0], G=null, busy=false, flyHide=null, timers=[];
+let mode='ai', score=[0,0], G=null, busy=false, flyHide=null, hitHide=null, timers=[];
 // пока открыто меню партии, компьютер ждёт: отложенные шаги переносятся
 const paused=()=>mode==='ai'&&!$('drawer').hidden;
 const later=(fn,ms)=>{const run=()=>{ if(paused()){timers.push(setTimeout(run,250));return;} fn(); }; const t=setTimeout(run,ms);timers.push(t);return t;};
@@ -1127,7 +1203,7 @@ function saveGame(){
   try{
     if(G.phase==='over'||G.phase==='start'){localStorage.removeItem('nardy-game-v1');return;}
     const phase=G.phase==='rolling'?'roll':G.phase;
-    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,head2:!!G.head2,first:G.first,level:G.level,turns:G.turns,undos:G.undos,tour:G.tour,rec:G.rec}));
+    localStorage.setItem('nardy-game-v1',JSON.stringify({mode,v:G.v||'long',s:{o:[...G.s.o],n:[...G.s.n],off:G.s.off,...(G.s.bar?{bar:G.s.bar}:{})},turn:G.turn,phase,dice:G.dice,diceAt:G.diceAt,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit,head2:!!G.head2,first:G.first,level:G.level,turns:G.turns,undos:G.undos,tour:G.tour,rec:G.rec}));
   }catch(e){}
 }
 function readSaved(){try{return JSON.parse(localStorage.getItem('nardy-game-v1')||'null');}catch(e){return null;}}
@@ -1169,12 +1245,18 @@ function say(kind,chance=1){
   clearTimeout(say.t); say.t=setTimeout(()=>el.classList.remove('show'),3800);
 }
 // с головы за ход: по правилам одна (две — только первым броском 6-6, 4-4, 3-3); в быстрой игре (настройка) — две всегда
-const headLim=(first,a,b)=>(G&&G.head2)||(first&&a===b&&(a===3||a===4||a===6))?2:1;
+const headLim=(first,a,b)=>SH()?99:(G&&G.head2)||(first&&a===b&&(a===3||a===4||a===6))?2:1;
 function curCtx(){return {s:G.s,pl:G.turn,rem:G.rem,headUsed:G.headUsed,headLimit:G.headLimit};}
 function refreshSteps(){G.steps=G.phase==='move'?legalSteps(curCtx(),new Map()):[];G.targets=null;}
 
-function freshState(){
+function freshState(v){
   const s={o:new Int8Array(24),n:new Int8Array(24),off:[0,0]};
+  if(v==='short'){
+    // короткие: у каждого 2 на самом дальнем пункте, 5 на середине пути, 3 перед домом и 5 в доме (24-, 13-, 8- и 6-й пункты)
+    s.bar=[0,0];
+    for(const [p,c] of [[0,2],[11,5],[16,3],[18,5]]){ s.o[p]=0; s.n[p]=c; s.o[23-p]=1; s.n[23-p]=c; }
+    return s;
+  }
   s.o[0]=0;s.n[0]=15;s.o[12]=1;s.n[12]=15;
   return s;
 }
@@ -1184,7 +1266,8 @@ function newGame(m,tutor,tour){
   if(m) mode=m;
   loadScore();
   const lvl=tour?TOUR[tourStage()]:tutor?'easy':settings.level;
-  G={s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,head2:!!settings.head2,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:lvl,turns:[0,0],undos:0,mistakes:[],tour:!!tour};   // сложность закреплена за партией
+  const v=tutor||tour?'long':(settings.variant==='short'?'short':'long');
+  G={v,s:freshState(v),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,head2:!!settings.head2,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:lvl,turns:[0,0],undos:0,mistakes:[],tour:!!tour};   // сложность закреплена за партией
   if(tutor) G.tutor={};
   $('coach').hidden=true;
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML=''; clearDice();
@@ -1197,7 +1280,7 @@ function resumeGame(){
   const v=readSaved(); if(!v){newGame(mode);return;}
   clearTimers();
   mode=v.mode; loadScore();
-  G={s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,head2:!!v.head2,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level,turns:v.turns||[0,0],undos:v.undos||0,mistakes:[],tour:!!v.tour,rec:v.rec||[]};
+  G={v:v.v||'long',s:{o:Int8Array.from(v.s.o),n:Int8Array.from(v.s.n),off:v.s.off,...(v.s.bar?{bar:v.s.bar}:{})},turn:v.turn,phase:v.phase,dice:v.dice,diceAt:v.diceAt||null,rem:v.rem,headUsed:v.headUsed,headLimit:v.headLimit,head2:!!v.head2,first:v.first,hist:[],sel:null,steps:[],targets:null,level:v.level||settings.level,turns:v.turns||[0,0],undos:v.undos||0,mistakes:[],tour:!!v.tour,rec:v.rec||[]};
   $('over').hidden=true; busy=false; flyHide=null; $('lFx').innerHTML='';
   showGame();
   if(G.phase==='move') placeDice(G.dice); else clearDice();
@@ -1374,7 +1457,7 @@ function rollOff(vals){
   let a,b; if(vals)[a,b]=vals; else do{a=1+Math.random()*6|0;b=1+Math.random()*6|0;}while(a===b);
   setStatus('Разыгрываем первый ход…');
   busy=true;
-  let L=landing('r'), R=landing('l'); if(G.flip)[L,R]=[R,L];
+  let L=landing('r'), R=landing('l'); if(G.flip&&!SH())[L,R]=[R,L];
   throwDice([a,b],REST,[L[0],R[1]],()=>{
     busy=false;
     G.turn=a>b?0:1;
@@ -1444,8 +1527,13 @@ function applyStep(st,cb){
   G.hist.push({s:prev,rem:G.rem.slice(),headUsed:G.headUsed,grp:G.grp,st});
   G.s=st.ns; G.rem=removeOne(G.rem,st.d); if(st.from===0)G.headUsed++;
   G.sel=null;
-  const n0=prev.n[st.src];
+  const n0=cntAt(prev,st.src,pl);
   const from=G.dragFrom||slotXY(st.src,n0-1,n0); G.dragFrom=null;   // после перетаскивания шашка летит с того места, где её отпустили
+  // короткие: на пункте стояла одиночная чужая шашка — она улетает на бар
+  if(prev.bar&&st.to!=='off'&&prev.n[st.to]===1&&prev.o[st.to]===1-pl){
+    const opp=1-pl, hp=slotXY(st.to,0,1); hitHide=opp;
+    fly(opp,hp,barSlot(opp,G.s.bar[opp]-1),false,()=>{ hitHide=null; sClack(false); render(); });
+  }
   let to, onStack=false;
   if(st.to==='off') to=traySlot(pl,G.s.off[pl]-1);
   else{const n=G.s.n[st.to]; to=slotXY(st.to,n-1,n); onStack=n>1;}
@@ -1521,7 +1609,7 @@ function undo(force){
   if(lst.to==='off') from=traySlot(pl,cur.off[pl]-1);
   else{const n=cur.n[lst.to]; from=slotXY(lst.to,n-1,n);}
   G.s=first.s; G.rem=first.rem; G.headUsed=first.headUsed; G.sel=null;
-  const src=first.st.src, n=G.s.n[src], to=slotXY(src,n-1,n);
+  const src=first.st.src, n=cntAt(G.s,src,pl), to=slotXY(src,n-1,n);
   refreshSteps(); flyHide=src; render();
   fly(pl,from,to,false,()=>{
     flyHide=null; sClack(n>1);
@@ -1530,6 +1618,14 @@ function undo(force){
 }
 // Почему выбранная шашка не может пойти на пункт t — понятным языком
 function explainMove(src,t){
+  if(SH()){ const ctx=curCtx(), pl=ctx.pl, opp=1-pl;
+    if(ctx.s.bar[pl]&&src!=='bar') return 'Сначала введите в игру шашку с бара (середина доски).';
+    if(t==='off') return homeCount(ctx.s,pl)<15?'Выбрасывать шашки можно, только когда все 15 в доме.':'Эту шашку сейчас не выбросить: больший кубик можно взять, только если на дальних пунктах дома шашек нет.';
+    if(t==='bar') return 'На бар ставить нельзя — туда попадают сбитые шашки.';
+    if(ctx.s.n[t]>=2&&ctx.s.o[t]===opp) return 'Пункт закрыт: там две или больше шашек соперника.';
+    const from=src==='bar'?-1:Pinv(pl,src), dist=Pinv(pl,t)-from;
+    if(dist<=0) return 'Шашки ходят только вперёд, к своему дому.';
+    return `На ${dist} не сходить: на кубиках ${ctx.rem.join(', ')}, или промежуточный пункт закрыт.`; }
   const ctx=curCtx(), pl=ctx.pl, opp=1-pl, from=P(pl,src);
   if(t==='off') return homeCount(ctx.s,pl)<15
     ? 'Выбрасывать шашки можно, только когда все 15 стоят в доме.'
@@ -1596,17 +1692,20 @@ function aiPlay(){
 function gameOver(pl,res={}){
   recTurn(); G.phase='over'; G.auto=false; clearTimers();
   saveRecord(pl,res);
-  const mars=!res.resign&&G.s.off[1-pl]===0, pts=mars?2:1;
+  const mars=!res.resign&&G.s.off[1-pl]===0;
+  // кокс (короткие): у проигравшего ничего не выброшено и шашка ещё на баре или в доме победителя
+  const koks=mars&&!!G.s.bar&&(G.s.bar[1-pl]>0||[18,19,20,21,22,23].some(p=>own(G.s,P(pl,p),1-pl)));
+  const pts=koks?3:mars?2:1;
   score[pl]+=pts; saveScore(); render();
   if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
   recordGame(pl,mars); if(G.tutor) finishTutor();
   if(mode==='net'&&NET&&NET.ready){ NET.games=(NET.games||0)+1; netRate(pl===G.me,mars); }
   if(mode==='ai') setTimeout(()=>say(pl===1?(mars?'mars':'win'):'lose'),700);
   $('bReview').hidden=!(mode==='ai');
-  $('wTitle').textContent=mode!=='pvp'?(pl===(mode==='net'?G.me:0)?(mars?'Марс!':'Победа'):(mars?'Вам марс':'Поражение')):`${NAME[pl]} победили`;
+  $('wTitle').textContent=mode!=='pvp'?(pl===(mode==='net'?G.me:0)?(koks?'Кокс!':mars?'Марс!':'Победа'):(koks?'Вам кокс':mars?'Вам марс':'Поражение')):`${NAME[pl]} победили${koks?' — кокс!':mars?' — марс!':''}`;
   const tr=mode==='ai'?tourResult(pl===0):'';
   $('bAgain').textContent=G.tour?(pl===0&&tourStage()!==0?'Следующий соперник':'Ещё раз'):'Ещё партию';
-  $('wText').textContent=(tr?tr+' ':'')+(res.resign?(pl===(mode==='net'?G.me:0)?'Соперник сдался. ':'Партия сдана. '):'')+(mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
+  $('wText').textContent=(tr?tr+' ':'')+(res.resign?(pl===(mode==='net'?G.me:0)?'Соперник сдался. ':'Партия сдана. '):'')+(koks?'Кокс: у проигравшего ничего не выброшено, а шашка осталась на баре или в чужом доме — тройные очки. ':mars?'Соперник не успел выбросить ни одной шашки — двойные очки. ':'')+`Счёт ${score[0]} : ${score[1]}.`;
   if(res.resign) setStatus(pl===(mode==='net'?G.me:0)?'Соперник сдался.':'Вы сдались.'); else setStatus(mode==='net'?(pl===G.me?'Вы выбросили все шашки!':`${who(pl)}: все шашки выброшены.`):`${NAME[pl]} выбросили все шашки${mars?' — марс':''}.`);
   $('over').hidden=false;
 }
@@ -1614,11 +1713,11 @@ function gameOver(pl,res={}){
 /* ---------- сыгранные партии и повтор ---------- */
 const loadGames=()=>{ try{return JSON.parse(localStorage.getItem('nardy-games')||'[]');}catch(e){return [];} };
 function saveRecord(winner,res){
-  if(G&&mode!=='replay'&&!G.tutor) statGame(G.tour?'tour':mode);
+  if(G&&mode!=='replay'&&!G.tutor) statGame((G.tour?'tour':mode)+(G.v==='short'?'-s':''));
   if(!G||mode==='replay'||!G.rec||!G.rec.length||G.tutor) return;
   const me=mode==='net'?G.me:0;
   const opp=mode==='ai'?LEVELS[G.level][0]:mode==='net'?((NET&&NET.oppName)||'Друг'):'Чёрные';
-  const g={t:Date.now(),mode,me,opp,winner,res:res.draw?'draw':res.resign?'resign':(winner!=null&&G.s.off[1-winner]===0?'mars':'win'),rec:G.rec,
+  const g={t:Date.now(),v:G.v||'long',mode,me,opp,winner,res:res.draw?'draw':res.resign?'resign':(winner!=null&&G.s.off[1-winner]===0?'mars':'win'),rec:G.rec,
            skin:settings.skin};
   const all=[g,...loadGames()].slice(0,25);
   try{ localStorage.setItem('nardy-games',JSON.stringify(all)); }catch(e){}
@@ -1638,12 +1737,12 @@ function openReplay(g){
   $('statsSheet').hidden=true; $('bubble').classList.remove('show');
   RP={g,i:0,prevMode:mode,prevG:G};
   mode='replay';
-  G={s:freshState(),turn:0,phase:'replay',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,flip:g.mode==='net'&&g.me===1,me:g.me,turns:[0,0],undos:0,mistakes:[]};
+  G={v:g.v||'long',s:freshState(g.v),turn:0,phase:'replay',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,flip:g.mode==='net'&&g.me===1,me:g.me,turns:[0,0],undos:0,mistakes:[]};
   $('over').hidden=true; clearDice(); buildHit(); showGame(); $('rbar').hidden=false; replayTo(0);
 }
 function replayTo(i){
   const g=RP.g; i=Math.max(0,Math.min(g.rec.length,i)); RP.i=i;
-  let s=freshState();
+  let s=freshState(g.v);
   for(let k=0;k<i;k++){ const r=g.rec[k];
     for(const [from,d] of r.st){ const ns=tryStep(s,r.p,from,d,{headUsed:0,headLimit:4}); if(!ns) break; s=ns; } }
   G.s=s; const r=g.rec[i-1];
@@ -1956,7 +2055,7 @@ function bestEnd(ctx){
   for(const e of enumerate(ctx)){ const v=V(e.s,ctx.pl); if(v>bv){bv=v;best=e;} }
   return best&&{...best,v:bv};
 }
-const ptName=(pl,rel)=>rel>=24?'выброс':String(rel+1);
+const ptName=(pl,rel)=>rel>=24?'выброс':rel<0?'бар':String(rel+1);
 function pathText(steps){
   // «1→7→10»: шаги одной шашки подряд склеиваются
   const out=[]; let cur=null;
@@ -2068,13 +2167,13 @@ if(MOCK) window.__t={                                   // ручки для а�
   st:()=>({over:!$('over').hidden,mist:G&&G.mistakes&&G.mistakes.map(m=>m.loss|0).join(','),phase:G&&G.phase,turn:G&&G.turn,me:G&&G.me,rem:G&&G.rem,steps:G&&G.steps.length,hist:G&&G.hist.length,key:G&&key(G.s),k:NET&&NET.k,pend:G&&(G.netPend||G.autoPending),busy,auto:G&&G.auto,dead:NET&&NET.dead,hold:NET&&NET.hold,status:$('status').textContent}),
   roll:()=>doRoll(),
   move:()=>{const st=G.steps[0];doMove([st]);},
-  head:()=>{const st=G.steps.find(x=>x.from===0); if(!st||G.auto||busy) return false; applyPath([st]); return true;}, hu:()=>G.headUsed,
+  head:()=>{const st=G.steps.find(x=>x.from===0); if(!st||G.auto||busy) return false; applyPath([st]); return true;}, hu:()=>G.headUsed, ait:l=>{const t=performance.now(); aiChoose(l); return Math.round(performance.now()-t);},
   undo:()=>undo(),
   end:()=>humanEnd(),
   best:()=>{const b=bestEnd(curCtx()); b&&b.path.length&&applyPath(b.path.slice(0,1));},
   bad:()=>{const st=G.steps[G.steps.length-1]; applyPath([st]);},
   // экранные точки: верхняя шашка, которой можно ходить, и пункт, куда она может пойти
-  coords:()=>{ const st=G.steps[0], src=st.src, n=G.s.n[src], a=slotXY(src,n-1,n);
+  coords:()=>{ const st=G.steps[0], src=st.src, n=cntAt(G.s,src), a=slotXY(src,n-1,n);
     const tg=movesFrom(curCtx(),src), to=[...tg.keys()].find(t=>t!=='off'), m=G.s.n[to], b=slotXY(to,m,m+1);
     const r=frame.getBoundingClientRect(), rot=document.documentElement.classList.contains('rot');
     const sc=([x,y])=>rot?[r.right-y/700*r.width,r.top+x/1100*r.height]:[r.left+x/1100*r.width,r.top+y/700*r.height];
@@ -2097,7 +2196,7 @@ async function diceFrom(a,b,distinct){
     h=await sha(h);
   }
 }
-const flipP=p=>[1000-p[0],700-p[1]];                 // поворот поля на 180°: чёрные видят доску со своей стороны
+const flipP=p=>flipXY(p);                 // поворот поля на 180°: чёрные видят доску со своей стороны
 const netLink=code=>`${location.origin}${location.pathname}?room=${code}${MOCK?'&mock':''}`;
 const netKey=code=>`nardy-net-${code}-${NETB.uid}`;
 
@@ -2182,10 +2281,10 @@ async function netCreate(){
     for(let t=0;t<5;t++){
       const code=[...crypto.getRandomValues(new Uint8Array(6))].map(x=>AB[x%AB.length]).join('');
       try{
-        await NETB.update(`rooms/${code}`,{created:Date.now(),'players/w':NETB.uid,'commit/w':chain[CHAIN],...(settings.head2?{head2:true}:{})});
+        await NETB.update(`rooms/${code}`,{created:Date.now(),'players/w':NETB.uid,'commit/w':chain[CHAIN],...(settings.head2?{head2:true}:{}),...(settings.variant==='short'?{v:'short'}:{})});
         NETB.update(`rooms/${code}/names`,{w:myName()}).catch(()=>{});   // имя — отдельно: без новых правил базы просто не запишется
         localStorage.setItem(netKey(code),JSON.stringify({seed}));
-        return netStart(code,'w',chain,!!settings.head2);
+        return netStart(code,'w',chain,!!settings.head2,settings.variant==='short'?'short':'long');
       }catch(e){}
     }
     throw new Error('no room');
@@ -2218,7 +2317,7 @@ async function netEnter(code){
       if(!saved) return netSheet('Эту партию начали на другом устройстве или в другом браузере — продолжить её здесь нельзя.');
       chain=await makeChain(saved.seed);
     }
-    netStart(code,slot,chain,!!room.head2);
+    netStart(code,slot,chain,!!room.head2,room.v==='short'?'short':'long');
   }catch(e){ console.error(e); netSheet('Не удалось подключиться к серверу игры. Проверьте интернет и откройте ссылку ещё раз.'); }
 }
 function netLeave(){
@@ -2228,14 +2327,14 @@ function netLeave(){
   history.replaceState(null,'',location.pathname+(MOCK?'?mock':''));
 }
 function netFresh(){
-  return {s:freshState(),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,turns:[0,0],undos:0,mistakes:[],
+  return {v:NET.v||'long',s:freshState(NET.v),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,first:[true,true],hist:[],sel:null,steps:[],targets:null,turns:[0,0],undos:0,mistakes:[],
     me:NET.me,flip:NET.me===1,netPend:false,ro:false,head2:!!NET.head2};
 }
-function netStart(code,slot,chain,head2){
+function netStart(code,slot,chain,head2,v){
   netLeave(); clearTimers();
   mode='net'; score=[0,0];
   NET={room:code,slot,me:slot==='w'?0:1,chain,commit:[null,null],rv:[[],[]],k:0,applied:0,q:new Map(),seen:0,
-       ready:false,started:false,send:Promise.resolve(),unsub:[],hold:false,opp:false,dead:false,mine:new Set(),head2:!!head2};
+       ready:false,started:false,send:Promise.resolve(),unsub:[],hold:false,opp:false,dead:false,mine:new Set(),head2:!!head2,v:v||'long'};
   G=netFresh(); busy=false; flyHide=null; $('over').hidden=true; $('lFx').innerHTML=''; clearDice(); buildHit();
   history.replaceState(null,'',`?room=${code}${MOCK?'&mock':''}`);
   try{localStorage.setItem('nardy-net-last',code);}catch(e){}
@@ -2454,7 +2553,7 @@ function buildStatic(){
 function buildHit(){
   let hit='';
   for(let i=0;i<24;i++){
-    const di=G&&G.flip?(i+12)%24:i, x=ptX(di)-35, y=isTop(di)?40:350;
+    const di=dispIdx(i), x=ptX(di)-35, y=isTop(di)?40:350;
     hit+=`<rect class="hit" data-pt="${i}" x="${x}" y="${y}" width="70" height="310" fill="transparent"/>`;
   }
   hit+=`<rect class="hit" data-pt="off" x="1010" y="0" width="90" height="700" fill="transparent"/>`;
@@ -2473,7 +2572,7 @@ function render(){
     for(const [to] of G.targets){
       if(to==='off'){ const y=(G.turn===0)!==!!G.flip?40:360;
         tg+=`<rect x="1018" y="${y}" width="66" height="300" rx="12" fill="rgba(243,217,147,.12)" stroke="${T}" stroke-width="2.5"/>`; continue; }
-      const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di);
+      const di=dispIdx(to), px=ptX(di), top=isTop(di);
       const kind=SHORT_MID.has(settings.skin)&&di%6!==0&&di%6!==5?'short':'long';
       tg+=`<image href="${av(`boards/pt-${settings.skin}-${kind}.png`)}" x="${px-40}" y="40" width="80" height="330" ${top?'':'transform="translate(0 700) scale(1 -1)"'}/>`;
     }
@@ -2491,6 +2590,12 @@ function render(){
       const [x,y]=slotXY(i,show-1,n), sel=G.sel===i;
       h+=`<circle cx="${x}" cy="${y}" r="${sel?34:32.5}" fill="none" stroke="${sel?'#fff6dc':T}" stroke-width="${sel?4:2.4}" ${sel?'filter="url(#glow)"':'opacity=".8"'} pointer-events="none"/>`;
     }
+  }
+  if(s.bar) for(const pl of [0,1]){
+    const c=s.bar[pl]-(hitHide===pl?1:0)-(flyHide==='bar'&&G.turn===pl?1:0);
+    for(let k=0;k<c;k++){ const [x,y]=barSlot(pl,k); h+=checker(x,y,pl,0); }
+    if(pl===G.turn&&srcs.has('bar')&&c>0){ const [x,y]=barSlot(pl,c-1), sel=G.sel==='bar';
+      h+=`<circle cx="${x}" cy="${y}" r="${sel?34:32.5}" fill="none" stroke="${sel?'#fff6dc':T}" stroke-width="${sel?4:2.4}" ${sel?'filter="url(#glow)"':'opacity=".8"'} pointer-events="none"/>`; }
   }
   const ck=skin().ck;
   for(const pl of [0,1]){
@@ -2516,7 +2621,7 @@ function render(){
   }
   if(human&&G.hint){
     for(const st of G.hint){
-      const n0=s.n[st.src], [x0,y0]=slotXY(st.src,Math.max(0,n0-1),Math.max(1,n0));
+      const n0=cntAt(s,st.src), [x0,y0]=slotXY(st.src,Math.max(0,n0-1),Math.max(1,n0));
       let x1,y1; if(st.to==='off'){[x1,y1]=[1050,G.turn===0?190:510];} else { const n=s.n[st.to]; [x1,y1]=slotXY(st.to,n,n+1); }
       h+=`<g class="hintmark" pointer-events="none"><circle cx="${x0}" cy="${y0}" r="31" fill="none" stroke="#9fe0a0" stroke-width="3"/>
         <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#9fe0a0" stroke-width="3" stroke-dasharray="7 6"/>
@@ -2590,10 +2695,10 @@ function showMenu(){
   $('mContinue').hidden=!(v||(NET&&NET.started));
   $('mAi').classList.toggle('main',!v);   // .main — крупная табличка
   const cm=NET&&NET.started?'net':v&&v.mode;
-  $('contCap').textContent=cm==='ai'?`с соперником: ${LEVELS[v.level||settings.level][1]}`:cm==='pvp'?'вдвоём':cm==='net'?'с другом по сети':'';
+  $('contCap').textContent=(v&&v.v==='short'?'короткие · ':'')+(cm==='ai'?`с соперником: ${LEVELS[v.level||settings.level][1]}`:cm==='pvp'?'вдвоём':cm==='net'?'с другом по сети':'');
   $('case').classList.remove('open'); $('menu').classList.remove('opening');
   $('lvlCap').textContent='Соперник: '+LEVELS[settings.level][1];
-  $('tourCap').textContent=`ступень ${tourStage()+1} из 4 · ${LEVELS[TOUR[tourStage()]][1]}`;
+  $('tourCap').textContent=`ступень ${tourStage()+1} из 4 · ${LEVELS[TOUR[tourStage()]][1]}${settings.variant==='short'?' · в длинные':''}`;
   let sc='';
   try{const all=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};
     if(all.ai&&(all.ai[0]||all.ai[1])) sc+=`С компьютером ${all.ai[0]} : ${all.ai[1]}`;
@@ -2664,6 +2769,9 @@ $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(
 $('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 document.querySelectorAll('.seg.amb').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.ambient=b.dataset.amb==='on'; saveSettings(); paintSettings(); ac(); ambientSync();}));
 $('setName').addEventListener('change',()=>{ settings.name=$('setName').value.trim().slice(0,20); saveSettings(); });
+function paintVariant(){ document.querySelectorAll('.varsel button').forEach(b=>b.classList.toggle('on',b.dataset.var===(settings.variant==='short'?'short':'long'))); }
+document.querySelectorAll('.varsel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; ac(); settings.variant=b.dataset.var; saveSettings(); paintVariant(); $('tourCap').textContent=`ступень ${tourStage()+1} из 4 · ${LEVELS[TOUR[tourStage()]][1]}${settings.variant==='short'?' · в длинные':''}`;}));
+paintVariant();
 document.querySelectorAll('.seg.headsel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.head2=b.dataset.head==='2'; saveSettings(); paintSettings();}));
 document.querySelectorAll('.seg.autosel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.automove=b.dataset.auto==='on'; saveSettings(); paintSettings();}));
 $('cksets').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b||b.disabled) return; settings.ckset=b.dataset.ck; saveSettings(); paintSettings(); buildStatic(); if(G) render();});
@@ -2683,8 +2791,9 @@ $('settings').addEventListener('click',e=>{if(e.target===$('settings'))$('settin
 // Просто нажатие (без движения) работает как раньше: выбор шашки, потом пункта.
 function ptAt(x,y){
   if(x>1010) return 'off';
+  if(SH()&&x>=462&&x<=538&&y>=40&&y<=660) return 'bar';
   for(let i=0;i<24;i++){
-    const di=G&&G.flip?(i+12)%24:i, px=ptX(di);
+    const di=dispIdx(i), px=ptX(di);
     if(Math.abs(x-px)<=35&&(isTop(di)?y>=40&&y<350:y>=350&&y<=660)) return i;
   }
   return null;
@@ -2697,7 +2806,7 @@ function snapTarget(x,y,src){
   for(const [to] of tg){
     let d;
     if(to==='off') d=Math.hypot(Math.max(0,1018-x),Math.max(0,Math.abs(y-350)-300));
-    else{ const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di), n=G.s.n[to], [sx,sy]=slotXY(to,n,n+1);
+    else{ const di=dispIdx(to), px=ptX(di), top=isTop(di), n=G.s.n[to], [sx,sy]=slotXY(to,n,n+1);
       const inCol=Math.abs(x-px)<=35&&(top?y>=40&&y<350:y>=350&&y<=660);
       d=Math.min(Math.hypot(x-sx,y-sy), inCol?0:Math.hypot(Math.max(0,Math.abs(x-px)-35),top?Math.max(0,y-350,40-y):Math.max(0,350-y,y-660))); }
     if(d<bd){ bd=d; best=to; }

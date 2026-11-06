@@ -73,7 +73,7 @@ try{
   const rows=(el,pairs)=>{ const m=Math.max(1,...pairs.map(p=>p[1])); $(el).innerHTML=pairs.map(([t,n])=>`<div class="row"><span>${t}</span><div class="bar"><div style="width:${n/m*100}%"></div></div><em>${n}</em></div>`).join('')||'<span class="sub">пока пусто</span>'; };
   const M={ai:'С соперником',tour:'Турнир двора',pvp:'Вдвоём',net:'По сети'}, mc={};
   Object.values(Gg).forEach(o=>Object.values(o).forEach(r=>{ mc[r.m]=(mc[r.m]||0)+1; }));
-  rows('modes',Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([k,n])=>[M[k]||k,n]));
+  rows('modes',Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([k,n])=>{ const sh=k.endsWith('-s'), b=sh?k.slice(0,-2):k; return [(M[b]||b)+(sh?' · короткие':''),n]; }));
   const P={ios:'iPhone / iPad',android:'Android',pc:'Компьютер'}, pc={};
   users.forEach(u=>{ pc[u.p]=(pc[u.p]||0)+1; });
   rows('devs',Object.entries(pc).sort((a,b)=>b[1]-a[1]).map(([k,n])=>[P[k]||k,n]));

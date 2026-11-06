@@ -37,6 +37,10 @@
         "head2": {
           ".write": "auth != null && !data.exists()",
           ".validate": "newData.isBoolean()"
+        },
+        "v": {
+          ".write": "auth != null && !data.exists()",
+          ".validate": "newData.val() === 'short' || newData.val() === 'long'"
         }
       }
     },

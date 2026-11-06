@@ -1,0 +1,16 @@
+{
+  "appId": "am.nardy.game",
+  "appName": "Нарды",
+  "webDir": "www",
+  "server": {
+    "url": "https://angel3330506.github.io/nardy/",
+    "allowNavigation": ["angel3330506.github.io"]
+  },
+  "android": {
+    "backgroundColor": "#0c0b0a",
+    "appendUserAgent": "NardyApp NardyAndroid",
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

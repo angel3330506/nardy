@@ -137,10 +137,28 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .d3.tap{pointer-events:auto;cursor:pointer}
 .d3.held .cube{animation:none}
 .d3.held .mover{transform:scale(1.15) rotateZ(var(--rz,0deg))}
-.d3.held .shadow{animation:none;transform:translate(22%,32%) scale(1.1);opacity:.55}
+.d3.held .shadow{animation:none;transform:translate(calc(var(--shx,6%) * 2.6 + 8%),calc(var(--shy,9%) * 2.6 + 14%)) scale(1.12);opacity:.45;filter:blur(calc(var(--ds,50px) * .16))}
+.d3.held .contact{opacity:0}
 @keyframes nudge{0%,80%,100%{translate:0 0}86%{translate:0 -7%}92%{translate:0 0}96%{translate:0 -3%}}
 @keyframes glowShadow{0%,100%{box-shadow:0 0 0 0 rgba(243,217,147,0)}50%{box-shadow:0 0 calc(var(--ds,50px) * .35) calc(var(--ds,50px) * .06) rgba(243,217,147,.55)}}
-.d3 .shadow{position:absolute;inset:6%;border-radius:22%;background:rgba(0,0,0,.55);filter:blur(calc(var(--ds,50px) * .08));transform:translate(6%,9%)}
+.d3 .shadow{position:absolute;inset:5%;border-radius:22%;background:rgba(0,0,0,.72);filter:blur(calc(var(--ds,50px) * .07));transform:translate(var(--shx,6%),var(--shy,9%))}
+/* живая тень: плотная тень касания прямо под кубиком + отбрасываемая (.shadow), её направление и длина — от света (время суток, лампа ночью) */
+.d3 .contact{position:absolute;inset:8%;border-radius:20%;background:rgba(0,0,0,.75);filter:blur(calc(var(--ds,50px) * .035));transform:translate(1%,3%)}
+html.night .d3 .shadow{background:rgba(0,0,0,.8)}
+/* конец хода: кубики — кнопка «передать ход»: золотое свечение и подпись */
+.d3.tap{opacity:1}
+.d3.tap .contact{animation:tapGlow 1.8s ease-in-out infinite}
+.d3.tap .mover{animation:tapBreath 1.8s ease-in-out infinite}
+@keyframes tapGlow{0%,100%{box-shadow:0 0 calc(var(--ds,50px) * .25) calc(var(--ds,50px) * .05) rgba(243,207,120,.55)}50%{box-shadow:0 0 calc(var(--ds,50px) * .55) calc(var(--ds,50px) * .14) rgba(255,214,120,.95)}}
+@keyframes tapBreath{0%,100%{scale:1}50%{scale:1.06}}
+.d3.tap .face.top{box-shadow:inset 0 0 0 calc(var(--ds,50px) * .035) rgba(240,196,100,.9),0 0 calc(var(--ds,50px) * .3) rgba(255,210,120,.7)}
+.dicehint{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;pointer-events:none;z-index:3;
+  background:linear-gradient(180deg,#2a2013,#17110b);border:1px solid var(--gold);color:var(--gold-hi);border-radius:999px;
+  padding:calc(var(--ds,50px) * .12) calc(var(--ds,50px) * .4);font-size:max(12px,calc(var(--ds,50px) * .34));box-shadow:0 6px 18px rgba(0,0,0,.55);
+  animation:hintIn .35s ease-out}
+@keyframes hintIn{from{opacity:0;translate:0 6px}to{opacity:1;translate:0 0}}
+html.lite .d3.tap .contact,html.lite .d3.tap .mover{animation:none}
+@media (prefers-reduced-motion:reduce){.d3.tap .contact,.d3.tap .mover{animation:none}}
 .d3 .mover{position:absolute;inset:0;transform-style:preserve-3d}
 .d3 .cube{position:absolute;inset:0;transform-style:preserve-3d}
 .d3 .face{
@@ -822,7 +840,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='104';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='105';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/intro-rev-w.webp":"af4818c9","boards/intro-rev.webp":"212eecdb","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -1348,7 +1366,7 @@ function resumeGame(){
   if(G.phase==='roll'){ if(isHuman(G.turn)) promptRoll(); else later(aiTurn,500); }
   else if(G.phase==='move'){
     if(!isHuman(G.turn)) later(aiPlay,500);
-    else if(!G.steps.length) setStatus('Ходов больше нет. Завершите ход.');
+    else if(!G.steps.length) setStatus('Ходов больше нет. Нажмите на кубики — ход перейдёт сопернику.');
     else setStatus(`Партия продолжается. Осталось: <b>${G.rem.join(', ')}</b>.`);
   }
 }
@@ -1373,12 +1391,20 @@ function dieEl(v){
     faces+=`<div class="face${f===v?' top':''}" style="background-image:url(${diceImg(f)});transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) / 2))">${pips}</div>`;
     faces+=`<div class="core" style="transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) * .47))"></div>`;
   }
-  el.innerHTML=`<div class="shadow"></div><div class="mover"><div class="cube">${faces}</div></div>`;
+  el.innerHTML=`<div class="shadow"></div><div class="contact"></div><div class="mover"><div class="cube">${faces}</div></div>`;
   el.dataset.v=v;
   return el;
 }
 const finalRot=(v,z,spinX=0,spinY=0)=>{const [a,b]=FACE[v];return `rotateZ(${z}deg) rotateY(${-b+360*spinY}deg) rotateX(${-a+360*spinX}deg)`;};
-const setPos=(el,[x,y])=>{el.style.left=(x/11)+'%'; el.style.top=(y/7)+'%';};
+// направление тени кубика (в % его размера): днём солнце почти сверху, вечером низкое — тень длинная и косая,
+// ночью свет от лампы над серединой доски — тень уходит от центра, тем дальше, чем дальше кубик от лампы
+function dieShadowDir(x,y){
+  const t=timeOfDay();
+  if(t==='evening') return [30,20];
+  if(t==='night'){ const vx=(x-550)/420, vy=(y-330)/300; return [vx*30+2,vy*24+6]; }
+  return [10,16];
+}
+const setPos=(el,[x,y])=>{el.style.left=(x/11)+'%'; el.style.top=(y/7)+'%'; const [a,b]=dieShadowDir(x,y); el.style.setProperty('--shx',a+'%'); el.style.setProperty('--shy',b+'%'); el._pos=[x,y];};
 function clearDice(){diceBox.innerHTML='';diceBox.dataset.state='';}
 function placeDice(vals,pos=G.diceAt||DIE_POS){
   clearDice();
@@ -1433,13 +1459,13 @@ function throwDice(vals,start,land,done,lift=1){
       {transform:at(0,0),offset:.9,easing:'ease-out'},
       {transform:at(0,0),offset:1}
     ],{duration:D,fill:'forwards'});
-    el.querySelector('.shadow').animate([
-      {transform:`translate(${sx}px,${sy}px) scale(1.5)`,opacity:.15,offset:0},
-      {transform:`translate(${sx*.34}px,${sy*.34}px) scale(1)`,opacity:.9,offset:.4},
-      {transform:`translate(${sx*.16}px,${sy*.16}px) scale(1.15)`,opacity:.6,offset:.55},
-      {transform:`translate(${sx*.06}px,${sy*.06}px) scale(1)`,opacity:.9,offset:.7},
-      {transform:'translate(6%,9%) scale(1)',opacity:1,offset:1}
-    ],{duration:D,fill:'forwards'});
+    // живая тень: следует за кубиком по столу; чем выше кубик, тем дальше она отброшена от него, шире, мягче и бледнее
+    const ds=el.offsetWidth||40, [shx,shy]=dieShadowDir(...land[i]).map(v=>v*ds/100);
+    const KF=[[0,1,H],[.4,.34,0],[.55,.16,H*.28],[.7,.06,0],[.8,.02,H*.07],[.9,0,0],[1,0,0]];
+    el.querySelector('.shadow').animate(KF.map(([o,f,z])=>{ const h=Math.min(3,z/ds);
+      return {offset:o,transform:`translate(${f*sx+shx*(1+h*1.6)+h*ds*.08}px,${f*sy+shy*(1+h*1.6)+h*ds*.18}px) scale(${1+h*.18})`,
+        opacity:Math.max(.4,1/(1+h*.3)),filter:`blur(${ds*(.07+h*.035)}px)`}; }),{duration:D,fill:'forwards'});
+    el.querySelector('.contact').animate(KF.map(([o,f,z])=>({offset:o,transform:`translate(${f*sx}px,${f*sy}px)`,opacity:z>0?0:1})),{duration:D,fill:'forwards'});
     el.querySelector('.cube').animate([
       {transform:`rotateZ(${rnd(-180,180)}deg) rotateY(${rnd(-60,60)}deg) rotateX(${rnd(-60,60)}deg)`},
       {transform:finalRot(v,rnd(-25,25),Math.random()<.5?2:-2,Math.random()<.5?1:-1)}
@@ -1456,8 +1482,14 @@ function renderDiceState(){
   if(a===b){ua=G.rem.length<2;ub=G.rem.length<1;}
   else{ua=!G.rem.includes(a);ub=!G.rem.includes(b);}
   els[0].classList.toggle('used',ua); els[1].classList.toggle('used',ub);
-  const done=isHuman(G.turn)&&!G.steps.length&&!busy&&!G.auto;
+  const done=isHuman(G.turn)&&!G.steps.length&&!busy&&!G.auto&&!G.netPend&&!G.autoEnd;
   els.forEach(e=>e.classList.toggle('tap',done));
+  // подпись над кубиками: их надо нажать, чтобы передать ход
+  let h=diceBox.querySelector('.dicehint');
+  if(done&&!h){ const p=[...els].map(e=>e._pos||[550,350]); h=document.createElement('div'); h.className='dicehint';
+    h.textContent=window.matchMedia('(hover:hover)').matches?'Нажмите на кубики — передать ход':'Коснитесь кубиков — передать ход';
+    const x=(p[0][0]+p[1][0])/2, y=Math.min(p[0][1],p[1][1]); h.style.left=(x/11)+'%'; h.style.top=`calc(${y/7}% - var(--ds,50px) * .85)`; diceBox.appendChild(h); }
+  else if(!done&&h) h.remove();
 }
 
 /* ---------- бросок пальцем ---------- */
@@ -1509,7 +1541,7 @@ diceBox.addEventListener('pointercancel',dropDice);
 // касание кубиков после хода — завершить ход
 diceBox.addEventListener('click',e=>{
   if(!e.target.closest('.d3')||!G||busy||G.auto) return;
-  if(G.phase==='move'&&isHuman(G.turn)&&!G.steps.length) humanEnd();
+  if(G.phase==='move'&&isHuman(G.turn)&&!G.steps.length&&!G.netPend) humanEnd();
 });
 
 // vals — заданный результат (в сетевой партии он общий для обоих)
@@ -1634,7 +1666,7 @@ function afterStep(){
     tutorHook('step'); return;
   }
   if(homeCount(G.s,G.turn)===15&&G.s.off[G.turn]===0) tutorHook('home');
-  if(!G.steps.length) setStatus(G.rem.length?'Остальные кубики сыграть нельзя. Завершите ход.':'Ход сделан. Завершите ход или отмените.');
+  if(!G.steps.length) setStatus(G.rem.length?'Остальные кубики сыграть нельзя. Нажмите на кубики — ход перейдёт сопернику.':'Ход сделан. Нажмите на кубики, чтобы передать ход, или отмените.');
   else setStatus(`Осталось: <b>${G.rem.join(', ')}</b>.`);
   tutorHook('step');
   render();
@@ -1984,7 +2016,7 @@ function tutorHook(ev){
     else if(ev==='roll'&&G.tutor.ai&&!G.tutor.goal){ coach('goal','Цель — привести все 15 шашек в дом (правая верхняя четверть) и выбросить их. Победа — 1 очко, марс — 2, <b>кокс</b> — 3: если у соперника ничего не выброшено, а его шашка на баре или в вашем доме. Удачи! Правила — в меню '+ic('menu')+'.',true); G.tutor.final=1; }
     else if(ev==='rolled') coach('move','Подсвечены шашки, которыми можно ходить. Нажмите на шашку и на пункт с числом — или перетащите. На пункт, где стоит <b>одна</b> чужая шашка, вставать можно — она будет <b>сбита</b>.');
     else if(ev==='step'&&G.steps.length) coach('step','Отлично! Сыграйте второй кубик. Стрелка '+ic('undo')+' отменит ход, лампочка подскажет.');
-    else if(ev==='step') coach('end','Ход сделан. Нажмите <b>«Завершить ход»</b> — или просто на кубики.');
+    else if(ev==='step') coach('end','Ход сделан. Нажмите на <b>светящиеся кубики</b> — ход перейдёт сопернику.');
     else if(ev==='ai') coach('ai','Ходит Арам. Главное в коротких: пункт с <b>двумя и больше</b> чужими шашками закрыт, а <b>одиночная</b> шашка под боем — её могут сбить. Старайтесь не оставлять свои шашки по одной.',true);
     else if(ev==='hit') coach('hit','Сбили! Шашка Арама ушла на <b>бар</b> в середине доски. Пока он не введёт её обратно — в ваш дом, — другими шашками ходить не сможет.',true);
     else if(ev==='hitme') coach('hitme','Вашу шашку сбили — она на баре. Теперь сначала нужно <b>ввести её</b> в дом соперника (правая нижняя четверть): нажмите на неё на баре и выберите пункт. Пункт с двумя чужими шашками закрыт.',true);
@@ -1997,7 +2029,7 @@ function tutorHook(ev){
   else if(ev==='roll'&&G.tutor.ai&&!G.tutor.goal){ coach('goal','Цель — привести все 15 шашек в <b>дом</b> (правая верхняя четверть доски) и выбросить их в лоток справа. Кто первым выбросит все — победил. Удачи! Правила всегда в меню '+ic('menu')+'.',true); G.tutor.final=1; }
   else if(ev==='rolled') coach('move','Подсвечены шашки, которыми можно ходить. <b>Нажмите на шашку, потом на пункт с числом</b> — или просто перетащите её. Число — на сколько пунктов вы идёте.');
   else if(ev==='step'&&G.steps.length) coach('step','Отлично! Сыграйте второй кубик. Передумали — стрелка '+ic('undo')+' отменит ход, а лампочка подскажет хороший вариант.');
-  else if(ev==='step') coach('end','Ход сделан. Нажмите <b>«Завершить ход»</b> вверху — или просто на кубики.');
+  else if(ev==='step') coach('end','Ход сделан. Нажмите на <b>светящиеся кубики</b> — ход перейдёт сопернику.');
   else if(ev==='ai') coach('ai','Теперь ходит Арам. Запомните главное: шашки идут <b>против часовой стрелки</b>, бить чужие нельзя — пункт с чужой шашкой закрыт, а с головы за ход снимается <b>одна шашка</b>.',true);
   else if(ev==='hide') hide();
 }
@@ -2486,7 +2518,7 @@ async function netBegin(){
 function netStatus(){
   if(G.phase==='start') setStatus('Ждём друга…');
   else if(G.phase==='roll') promptRoll();
-  else if(G.phase==='move') setStatus(isHuman(G.turn)?(G.steps.length?`Ваш ход. Осталось: <b>${G.rem.join(', ')}</b>.`:'Ходов больше нет. Завершите ход.'):'Ходит друг…');
+  else if(G.phase==='move') setStatus(isHuman(G.turn)?(G.steps.length?`Ваш ход. Осталось: <b>${G.rem.join(', ')}</b>.`:'Ходов больше нет. Нажмите на кубики — ход перейдёт сопернику.'):'Ходит друг…');
 }
 // Свои действия (ход, отмена, конец хода, бросок) показываем сразу, не дожидаясь сервера: событие уходит в фоне,
 // а когда оно вернётся из общего лога — пропускаем его (по id), оно уже применено. Так по сети нет задержки на каждый ход.
@@ -2763,7 +2795,7 @@ function renderPanel(){
     $('n1').textContent=mode==='ai'?opp()[0]:'Чёрные';
   }
   const human=isHuman(G.turn);
-  $('bMain').hidden=!(G.phase==='move'&&human&&!busy&&!G.auto&&!G.steps.length&&!G.netPend);
+  $('bMain').hidden=true;   // «Завершить ход» теперь — сами кубики (светятся золотом, над ними подпись); кнопка осталась только для пробела на клавиатуре
   $('bUndo').disabled=!(G.phase==='move'&&human&&G.hist.length&&!busy&&!G.auto&&!G.netPend);
   $('bHint').hidden=mode==='net'; $('bHint').disabled=!(G.phase==='move'&&human&&G.steps.length&&!busy&&!G.auto);
 }
@@ -2847,7 +2879,8 @@ function timeOfDay(){
   const t=settings.tod||'auto'; if(t!=='auto') return t;
   const h=new Date().getHours(); return h>=21||h<6?'night':h>=18?'evening':'day';
 }
-function applyTod(){ const de=document.documentElement, t=timeOfDay(); de.classList.toggle('evening',t==='evening'); de.classList.toggle('night',t==='night'); }
+function applyTod(){ const de=document.documentElement, t=timeOfDay(); de.classList.toggle('evening',t==='evening'); de.classList.toggle('night',t==='night');
+  const db=document.getElementById('dice3d'); if(db) db.querySelectorAll('.d3').forEach(e=>e._pos&&setPos(e,e._pos)); }
 applyTod(); setInterval(applyTod,60000);
 // подарок от автора: 7 быстрых нажатий на название «Нарды» в главном меню → код → золотые и серебряные шашки (и иконки) без турниров
 // (работает и в приложении с экрана «Домой», где своя отдельная память)

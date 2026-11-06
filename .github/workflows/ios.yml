@@ -21,11 +21,13 @@ jobs:
         run: |
           mkdir app && cd app
           npm init -y >/dev/null
-          npm i @capacitor/core@7 @capacitor/cli@7 @capacitor/ios@7
+          npm i @capacitor/core@7 @capacitor/cli@7 @capacitor/ios@7 @capacitor/haptics@7
           mkdir www && cp -R ../index.html ../manifest.webmanifest ../privacy.html ../og.jpg ../boards ../sounds ../icons www/
           cp ../ios-shell/capacitor.config.json .
           npx cap add ios
           cp ../ios-shell/AppIcon-1024.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+          # экран загрузки: тёмный, с иконкой игры
+          for f in ios/App/App/Assets.xcassets/Splash.imageset/*.png; do cp ../ios-shell/splash-2732.png "$f"; done
           # без статус-бара, поворот в любую сторону, полноэкранно
           P=ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Нарды" $P || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Нарды" $P

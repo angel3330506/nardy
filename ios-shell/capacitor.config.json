@@ -4,12 +4,15 @@
   "webDir": "www",
   "server": {
     "url": "https://angel3330506.github.io/nardy/",
-    "allowNavigation": ["angel3330506.github.io"]
+    "allowNavigation": [
+      "angel3330506.github.io"
+    ]
   },
   "ios": {
     "contentInset": "never",
     "backgroundColor": "#0c0b0a",
     "scrollEnabled": false,
-    "limitsNavigationsToAppBoundDomains": true
+    "limitsNavigationsToAppBoundDomains": true,
+    "appendUserAgent": "NardyApp"
   }
 }

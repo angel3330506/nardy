@@ -1,0 +1,47 @@
+# Сборка iOS-приложения (.ipa без подписи) — для установки через Sideloadly с бесплатным Apple ID.
+# Игра упаковывается в Capacitor целиком (работает без интернета, кроме игры по сети).
+# Результат: релиз «ios-latest» в GitHub с файлом Nardy.ipa.
+name: iOS app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['index.html', 'boards/**', 'sounds/**', 'icons/**', 'ios-shell/**', '.github/workflows/ios.yml']
+permissions:
+  contents: write
+jobs:
+  ipa:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Capacitor-проект
+        run: |
+          mkdir app && cd app
+          npm init -y >/dev/null
+          npm i @capacitor/core@7 @capacitor/cli@7 @capacitor/ios@7
+          mkdir www && cp -R ../index.html ../manifest.webmanifest ../privacy.html ../og.jpg ../boards ../sounds ../icons www/
+          cp ../ios-shell/capacitor.config.json .
+          npx cap add ios
+          cp ../ios-shell/AppIcon-1024.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+          # без статус-бара, поворот в любую сторону, полноэкранно
+          P=ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Нарды" $P || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Нарды" $P
+          /usr/libexec/PlistBuddy -c "Add :UIStatusBarHidden bool true" $P || true
+          /usr/libexec/PlistBuddy -c "Add :UIRequiresFullScreen bool true" $P || true
+          /usr/libexec/PlistBuddy -c "Set :UIViewControllerBasedStatusBarAppearance false" $P || /usr/libexec/PlistBuddy -c "Add :UIViewControllerBasedStatusBarAppearance bool false" $P
+          npx cap sync ios
+      - name: Сборка без подписи
+        run: |
+          cd app/ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build | tail -20
+          mkdir -p Payload && cp -R build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qry ../../../Nardy.ipa Payload
+          ls -la ../../../Nardy.ipa
+      - name: Релиз
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release delete ios-latest -y --cleanup-tag || true
+          gh release create ios-latest Nardy.ipa --title "Нарды для iPhone (для Sideloadly)" --notes "Собрано из ${GITHUB_SHA::7}. Установка: Sideloadly на Windows/Mac, бесплатный Apple ID; подпись действует 7 дней."

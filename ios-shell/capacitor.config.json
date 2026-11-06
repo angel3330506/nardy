@@ -1,0 +1,6 @@
+{
+  "appId": "am.nardy.game",
+  "appName": "Нарды",
+  "webDir": "www",
+  "ios": { "contentInset": "never", "backgroundColor": "#0c0b0a", "scrollEnabled": false }
+}

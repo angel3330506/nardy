@@ -32,6 +32,13 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :UIStatusBarHidden bool true" $P || true
           /usr/libexec/PlistBuddy -c "Add :UIRequiresFullScreen bool true" $P || true
           /usr/libexec/PlistBuddy -c "Set :UIViewControllerBasedStatusBarAppearance false" $P || /usr/libexec/PlistBuddy -c "Add :UIViewControllerBasedStatusBarAppearance bool false" $P
+          # только горизонтально (обе стороны)
+          for K in UISupportedInterfaceOrientations "UISupportedInterfaceOrientations~ipad"; do
+            /usr/libexec/PlistBuddy -c "Delete :$K" $P || true
+            /usr/libexec/PlistBuddy -c "Add :$K array" $P
+            /usr/libexec/PlistBuddy -c "Add :$K:0 string UIInterfaceOrientationLandscapeRight" $P
+            /usr/libexec/PlistBuddy -c "Add :$K:1 string UIInterfaceOrientationLandscapeLeft" $P
+          done
           # сайт игры — «свой» домен приложения: так WebView разрешает офлайн-кэш (service worker), как в Safari
           /usr/libexec/PlistBuddy -c "Add :WKAppBoundDomains array" $P || true
           /usr/libexec/PlistBuddy -c "Add :WKAppBoundDomains:0 string angel3330506.github.io" $P || true

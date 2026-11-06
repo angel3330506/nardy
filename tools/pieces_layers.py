@@ -18,9 +18,9 @@ def checker(kind):
     g = lambda rad, d, w: -np.exp(-((r - rad) / w) ** 2) * d
     metal = np.zeros((N, N))
     grooves = lambda: g(.80, .018, .012) + g(.60, .015, .01) + g(.38, .012, .009) + g(.16, .01, .008)
-    if kind in ('copper', 'bronze', 'gold'):
+    if kind in ('copper', 'bronze', 'gold', 'silver'):
         # металлические шашки: медь, тёмная бронза, золото — точёные бороздки, в них патина
-        col = {'copper': (.86, .45, .26), 'bronze': (.30, .20, .12), 'gold': (.95, .74, .36)}[kind]
+        col = {'copper': (.86, .45, .26), 'bronze': (.30, .20, .12), 'gold': (.95, .74, .36), 'silver': (.86, .87, .88)}[kind]
         rng = np.random.default_rng(len(kind))
         brush = ndi.gaussian_filter(rng.random((N, N)), (0.6, 0.6))
         ang = np.arctan2(y, x); turn = ndi.map_coordinates(rng.random((64, 2048)), [np.clip(r * 63, 0, 63), (ang / math.pi + 1) / 2 * 2047], order=1)
@@ -109,7 +109,7 @@ def die_face(v, mat='bone'):
 
 if __name__ == '__main__':
     out = os.path.join(os.path.dirname(__file__), '..', '.preview')
-    for k in ('ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold'):
+    for k in ('ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold', 'silver'):
         np.savez_compressed(os.path.join(out, f'piece-ck-{k}.npz'), **checker(k))
     for mat in ('bone', 'wood', 'amber'):
         for v in range(1, 7):

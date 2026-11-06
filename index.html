@@ -683,6 +683,7 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
 <div class="sheet" id="statsSheet" hidden>
   <div class="sheet-in">
     <h3>Статистика</h3>
+    <div class="varsel statvar"><button data-sv="long">Длинные</button><button data-sv="short">Короткие</button></div>
     <div class="stats" id="statsGrid"></div>
     <div id="rateBox" hidden>
       <h4>Рейтинг по сети</h4>
@@ -779,10 +780,10 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='85';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='86';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
-/*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/leafshade.webp":"8666bd89","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
+/*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/leafshade.webp":"8666bd89","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
 const av=p=>p+'?v='+(AV[p]||APP_VERSION);
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
@@ -839,11 +840,12 @@ const CK={
   pearl:{img:'pearl',cntBg:'#1a130c',cntFg:'#f3e9da'},
   copper:{img:'copper',cntBg:'#2a140a',cntFg:'#ffd9b8'},
   bronze:{img:'bronze',cntBg:'#f3d993',cntFg:'#1a120b'},
-  gold:{img:'gold',cntBg:'#2a1a06',cntFg:'#fff0c4'}
+  gold:{img:'gold',cntBg:'#2a1a06',cntFg:'#fff0c4'},
+  silver:{img:'silver',cntBg:'#1a1d22',cntFg:'#f2f4f7'}
 };
 // наборы шашек (светлые/тёмные); «золото» открывается за победу в турнире двора
 const CKSETS={skin:['Как у доски'],pomegranate:['Гранат',CK.beech,CK.pomegranate],pearl:['Перламутр',CK.pearl,CK.onyx],
-  copper:['Медь',CK.copper,CK.bronze],gold:['Золото',CK.gold,CK.walnut]};
+  copper:['Медь',CK.copper,CK.bronze],gold:['Золото',CK.gold,CK.walnut],silver:['Серебро',CK.silver,CK.onyx]};
 const SKINS={
   night:{name:'Ночь',ck:{w:CK.ivory,b:CK.onyx},tgt:'#f3d993'},
   ararat:{name:'Аревахач',ck:{w:CK.beech,b:CK.walnut},tgt:'#fff1cf'},
@@ -1130,6 +1132,15 @@ function sOpen(){
   g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.5,t+.01); g.gain.exponentialRampToValueAtTime(.001,t+.3);
   o.connect(g).connect(a.destination); o.start(t); o.stop(t+.35); synthKnock(.6,.32);
 }
+// сбили шашку: короткий плотный удар дерева о дерево и низкий «бум»
+function sHit(){
+  const a=settings.sound&&ac(); if(!a) return; const t=a.currentTime;
+  synthKnock(.75,0); synthKnock(.45,.025);
+  const o=a.createOscillator(), g=a.createGain(); o.type='sine';
+  o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(48,t+.22);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.55,t+.008); g.gain.exponentialRampToValueAtTime(.001,t+.3);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+.32);
+}
 /* атмосфера дворика: шелест листвы, птицы, изредка ложечка о стакан — всё синтезируется, без файлов */
 const AMB={on:false,nodes:[],timers:[]};
 const MUSIC=[];   // что сейчас играет из музыки (дудук) — «Без музыки» глушит это сразу
@@ -1261,8 +1272,8 @@ function newGame(m,tutor,tour){
   clearTimers(); netLeave();
   if(m) mode=m;
   loadScore();
-  const lvl=tour?TOUR[tourStage()]:tutor?'easy':settings.level;
-  const v=tour?'long':tutor?(tutor==='short'?'short':'long'):(settings.variant==='short'?'short':'long');
+  const lvl=tour?TOUR[tourStage(settings.variant==='short'?'short':'long')]:tutor?'easy':settings.level;
+  const v=tutor?(tutor==='short'?'short':'long'):(settings.variant==='short'?'short':'long');
   G={v,s:freshState(v),turn:0,phase:'start',dice:[0,0],diceAt:null,rem:[],headUsed:0,headLimit:1,head2:false,first:[true,true],hist:[],sel:null,steps:[],targets:null,level:lvl,turns:[0,0],undos:0,mistakes:[],tour:!!tour};   // сложность закреплена за партией
   if(tutor) G.tutor={};
   $('coach').hidden=true;
@@ -1498,7 +1509,7 @@ function rolled(a,b,land,after,instant){
     (G.rec=G.rec||[]).push({p:G.turn,d:[a,b],st:[]});              // запись партии для повтора
     G.dice=[a,b]; G.diceAt=land;
     G.rem=a===b?[a,a,a,a]:[a,b];
-    G.headUsed=0;
+    G.headUsed=0; G.hitsTurn=0;
     G.headLimit=headLim(G.first[G.turn],a,b);
     G.first[G.turn]=false;
     G.phase='move'; G.hist=[]; G.sel=null; G.hint=null; G.usedHint=false;
@@ -1528,7 +1539,9 @@ function applyStep(st,cb){
   // короткие: на пункте стояла одиночная чужая шашка — она улетает на бар
   if(prev.bar&&st.to!=='off'&&prev.n[st.to]===1&&prev.o[st.to]===1-pl){
     const opp=1-pl, hp=slotXY(st.to,0,1); hitHide=opp; later(()=>tutorHook(isHuman(pl)?'hit':'hitme'),450);
-    fly(opp,hp,barSlot(opp,G.s.bar[opp]-1),false,()=>{ hitHide=null; sClack(false); render(); });
+    if(isHuman(pl)&&mode!=='pvp'){ G.hitsTurn=(G.hitsTurn||0)+1; if(G.hitsTurn>=3){ const a=loadStats(); unlock(a,'hit3'); saveStats(a); } }
+    sHit();
+    fly(opp,hp,barSlot(opp,G.s.bar[opp]-1),false,()=>{ hitHide=null; synthKnock(.5,0); render(); });
   }
   let to, onStack=false;
   if(st.to==='off') to=traySlot(pl,G.s.off[pl]-1);
@@ -1695,7 +1708,7 @@ function gameOver(pl,res={}){
   const pts=koks?3:mars?2:1;
   score[pl]+=pts; saveScore(); render();
   if(G.turnStart){ G.turnStart.played=G.hist.map(h=>h.st); analyzeTurn(); }
-  recordGame(pl,mars); if(G.tutor) finishTutor();
+  recordGame(pl,mars,koks); if(G.tutor) finishTutor();
   if(mode==='net'&&NET&&NET.ready){ NET.games=(NET.games||0)+1; netRate(pl===G.me,mars); }
   if(mode==='ai') setTimeout(()=>say(pl===1?(mars?'mars':'win'):'lose'),700);
   $('bReview').hidden=!(mode==='ai');
@@ -1758,16 +1771,18 @@ function closeReplay(){
 
 /* турнир двора */
 const TOUR=['easy','medium','hard','expert'];
-const tourStage=()=>{ try{return Math.min(3,JSON.parse(localStorage.getItem('nardy-tour')||'{}').stage|0);}catch(e){return 0;} };
-const setTour=st=>{ try{localStorage.setItem('nardy-tour',JSON.stringify({stage:st}));}catch(e){} };
+const tourKey=v=>(v||(G&&G.tour?G.v:settings.variant))==='short'?'nardy-tour-s':'nardy-tour';
+const tourStage=v=>{ try{return Math.min(3,JSON.parse(localStorage.getItem(tourKey(v))||'{}').stage|0);}catch(e){return 0;} };
+const setTour=st=>{ try{localStorage.setItem(tourKey(),JSON.stringify({stage:st}));}catch(e){} };
 function tourResult(won){
   if(!G.tour) return '';
   const st=tourStage();
   if(!won) return `Турнир: ${LEVELS[TOUR[st]][1]} пока сильнее. Попробуйте ещё раз — ступень ${st+1} из 4.`;
   if(st<3){ setTour(st+1); return `Турнир: ступень ${st+1} пройдена! Следующий за столом — ${LEVELS[TOUR[st+1]][1]}.`; }
   setTour(0);
-  const s_=loadStats(); const first=!s_.ach.tour; unlock(s_,'tour'); saveStats(s_); buildCksets();
-  return first?'Вы прошли весь двор! Открыты золотые шашки — выберите их в настройках.':'Вы снова прошли весь двор!';
+  const sh=G.v==='short', id=sh?'stour':'tour';
+  const s_=loadStats(); const first=!s_.ach[id]; unlock(s_,id); saveStats(s_); buildCksets();
+  return first?(sh?'Вы прошли весь двор в короткие! Открыты серебряные шашки — выберите их в настройках.':'Вы прошли весь двор! Открыты золотые шашки — выберите их в настройках.'):'Вы снова прошли весь двор!';
 }
 
 // ничья по согласию (только по сети)
@@ -2015,9 +2030,13 @@ const ACH=[
   ['games50','tea','Свой человек во дворе','Сыграть 50 партий'],
   ['net','handshake','По ту сторону экрана','Победить друга по сети'],
   ['tour','trophy','Чемпион двора','Пройти турнир двора — открыть золотые шашки'],
-  ['doubles','doubles','Везунчик','Выбросить три дубля подряд за партию']
+  ['doubles','doubles','Везунчик','Выбросить три дубля подряд за партию'],
+  ['sfirst','dice','Короткий путь','Выиграть партию в короткие нарды'],
+  ['koks','flame','Кокс!','Выиграть коксом: у соперника ничего не выброшено, а шашка на баре или в вашем доме'],
+  ['hit3','bolt','Гроза двора','Сбить три шашки соперника за один ход'],
+  ['stour','crown','Чемпион коротких','Пройти турнир двора в короткие — открыть серебряные шашки']
 ];
-function loadStats(){ try{return Object.assign({games:0,wins:0,losses:0,mars:0,streak:0,best:0,fastest:0,ach:{}},JSON.parse(localStorage.getItem('nardy-stats-v1')||'{}'));}catch(e){return {games:0,wins:0,losses:0,mars:0,streak:0,best:0,fastest:0,ach:{}};} }
+function loadStats(){ try{const st=Object.assign({games:0,wins:0,losses:0,mars:0,streak:0,best:0,fastest:0,ach:{}},JSON.parse(localStorage.getItem('nardy-stats-v1')||'{}')); st.s=Object.assign({games:0,wins:0,losses:0,mars:0,koks:0,streak:0,best:0,fastest:0},st.s||{}); return st;}catch(e){return {games:0,wins:0,losses:0,mars:0,streak:0,best:0,fastest:0,ach:{}};} }
 const saveStats=st=>{try{localStorage.setItem('nardy-stats-v1',JSON.stringify(st));}catch(e){}};
 // иконки (рисованные, 24×24, линия 1.7)
 const ICONS={"menu":"<path d=\"M4 7h16M4 12h16M4 17h16\"/>","undo":"<path d=\"M9 14L4 9l5-5\"/><path d=\"M4 9h10a6 6 0 0 1 0 12h-3\"/>","lock": "<rect x=\"5\" y=\"11\" width=\"14\" height=\"10\" rx=\"2\"/><path d=\"M8 11V8a4 4 0 0 1 8 0v3\"/>", "close": "<path d=\"M6 6l12 12M18 6L6 18\"/>", "first": "<path d=\"M6 5v14\"/><path d=\"M18 6l-9 6 9 6z\" fill=\"currentColor\"/>", "prev": "<path d=\"M16 5l-9 7 9 7z\" fill=\"currentColor\"/>", "next": "<path d=\"M8 5l9 7-9 7z\" fill=\"currentColor\"/>", "last": "<path d=\"M18 5v14\"/><path d=\"M6 6l9 6-9 6z\" fill=\"currentColor\"/>", "handshake": "<path d=\"M2 10l4-4 4 2\"/><path d=\"M22 10l-4-4-5 2-4 4c-.8.8.3 2.2 1.3 1.6L13 12\"/><path d=\"M5 12l5.5 5.5c.8.8 2 .8 2.8 0M13 12l4 4M18 15l-3.2 3.2c-.8.8-2 .8-2.8 0\"/>", "mail": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"M3.5 7l8.5 6 8.5-6\"/>", "trophy": "<path d=\"M8 4h8v5a4 4 0 0 1-8 0z\"/><path d=\"M8 6H5a3 3 0 0 0 3 4.5M16 6h3a3 3 0 0 1-3 4.5\"/><path d=\"M12 13v4M8 20h8M10 17h4\"/>", "flame": "<path d=\"M12 3c1 3.5 5 5.5 5 10.5a5 5 0 0 1-10 0c0-2.2 1-3.8 2.2-4.8 0 2 .9 3.1 1.9 3.3C11 9 10.5 6 12 3z\"/>", "target": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1.4\" fill=\"currentColor\"/>", "brain": "<path d=\"M9.5 4A3 3 0 0 0 6.6 6.5 3 3 0 0 0 4.5 11a3 3 0 0 0 1.2 5 3 3 0 0 0 3.8 3.8A2.5 2.5 0 0 0 12 18V6.5A2.5 2.5 0 0 0 9.5 4z\"/><path d=\"M14.5 4a3 3 0 0 1 2.9 2.5 3 3 0 0 1 2.1 4.5 3 3 0 0 1-1.2 5 3 3 0 0 1-3.8 3.8A2.5 2.5 0 0 1 12 18\"/>", "crown": "<path d=\"M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z\"/><path d=\"M5 16h14\"/>", "sparkles": "<path d=\"M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z\"/><path d=\"M18.5 14.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z\"/>", "medal": "<circle cx=\"12\" cy=\"15\" r=\"5.5\"/><path d=\"M8 3l2.6 6.8M16 3l-2.6 6.8\"/><path d=\"M12 12.5l.8 1.6 1.7.2-1.2 1.2.3 1.7-1.6-.8-1.6.8.3-1.7-1.2-1.2 1.7-.2z\" fill=\"currentColor\" stroke=\"none\"/>", "bolt": "<path d=\"M13 2L4.5 13.5H11L10 22l8.5-11.5H12z\"/>", "feather": "<path d=\"M20 4C12 4 6 10 6 18\"/><path d=\"M20 4c0 8-5.5 12.5-13 13\"/><path d=\"M4 20l9-9\"/>", "dice": "<rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"3.5\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.35\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"12\" cy=\"12\" r=\"1.35\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"15.5\" cy=\"15.5\" r=\"1.35\" fill=\"currentColor\" stroke=\"none\"/>", "tea": "<path d=\"M7.5 3h9c0 3.5-3 4.5-3 8.5s3 5 3 7.5h-9c0-2.5 3-3.5 3-7.5S7.5 6.5 7.5 3z\"/><path d=\"M4 21.5h16\"/>", "up": "<path d=\"M3 17l6-6 4 4 8-8\"/><path d=\"M15 7h6v6\"/>", "down": "<path d=\"M3 7l6 6 4-4 8 8\"/><path d=\"M15 17h6v-6\"/>", "check": "<path d=\"M5 12.5l4.5 4.5L19 7\"/>", "doubles": "<rect x=\"2.5\" y=\"5\" width=\"10\" height=\"10\" rx=\"2.2\"/><rect x=\"11.5\" y=\"9\" width=\"10\" height=\"10\" rx=\"2.2\" fill=\"var(--icbg,#17110b)\"/><circle cx=\"5.5\" cy=\"8\" r=\"1.35\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"9.5\" cy=\"12\" r=\"1.35\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"14.5\" cy=\"12\" r=\"1.35\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"18.5\" cy=\"16\" r=\"1.35\" fill=\"currentColor\" stroke=\"none\"/>"};
@@ -2033,35 +2052,42 @@ function unlock(st,id){
   const a=ACH.find(x=>x[0]===id); if(a) setTimeout(()=>toast(a[1],'Достижение: '+a[2],a[3]),600);
 }
 // после партии: только за человека (против компьютера — за вас, по сети — за себя); игра вдвоём на одном телефоне считается только в «сыграно»
-function recordGame(winner,mars){
-  const st=loadStats(); st.games++;
+function recordGame(winner,mars,koks){
+  const all=loadStats(), short=G.v==='short', st=short?all.s:all;   // у коротких — своя статистика (all.s)
+  st.games++; all.ach=all.ach||{};
   const me=mode==='net'?G.me:mode==='ai'?0:null;
   if(me!=null){
     if(winner===me){
-      st.wins++; st.streak++; st.best=Math.max(st.best,st.streak); if(mars) st.mars++;
+      st.wins++; st.streak++; st.best=Math.max(st.best,st.streak); if(mars) st.mars++; if(koks) st.koks++;
+      if(short){ unlock(all,'sfirst'); if(koks) unlock(all,'koks'); }
       const t=G.turns[me]; if(!st.fastest||t<st.fastest) st.fastest=t;
-      unlock(st,'first'); if(mars) unlock(st,'mars');
-      if(mode==='ai'&&G.level==='medium') unlock(st,'medium');
-      if(mode==='ai'&&(G.level==='hard'||G.level==='expert')){ unlock(st,'medium'); unlock(st,'hard'); }
-      if(mode==='ai'&&G.level==='expert') unlock(st,'expert');
-      if(st.streak>=3) unlock(st,'streak3'); if(st.streak>=10) unlock(st,'streak10');
-      if(t<22) unlock(st,'fast'); if(!G.undos) unlock(st,'clean'); if(mode==='net') unlock(st,'net');
+      unlock(all,'first'); if(mars) unlock(all,'mars');
+      if(mode==='ai'&&G.level==='medium') unlock(all,'medium');
+      if(mode==='ai'&&(G.level==='hard'||G.level==='expert')){ unlock(all,'medium'); unlock(all,'hard'); }
+      if(mode==='ai'&&G.level==='expert') unlock(all,'expert');
+      if(st.streak>=3) unlock(all,'streak3'); if(st.streak>=10) unlock(all,'streak10');
+      if(t<22) unlock(all,'fast'); if(!G.undos) unlock(all,'clean'); if(mode==='net') unlock(all,'net');
     }else{ st.losses++; st.streak=0; }
   }
-  if(st.games>=10) unlock(st,'games10'); if(st.games>=50) unlock(st,'games50');
-  saveStats(st);
+  const tot=all.games+all.s.games;
+  if(tot>=10) unlock(all,'games10'); if(tot>=50) unlock(all,'games50');
+  saveStats(all);
 }
 function noteDouble(pl,a,b){
   if(!isHuman(pl)||mode==='pvp') return;
   G.dblRun=a===b?(G.dblRun||0)+1:0;
   if(G.dblRun===3){ const st=loadStats(); unlock(st,'doubles'); saveStats(st); }
 }
+let statV=null;
 function showStats(){
-  const st=loadStats();
+  const all=loadStats(); statV=statV||(settings.variant==='short'?'short':'long');
+  const st=statV==='short'?all.s:all;
+  document.querySelectorAll('.statvar button').forEach(b=>b.classList.toggle('on',b.dataset.sv===statV));
   const pct=st.wins+st.losses?Math.round(st.wins*100/(st.wins+st.losses))+'%':'—';
-  $('statsGrid').innerHTML=[[st.games,'партий'],[st.wins,'побед'],[pct,'побед из всех'],[st.mars,'марсов'],[st.best,'лучшая серия'],[st.fastest||'—','самая быстрая победа, ходов']]
+  $('statsGrid').innerHTML=[[st.games,'партий'],[st.wins,'побед'],[pct,'побед из всех'],[st.mars,'марсов'],...(statV==='short'?[[st.koks,'коксов']]:[]),[st.best,'лучшая серия'],[st.fastest||'—','самая быстрая победа, ходов']]
     .map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
-  $('achList').innerHTML=ACH.map(([id,icn,t,d])=>`<div class="ach${st.ach[id]?'':' off'}"><i>${ic(icn)}</i><div>${t}<small>${d}</small></div></div>`).join('');
+  const sta=all;
+  $('achList').innerHTML=ACH.map(([id,icn,t,d])=>`<div class="ach${sta.ach[id]?'':' off'}"><i>${ic(icn)}</i><div>${t}<small>${d}</small></div></div>`).join('');
   $('statsSheet').hidden=false;
   gamesList();
   $('rateBox').hidden=true;
@@ -2225,8 +2251,9 @@ const netKey=code=>`nardy-net-${code}-${NETB.uid}`;
 const myName=()=>(settings.name||'').trim()||'Игрок';
 const loadFriends=()=>{ try{return JSON.parse(localStorage.getItem('nardy-friends')||'{}');}catch(e){return {};} };
 const saveFriends=f=>{ try{localStorage.setItem('nardy-friends',JSON.stringify(f));}catch(e){} };
-async function myProfile(){ const p=await NETB.get(`players/${NETB.uid}`); return p||{name:myName(),r:1200,g:0}; }
-async function saveProfile(p){ p.name=myName(); p.t=Date.now(); await NETB.update(`players/${NETB.uid}`,{name:p.name,r:Math.round(p.r),g:p.g|0,t:p.t}); }
+// рейтинг у длинных — r/g, у коротких — свой rs/gs
+async function myProfile(){ const p=await NETB.get(`players/${NETB.uid}`); return Object.assign({name:myName(),r:1200,g:0},p||{}); }
+async function saveProfile(p){ p.name=myName(); p.t=Date.now(); await NETB.update(`players/${NETB.uid}`,{name:p.name,r:Math.round(p.r||1200),g:p.g|0,t:p.t,...(p.rs!=null?{rs:Math.round(p.rs),gs:p.gs|0}:{})}); }
 function renderFriends(){
   const f=loadFriends(), ids=Object.keys(f).sort((a,b)=>(f[b].last||0)-(f[a].last||0));
   $('friendsBox').hidden=!ids.length||!NET||NET.started;
@@ -2262,10 +2289,11 @@ listenInvites.shown=new Set();
 async function showRating(){
   try{
     await NETB.init();
-    const me=await myProfile(), top=await NETB.top('players','r',10);
-    const rows=Object.entries(top).sort((a,b)=>b[1].r-a[1].r);
+    const RK=statV==='short'?'rs':'r', GK=statV==='short'?'gs':'g';
+    const me=await myProfile(), top=await NETB.top('players',RK,10);
+    const rows=Object.entries(top).filter(([,p])=>p[RK]!=null).sort((a,b)=>b[1][RK]-a[1][RK]);
     if(!rows.some(([id])=>id===NETB.uid)) rows.push([NETB.uid,me]);
-    $('rateList').innerHTML=rows.map(([id,p],i)=>`<div class="${id===NETB.uid?'me':''}"><small>${i<10?i+1:'…'}</small><span>${esc(p.name||'Игрок')}${id===NETB.uid?' (вы)':''}</span><small>${Math.round(p.r||1200)} · ${p.g|0} парт.</small></div>`).join('');
+    $('rateList').innerHTML=rows.map(([id,p],i)=>`<div class="${id===NETB.uid?'me':''}"><small>${i<10?i+1:'…'}</small><span>${esc(p.name||'Игрок')}${id===NETB.uid?' (вы)':''}</span><small>${Math.round(p[RK]||1200)} · ${p[GK]|0} парт.</small></div>`).join('');
     $('rateBox').hidden=false;
   }catch(e){ console.error(e); }
 }
@@ -2274,10 +2302,11 @@ async function showRating(){
 async function netRate(won,mars){
   if(!NET||NET.rated===NET.games) return; NET.rated=NET.games;
   try{
-    const me=await myProfile(), ro=NET.oppR||1200, S=won==='draw'?.5:won?1:0;
-    const E=1/(1+Math.pow(10,(ro-me.r)/400)), K=32*(mars?1.5:1), d=K*(S-E);
-    me.r=(me.r||1200)+d; me.g=(me.g|0)+1; await saveProfile(me);
-    toast(d>=0?'up':'down','Рейтинг: '+Math.round(me.r),`${d>=0?'+':''}${Math.round(d)} за партию`);
+    const sh=G.v==='short', RK=sh?'rs':'r', GK=sh?'gs':'g';
+    const me=await myProfile(), mr=me[RK]||1200, ro=NET.oppR||1200, S=won==='draw'?.5:won?1:0;
+    const E=1/(1+Math.pow(10,(ro-mr)/400)), K=32*(mars?1.5:1), d=K*(S-E);
+    me[RK]=mr+d; me[GK]=(me[GK]|0)+1; await saveProfile(me);
+    toast(d>=0?'up':'down',(sh?'Рейтинг в коротких: ':'Рейтинг: ')+Math.round(me[RK]),`${d>=0?'+':''}${Math.round(d)} за партию`);
   }catch(e){ console.error(e); }
 }
 
@@ -2389,7 +2418,7 @@ async function netBegin(){
     const ouid=room&&room.players&&room.players[other]; NET.oppName=room&&room.names&&room.names[other]||'Друг';
     if(ouid){ const f=loadFriends(); f[ouid]={name:NET.oppName,last:Date.now()}; saveFriends(f);
       NET.unsub.push(NETB.onValue(`${R}/names/${other}`,n=>{ if(!NET||!n) return; NET.oppName=String(n).slice(0,20); const f=loadFriends(); if(f[ouid]){f[ouid].name=NET.oppName;saveFriends(f);} renderPanel(); }));
-      const op=await NETB.get(`players/${ouid}`).catch(()=>null); NET.oppR=op&&op.r||1200; }
+      const op=await NETB.get(`players/${ouid}`).catch(()=>null); NET.oppR=op&&(NET.v==='short'?op.rs:op.r)||1200; }
     myProfile().then(saveProfile).catch(()=>{});
     renderPanel();
   }).catch(()=>{});
@@ -2551,8 +2580,9 @@ async function netThrow(start,land,lift){
 
 /* ---------- отрисовка ---------- */
 const skin=()=>{ const sk=SKINS[settings.skin], set=CKSETS[settings.ckset];
-  return set&&set[1]&&(settings.ckset!=='gold'||goldOpen())?{...sk,ck:{w:set[1],b:set[2]}}:sk; };
+  return set&&set[1]&&(settings.ckset!=='gold'||goldOpen())&&(settings.ckset!=='silver'||silverOpen())?{...sk,ck:{w:set[1],b:set[2]}}:sk; };
 const goldOpen=()=>{ try{return !!loadStats().ach.tour;}catch(e){return false;} };
+const silverOpen=()=>{ try{return !!loadStats().ach.stour;}catch(e){return false;} };
 function checker(x,y,pl,cnt,ck=skin().ck){
   const c=pl?ck.b:ck.w;
   return `<g transform="translate(${x},${y})">
@@ -2718,7 +2748,7 @@ function showMenu(){
   $('contCap').textContent=(v&&v.v==='short'?'короткие · ':'')+(cm==='ai'?`с соперником: ${LEVELS[v.level||settings.level][1]}`:cm==='pvp'?'вдвоём':cm==='net'?'с другом по сети':'');
   $('case').classList.remove('open'); $('menu').classList.remove('opening');
   $('lvlCap').textContent='Соперник: '+LEVELS[settings.level][1];
-  $('tourCap').textContent=`ступень ${tourStage()+1} из 4 · ${LEVELS[TOUR[tourStage()]][1]}${settings.variant==='short'?' · в длинные':''}`;
+  $('tourCap').textContent=`${settings.variant==='short'?'короткие · ':''}ступень ${tourStage(settings.variant)+1} из 4 · ${LEVELS[TOUR[tourStage(settings.variant)]][1]}`;
   let sc='';
   try{const all=JSON.parse(localStorage.getItem('nardy-score-v1')||'null')||{};
     if(all.ai&&(all.ai[0]||all.ai[1])) sc+=`С компьютером ${all.ai[0]} : ${all.ai[1]}`;
@@ -2761,8 +2791,8 @@ applyTod(); setInterval(applyTod,60000);
 function buildCksets(){
   $('cksets').innerHTML=Object.entries(CKSETS).map(([k,v])=>{
     const imgs=v[1]?`<img alt="" src="boards/ck-${v[1].img}.png"><img alt="" src="boards/ck-${v[2].img}.png">`:'';
-    const lock=k==='gold'&&!goldOpen();
-    return `<button data-ck="${k}"${lock?' disabled title="Пройдите турнир двора"':''}>${imgs}${v[0]}${lock?' '+ic('lock'):''}</button>`; }).join('');
+    const lock=(k==='gold'&&!goldOpen())||(k==='silver'&&!silverOpen());
+    return `<button data-ck="${k}"${lock?` disabled title="${k==='silver'?'Пройдите турнир двора в короткие':'Пройдите турнир двора'}"`:''}>${imgs}${v[0]}${lock?' '+ic('lock'):''}</button>`; }).join('');
 }
 function paintSettings(){
   document.querySelectorAll('.seg.autosel button').forEach(b=>b.classList.toggle('on',(b.dataset.auto==='on')===(settings.automove!==false)));
@@ -2788,8 +2818,8 @@ $('levels').addEventListener('click',e=>{const b=e.target.closest('button'); if(
 $('dSounds').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.sound=b.dataset.snd==='on'; saveSettings(); paintSettings(); if(settings.sound){ac();sClack(false);} ambientSync();});
 document.querySelectorAll('.seg.amb').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.ambient=b.dataset.amb==='on'; saveSettings(); paintSettings(); ac(); ambientSync();}));
 $('setName').addEventListener('change',()=>{ settings.name=$('setName').value.trim().slice(0,20); saveSettings(); });
-function paintVariant(){ document.querySelectorAll('.varsel button').forEach(b=>b.classList.toggle('on',b.dataset.var===(settings.variant==='short'?'short':'long'))); }
-document.querySelectorAll('.varsel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; ac(); settings.variant=b.dataset.var; saveSettings(); paintVariant(); if(settings.variant==='short'&&!tutorDone('short')) offerTutor('short'); $('tourCap').textContent=`ступень ${tourStage()+1} из 4 · ${LEVELS[TOUR[tourStage()]][1]}${settings.variant==='short'?' · в длинные':''}`;}));
+function paintVariant(){ document.querySelectorAll('.varsel:not(.statvar) button').forEach(b=>b.classList.toggle('on',b.dataset.var===(settings.variant==='short'?'short':'long'))); }
+document.querySelectorAll('.varsel:not(.statvar)').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; ac(); settings.variant=b.dataset.var; saveSettings(); paintVariant(); if(settings.variant==='short'&&!tutorDone('short')) offerTutor('short'); $('tourCap').textContent=`${settings.variant==='short'?'короткие · ':''}ступень ${tourStage(settings.variant)+1} из 4 · ${LEVELS[TOUR[tourStage(settings.variant)]][1]}`;}));
 paintVariant();
 document.querySelectorAll('.seg.autosel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.automove=b.dataset.auto==='on'; saveSettings(); paintSettings();}));
 $('cksets').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b||b.disabled) return; settings.ckset=b.dataset.ck; saveSettings(); paintSettings(); buildStatic(); if(G) render();});
@@ -2900,6 +2930,7 @@ $('bHint').addEventListener('click',()=>{ ac(); G.usedHint=true; showHint(); });
 $('bReview').addEventListener('click',showReview);
 $('bReviewClose').addEventListener('click',()=>{$('reviewSheet').hidden=true;});
 $('bStats').addEventListener('click',showStats);
+document.querySelector('.statvar').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; statV=b.dataset.sv; showStats(); });
 $('bStatsClose').addEventListener('click',()=>{$('statsSheet').hidden=true;});
 for(const id of ['statsSheet','reviewSheet']) $(id).addEventListener('click',e=>{if(e.target===$(id))$(id).hidden=true;});
 // ☰ во время партии — боковая шторка: доска, звук, правила, выход в меню. Сложность видна, но не меняется до новой партии.

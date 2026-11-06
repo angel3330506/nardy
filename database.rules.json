@@ -47,7 +47,8 @@
     "players": {
       ".read": "auth != null",
       ".indexOn": [
-        "r"
+        "r",
+        "rs"
       ],
       "$uid": {
         ".write": "auth != null && auth.uid === $uid",

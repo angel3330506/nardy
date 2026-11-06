@@ -415,6 +415,9 @@ html.night .sky{mix-blend-mode:normal;background:radial-gradient(ellipse 50% 58%
 .games button{padding:6px 10px;font-size:13px}
 #bugText{font:inherit;color:var(--fg);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical;-webkit-user-select:text;user-select:text}
 .nettext{margin:0;color:var(--muted);font-size:14.5px}
+.netcode{font-size:15px;color:var(--muted);text-align:center}.netcode b{color:var(--gold-hi);font-size:22px;letter-spacing:.14em;margin-left:6px;-webkit-user-select:text;user-select:text}
+.joinrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.joinrow input{min-width:0;font-size:17px;letter-spacing:.1em;text-transform:lowercase;background:#0f0b08;border:1px solid var(--line);border-radius:10px;color:var(--fg);padding:10px 12px}
 .netlink{font-size:14px;color:var(--gold-hi);background:#0f0b08;border:1px solid var(--line);border-radius:10px;padding:10px 12px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .hint{font-size:12.5px;color:var(--muted);margin:-6px 0 0}
 
@@ -657,10 +660,16 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
     <h3>Игра по сети</h3>
     <label class="namerow">Ваше имя <input id="netName" maxlength="20" autocomplete="nickname" placeholder="Как вас зовут?"></label>
     <p class="nettext" id="netText"></p>
+    <div class="netcode" id="netCode" hidden>Код партии: <b id="netCodeV"></b></div>
     <div class="netlink" id="netLink" hidden></div>
     <div class="mrow" id="netBtns" hidden>
       <button class="primary" id="bShare">Отправить ссылку</button>
       <button id="bCopy">Скопировать</button>
+    </div>
+    <div id="joinBox">
+      <h4>Друг прислал код?</h4>
+      <div class="joinrow"><input id="joinCode" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="например, k7mp2x"><button class="primary" id="bJoin">Войти</button></div>
+      <p class="nettext" id="joinErr" hidden></p>
     </div>
     <div id="friendsBox" hidden>
       <h4>Позвать друга одним нажатием</h4>
@@ -760,7 +769,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='81';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='82';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/leafshade.webp":"8666bd89","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -2158,6 +2167,9 @@ function netSheet(text,link){
   $('netText').innerHTML=text;
   $('netLink').hidden=!link; $('netBtns').hidden=!link;
   if(link) $('netLink').textContent=link;
+  const code=link&&(link.match(/room=([a-z0-9]+)/)||[])[1];
+  $('netCode').hidden=!code; if(code) $('netCodeV').textContent=code;
+  $('joinBox').hidden=!!(NET&&NET.started); $('joinErr').hidden=true;
   renderFriends();
   $('netSheet').hidden=false;
 }
@@ -2179,7 +2191,16 @@ async function netCreate(){
     throw new Error('no room');
   }catch(e){ console.error(e); netSheet('Не удалось подключиться к серверу игры. Проверьте интернет и попробуйте ещё раз.'); }
 }
+// На iPhone ссылка всегда открывается в Safari, даже если игра стоит на экране «Домой» (это ограничение iOS).
+// Поэтому в Safari сначала спрашиваем: играть здесь или перейти в приложение по коду.
+function iosSafariAsk(code){ return new Promise(res=>{
+  netSheet(`На iPhone ссылка открылась в Safari. Если игра стоит у вас на экране «Домой» — откройте её, нажмите «С другом» и введите код <b style="color:var(--gold-hi);letter-spacing:.12em">${code}</b>.<div class="mrow" style="margin-top:12px"><button class="primary" id="askHere">Играть здесь</button><button id="askCopy">Скопировать код</button></div>`);
+  $('joinBox').hidden=true;
+  $('askHere').onclick=()=>res(true);
+  $('askCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(code); $('askCopy').textContent='Скопировано'; }catch(e){} };
+}); }
 async function netEnter(code){
+  if(/iPhone|iPad|iPod/.test(navigator.userAgent)&&!isStandalone()&&!MOCK&&new URLSearchParams(location.search).get('room')===code&&!Object.keys(localStorage).some(k=>k.startsWith(`nardy-net-${code}-`))) await iosSafariAsk(code);
   netSheet('Подключаемся к партии…');
   try{
     await NETB.init();
@@ -2223,7 +2244,7 @@ function netStart(code,slot,chain,head2){
     if(!NET||NET.started) return;
     NET.commit=[v&&v.w,v&&v.b];
     if(NET.commit[0]&&NET.commit[1]){ NET.started=true; netBegin(); }
-    else netSheet('Отправьте другу ссылку — партия начнётся, как только он её откроет.<br>Ждём друга…',netLink(code));
+    else netSheet('Отправьте другу ссылку — или просто продиктуйте код: у кого игра стоит на экране «Домой», откроет её, нажмёт «С другом» и введёт код.<br>Ждём друга…',netLink(code));
   }));
 }
 async function netBegin(){
@@ -2668,6 +2689,21 @@ function ptAt(x,y){
   }
   return null;
 }
+// «Магнит»: если шашку отпустили (или нажали) рядом с подсвеченным пунктом, а не точно в него, — ставим в ближайший
+// допустимый пункт. Расстояние меряем до места, куда ляжет шашка, и до самого пункта; слишком далеко — не тянем.
+function snapTarget(x,y,src){
+  if(src==null) return null;
+  const tg=G.targets||(G.targets=movesFrom(curCtx(),src)); let best=null, bd=1e9;
+  for(const [to] of tg){
+    let d;
+    if(to==='off') d=Math.hypot(Math.max(0,1018-x),Math.max(0,Math.abs(y-350)-300));
+    else{ const di=G.flip?(to+12)%24:to, px=ptX(di), top=isTop(di), n=G.s.n[to], [sx,sy]=slotXY(to,n,n+1);
+      const inCol=Math.abs(x-px)<=35&&(top?y>=40&&y<350:y>=350&&y<=660);
+      d=Math.min(Math.hypot(x-sx,y-sy), inCol?0:Math.hypot(Math.max(0,Math.abs(x-px)-35),top?Math.max(0,y-350,40-y):Math.max(0,350-y,y-660))); }
+    if(d<bd){ bd=d; best=to; }
+  }
+  return bd<=70?best:null;
+}
 function doMove(path){
   if(mode==='net'){ G.sel=null; G.targets=null; netLocal({t:'mv',s:path.map(st=>[st.from,st.d])}); }
   applyPath(path);
@@ -2699,7 +2735,8 @@ function endCheckerDrag(e){
   if(!d.on) return;                                     // это было нажатие — его обработает click
   swallowClick=true; setTimeout(()=>swallowClick=false,0);
   d.g.remove(); flyHide=null;
-  const t=e.type==='pointercancel'?null:ptAt(d.x,d.y);
+  let t=e.type==='pointercancel'?null:ptAt(d.x,d.y);
+  if(e.type!=='pointercancel'&&!(t!=null&&G.targets&&G.targets.has(t))){ const sn=snapTarget(d.x,d.y,d.src); if(sn!=null) t=sn; }
   if(t!=null&&t!==d.src&&G.targets&&G.targets.has(t)){
     G.dragFrom=[d.x,d.y-8]; doMove(G.targets.get(t)); return;
   }
@@ -2712,7 +2749,11 @@ $('board').addEventListener('click',e=>{
   if(swallowClick) return;
   // пункт определяем по координатам: после setPointerCapture (перетаскивание) click приходит самой доске, а не пункту
   if(busy||!G||G.auto||G.netPend||G.autoPending) return;
-  const t=ptAt(...toBoard(e.clientX,e.clientY)); if(t==null) return;
+  const [bx,by]=toBoard(e.clientX,e.clientY); let t=ptAt(bx,by);
+  if(G.phase==='move'&&isHuman(G.turn)&&G.sel!=null&&!(t!=null&&G.targets&&G.targets.has(t))&&!(t!=null&&t!=='off'&&G.steps.some(x=>x.src===t))){
+    const sn=snapTarget(bx,by,G.sel); if(sn!=null) t=sn;      // промахнулись мимо подсвеченного пункта — притягиваем
+  }
+  if(t==null) return;
   ac();
   if(G.phase!=='move'||!isHuman(G.turn)) return;
   if(G.sel!=null&&G.targets&&G.targets.has(t)){ doMove(G.targets.get(t)); return; }
@@ -2789,13 +2830,23 @@ $('mContinue').addEventListener('click',()=>openCase(()=>{ if(NET&&NET.started) 
 $('mNet').addEventListener('click',()=>{ac(); netCreate();});
 $('bShare').addEventListener('click',async()=>{
   const url=$('netLink').textContent;
-  try{ if(navigator.share){ await navigator.share({title:'Нарды',text:'Сыграем в нарды?',url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  const code=$('netCodeV').textContent;
+  try{ if(navigator.share){ await navigator.share({title:'Нарды',text:`Сыграем в нарды? Если игра у тебя на экране «Домой» — открой её, «С другом» и введи код ${code}. Или просто открой ссылку:`,url}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
   $('bCopy').click();
 });
 $('bCopy').addEventListener('click',async()=>{
   try{ await navigator.clipboard.writeText($('netLink').textContent); $('bCopy').textContent='Скопировано'; setTimeout(()=>$('bCopy').textContent='Скопировать',1500); }
   catch(e){ const r=document.createRange(); r.selectNodeContents($('netLink')); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); }
 });
+function joinByCode(){
+  const code=$('joinCode').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!/^[a-z0-9]{4,12}$/.test(code)){ $('joinErr').textContent='Введите код из сообщения друга — 6 букв и цифр.'; $('joinErr').hidden=false; return; }
+  if(NET&&NET.room===code) return;
+  if(NET&&!NET.started) netLeave();   // своя пустая комната больше не нужна
+  ac(); netEnter(code);
+}
+$('bJoin').addEventListener('click',joinByCode);
+$('joinCode').addEventListener('keydown',e=>{ if(e.key==='Enter') joinByCode(); });
 $('bNetClose').addEventListener('click',()=>{ $('netSheet').hidden=true; if(NET&&!NET.started) netLeave(); if(!NET||!NET.started) showMenu(); });
 $('bRules').addEventListener('click',()=>{$('rules').hidden=false;});
 $('bRulesClose').addEventListener('click',()=>{$('rules').hidden=true;});

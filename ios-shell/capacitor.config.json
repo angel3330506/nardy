@@ -2,5 +2,14 @@
   "appId": "am.nardy.game",
   "appName": "Нарды",
   "webDir": "www",
-  "ios": { "contentInset": "never", "backgroundColor": "#0c0b0a", "scrollEnabled": false }
+  "server": {
+    "url": "https://angel3330506.github.io/nardy/",
+    "allowNavigation": ["angel3330506.github.io"]
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0c0b0a",
+    "scrollEnabled": false,
+    "limitsNavigationsToAppBoundDomains": true
+  }
 }

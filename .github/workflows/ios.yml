@@ -1,5 +1,6 @@
 # Сборка iOS-приложения (.ipa без подписи) — для установки через Sideloadly с бесплатным Apple ID.
-# Игра упаковывается в Capacitor целиком (работает без интернета, кроме игры по сети).
+# Приложение открывает игру с сайта (как Safari): та же скорость и звуки, обновления приходят сами; офлайн — через кэш.
+# В сборку кладётся и копия игры (www) — запасной вариант на случай, если сайт недоступен при первом запуске.
 # Результат: релиз «ios-latest» в GitHub с файлом Nardy.ipa.
 name: iOS app
 on:
@@ -31,6 +32,9 @@ jobs:
           /usr/libexec/PlistBuddy -c "Add :UIStatusBarHidden bool true" $P || true
           /usr/libexec/PlistBuddy -c "Add :UIRequiresFullScreen bool true" $P || true
           /usr/libexec/PlistBuddy -c "Set :UIViewControllerBasedStatusBarAppearance false" $P || /usr/libexec/PlistBuddy -c "Add :UIViewControllerBasedStatusBarAppearance bool false" $P
+          # сайт игры — «свой» домен приложения: так WebView разрешает офлайн-кэш (service worker), как в Safari
+          /usr/libexec/PlistBuddy -c "Add :WKAppBoundDomains array" $P || true
+          /usr/libexec/PlistBuddy -c "Add :WKAppBoundDomains:0 string angel3330506.github.io" $P || true
           npx cap sync ios
       - name: Сборка без подписи
         run: |

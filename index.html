@@ -226,9 +226,10 @@ body.introOut #menu .mside{transition:opacity .7s ease-out,transform .9s cubic-b
 body.introOut #menu .micons{transition:opacity .8s .3s}
 #menu.opening .mside,#menu.opening .micons{opacity:0;pointer-events:none}
 /* при раскрытии доска уезжает в центр: раскрытая она вдвое шире */
-.case{transition:transform 1.1s cubic-bezier(.55,0,.25,1)}
-#menu.opening .case{transform:translateX(-50%)}
-html.land #menu.opening .case{transform:translateX(calc(-50% + calc(3 * var(--vw)) + min(calc(92 * var(--vw)),400px) / 2))}
+/* сдвигаем через left, а не transform: на iPhone Safari не перерисовывал transform нард, пока внутри крутится 3D-крышка, — доска стояла и в конце прыгала */
+.case{left:0;transition:left 1.1s cubic-bezier(.55,0,.25,1)}
+#menu.opening .case{left:calc(var(--cw,0px) * -.5)}
+html.land #menu.opening .case{left:calc(var(--cw,0px) * -.5 + calc(3 * var(--vw)) + min(calc(92 * var(--vw)),400px) / 2)}
 .mbtns{display:grid;gap:10px}
 /* вид нард: длинные / короткие — переключатель под названием */
 .varsel{display:grid;grid-template-columns:1fr 1fr;padding:4px;gap:4px;border-radius:999px;background:rgba(20,12,6,.55);border:1px solid rgba(217,181,106,.35);
@@ -816,7 +817,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='99';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='100';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/intro-rev-w.webp":"af4818c9","boards/intro-rev.webp":"212eecdb","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -3030,6 +3031,16 @@ $('mTour').addEventListener('click',()=>openCase(()=>newGame('ai',false,true)));
 $('bToMenu').addEventListener('click',showMenu);
 // крышка откидывается, под ней доска — и начинается партия
 let opening=false;
+// Экранный прямоугольник элемента внутри меню. Меню уменьшено через zoom, и Safari на iPhone отдаёт координаты внутри него
+// в другом масштабе. Калибруем по невидимому квадрату 100×100 в меню: по его замеру видно, во сколько раз врут координаты
+function visRect(el){
+  const r=el.getBoundingClientRect(), mi=document.querySelector('.menu-in'), k=mi&&parseFloat(mi.style.zoom)||1;
+  if(k===1||!mi.contains(el)) return r;
+  let pr=$('miProbe'); if(!pr){ pr=document.createElement('div'); pr.id='miProbe'; pr.setAttribute('aria-hidden','true');
+    pr.style.cssText='position:absolute;left:0;top:0;width:100px;height:100px;visibility:hidden;pointer-events:none'; mi.appendChild(pr); }
+  const pw=pr.getBoundingClientRect().width, f=pw>1?k*100/pw:1;
+  return {left:r.left*f,top:r.top*f,width:r.width*f,height:r.height*f,right:r.right*f,bottom:r.bottom*f};
+}
 function openCase(fn){
   if(opening) return;
   if(matchMedia('(prefers-reduced-motion: reduce)').matches||$('menu').hidden) return fn();
@@ -3038,12 +3049,13 @@ function openCase(fn){
   const start=()=>{ if(go) return; go=true;
     // доска под крышкой и обратная сторона крышки — прямо в стиль граней: WebKit иногда не перерисовывает скрытую грань по CSS-переменной
     for(const id of ['caseIn','caseBack']) $(id).style.backgroundImage=`url(${inside})`;
+    $('case').style.setProperty('--cw',$('case').offsetWidth+'px');   // ширина нард в их собственных px (для сдвига на полширины)
     $('menu').classList.add('opening');                       // сначала включаем объём (3D)…
     requestAnimationFrame(()=>requestAnimationFrame(()=>{     // …и только в следующем кадре откидываем крышку
       $('case').classList.add('open'); synthKnock(.35,0); synthKnock(.3,.07); buzz(10);
       setTimeout(()=>{
     // раскрытая доска на столе: от левого края основания до правого края откинутой крышки
-    const r=$('case').getBoundingClientRect(), from={x:r.left,y:r.top,w:r.width*2,h:r.height};
+    const r=visRect($('case')), from={x:r.left,y:r.top,w:r.width*2,h:r.height};
     opening=false; fn(); zoomIn(from);
       },1150);
     }));
@@ -3116,13 +3128,9 @@ function runIntro(){
   let W, H, cw, ch, sliding=false, done=false;
   // Safari по-разному отдаёт координаты внутри меню с zoom (в одних версиях уже с учётом масштаба, в других — без).
   // Калибруем: внутри меню лежит невидимый квадрат 100×100 — по его замеру видно, во сколько раз врут координаты
-  const mi=document.querySelector('.menu-in'), probe=document.createElement('div');
-  probe.style.cssText='position:absolute;left:0;top:0;width:100px;height:100px;visibility:hidden;pointer-events:none';
-  mi.appendChild(probe);
-  const measure=()=>{ const v=I.getBoundingClientRect(), r=cs.getBoundingClientRect(), k=parseFloat(mi.style.zoom)||1, pw=probe.getBoundingClientRect().width;
-    const f=pw>1?k*100/pw:1;                                             // истинный экранный px = замер × f
-    W=v.width; H=v.height; cw=r.width*f; ch=r.height*f;
-    return {x:r.left*f-v.left, y:r.top*f-v.top}; };
+  const measure=()=>{ const v=I.getBoundingClientRect(), r=visRect(cs);     // visRect — с поправкой на zoom меню в Safari
+    W=v.width; H=v.height; cw=r.width; ch=r.height;
+    return {x:r.left-v.left, y:r.top-v.top}; };
   const place=()=>{ measure(); gc.style.width=cw+'px'; gc.style.height=ch+'px'; gc.style.transform=`translate(${(W-cw)/2}px,${(H-ch)/2}px)`; };
   place(); introRecenter=()=>{ if(!done&&!sliding) place(); };
   (function watch(){ if(done||sliding) return; const w0=W,h0=H,c0=cw,d0=ch; measure();
@@ -3133,7 +3141,7 @@ function runIntro(){
   const box=(d,rot)=>({transform:`translate(${W/2-50}px,${H/2-50}px) rotate(${rot}deg) scale(${d/100})`});
   const timers=[], T=(f,ms)=>timers.push(setTimeout(f,ms));
   const land=()=>{ gc.style.backgroundImage=`url(${av('boards/lid.webp')})`; gold.getAnimations().forEach(a=>a.cancel()); gold.style.opacity=white.style.opacity='0'; };
-  const finish=()=>{ if(done) return; done=true; timers.forEach(clearTimeout); introRecenter=null; cs.style.visibility=""; probe.remove();
+  const finish=()=>{ if(done) return; done=true; timers.forEach(clearTimeout); introRecenter=null; cs.style.visibility="";
     I.hidden=true; gc.getAnimations().forEach(a=>a.cancel());
     document.body.classList.remove('intro','introOut'); };
   I.addEventListener('pointerdown',finish,{once:true});

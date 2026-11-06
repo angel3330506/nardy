@@ -21,11 +21,15 @@ jobs:
         run: |
           mkdir app && cd app
           npm init -y >/dev/null
-          npm i @capacitor/core@7 @capacitor/cli@7 @capacitor/ios@7 @capacitor/haptics@7
+          npm i @capacitor/core@7 @capacitor/cli@7 @capacitor/ios@7 @capacitor/haptics@7 ../ios-shell/nardy-native
           mkdir www && cp -R ../index.html ../manifest.webmanifest ../privacy.html ../og.jpg ../boards ../sounds ../icons www/
           cp ../ios-shell/capacitor.config.json .
           npx cap add ios
           cp ../ios-shell/AppIcon-1024.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+          # запасные иконки: золотая (турнир в длинные) и серебряная (турнир в короткие)
+          for N in Gold Silver; do D=ios/App/App/Assets.xcassets/AppIcon$N.appiconset; mkdir -p $D
+            cp ../ios-shell/AppIcon-$N-1024.png $D/icon.png
+            printf '{"images":[{"filename":"icon.png","idiom":"universal","platform":"ios","size":"1024x1024"}],"info":{"author":"xcode","version":1}}' > $D/Contents.json; done
           # экран загрузки: тёмный, с иконкой игры
           for f in ios/App/App/Assets.xcassets/Splash.imageset/*.png; do cp ../ios-shell/splash-2732.png "$f"; done
           # без статус-бара, поворот в любую сторону, полноэкранно
@@ -49,7 +53,7 @@ jobs:
         run: |
           cd app/ios/App
           xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos \
-            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build | tail -20
+            -derivedDataPath build ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES="AppIconGold AppIconSilver" ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build | tail -20
           mkdir -p Payload && cp -R build/Build/Products/Release-iphoneos/App.app Payload/
           zip -qry ../../../Nardy.ipa Payload
           ls -la ../../../Nardy.ipa

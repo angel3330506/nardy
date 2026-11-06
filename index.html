@@ -613,6 +613,14 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
       <button data-auto="on">Если ход один — сам</button>
       <button data-auto="off">Всегда сам ходить</button>
     </div>
+    <div id="iconBox" hidden>
+      <h4>Иконка приложения</h4>
+      <div class="seg iconsel" style="grid-template-columns:repeat(3,1fr)">
+        <button data-icon="">Обычная</button>
+        <button data-icon="AppIconGold">Золотая</button>
+        <button data-icon="AppIconSilver">Серебряная</button>
+      </div>
+    </div>
     <div id="vibBox" hidden>
       <h4>Вибрация</h4>
       <div class="seg vib" style="grid-template-columns:1fr 1fr">
@@ -790,7 +798,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='92';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='93';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/leafshade.webp":"8666bd89","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -1189,6 +1197,11 @@ document.addEventListener('visibilitychange',()=>ambientSync());
 // Вибрация — только в приложении (Capacitor, плагин Haptics: Taptic Engine iPhone). В браузере её нет.
 // ms: число — короткий «тик» (сила по длительности), массив — «успех» (например, шашка выброшена).
 const HAP=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Haptics;
+// нативный модуль приложения (ios-shell/nardy-native): экран не гаснет в партии, смена иконки
+const NAT=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.NardyNative;
+const keepAwake=on=>{ try{ const n=NAT(); n&&n.keepAwake({on}); }catch(e){} };
+// звук игры — поверх музыки и подкастов, а в беззвучном режиме молчит (Safari 16.4+ и приложение)
+try{ if(navigator.audioSession) navigator.audioSession.type='ambient'; }catch(e){}
 const buzz=ms=>{ const h=HAP(); if(!h||settings.vibro===false) return;
   try{ if(Array.isArray(ms)) h.notification({type:'SUCCESS'}); else h.impact({style:ms>=16?'HEAVY':ms>=10?'MEDIUM':'LIGHT'}); }catch(e){} };
 function synthClack(){
@@ -1798,7 +1811,8 @@ function tourResult(won){
   setTour(0);
   const sh=G.v==='short', id=sh?'stour':'tour';
   const s_=loadStats(); const first=!s_.ach[id]; unlock(s_,id); saveStats(s_); buildCksets();
-  return first?(sh?'Вы прошли весь двор в короткие! Открыты серебряные шашки — выберите их в настройках.':'Вы прошли весь двор! Открыты золотые шашки — выберите их в настройках.'):'Вы снова прошли весь двор!';
+  const ico=NAT()?(sh?' и серебряная иконка приложения':' и золотая иконка приложения'):'';
+  return first?(sh?`Вы прошли весь двор в короткие! Открыты серебряные шашки${ico} — выберите в настройках.`:`Вы прошли весь двор! Открыты золотые шашки${ico} — выберите в настройках.`):'Вы снова прошли весь двор!';
 }
 
 // ничья по согласию (только по сети)
@@ -2754,7 +2768,7 @@ function unlockOrientation(){
   try{screen.orientation.unlock();}catch(e){}
   try{if(document.fullscreenElement&&!isStandalone())document.exitFullscreen();}catch(e){}
 }
-function showGame(){ setTimeout(placeHot,60); setTimeout(probeFps,2500); document.body.classList.remove('props-in'); setTimeout(()=>{ placeHot(); document.body.classList.add('props-in'); },900); document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
+function showGame(){ keepAwake(true); setTimeout(placeHot,60); setTimeout(probeFps,2500); document.body.classList.remove('props-in'); setTimeout(()=>{ placeHot(); document.body.classList.add('props-in'); },900); document.body.classList.add('playing'); $('menu').hidden=true; lockLandscape(); requestAnimationFrame(sizeDice); ambientSync(); }
 // меню целиком помещается на экран: если не влезает — масштабируем, а не прокручиваем
 function fitMenu(){
   const m=$('menu'), mi=document.querySelector('.menu-in'); if(!m||m.hidden||!mi) return;
@@ -2766,7 +2780,7 @@ function fitMenu(){
 }
 addEventListener('resize',()=>requestAnimationFrame(fitMenu)); addEventListener('orientationchange',()=>setTimeout(fitMenu,300));
 function showMenu(){
-  document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false; requestAnimationFrame(fitMenu); setTimeout(fitMenu,400);
+  keepAwake(false); document.body.classList.remove('playing'); ambientSync(); $('menu').hidden=false; requestAnimationFrame(fitMenu); setTimeout(fitMenu,400);
   const v=readSaved();
   $('mContinue').hidden=!(v||(NET&&NET.started));
   $('mAi').classList.toggle('main',!v);   // .main — крупная табличка
@@ -2822,6 +2836,10 @@ function buildCksets(){
 }
 function paintSettings(){
   $('vibBox').hidden=!HAP();
+  $('iconBox').hidden=!NAT();
+  if(NAT()) document.querySelectorAll('.seg.iconsel button').forEach(b=>{ const k=b.dataset.icon, lock=(k==='AppIconGold'&&!goldOpen())||(k==='AppIconSilver'&&!silverOpen());
+    b.disabled=lock; b.innerHTML=(k===''?'Обычная':k==='AppIconGold'?'Золотая':'Серебряная')+(lock?' '+ic('lock'):''); b.title=lock?(k==='AppIconGold'?'Пройдите турнир двора':'Пройдите турнир двора в короткие'):'';
+    b.classList.toggle('on',(settings.appIcon||'')===k); });
   document.querySelectorAll('.seg.vib button').forEach(b=>b.classList.toggle('on',(b.dataset.vib==='on')===(settings.vibro!==false)));
   document.querySelectorAll('.seg.autosel button').forEach(b=>b.classList.toggle('on',(b.dataset.auto==='on')===(settings.automove!==false)));
   if(!$('cksets').innerHTML) buildCksets();
@@ -2848,6 +2866,8 @@ $('setName').addEventListener('change',()=>{ settings.name=$('setName').value.tr
 function paintVariant(){ document.querySelectorAll('.varsel:not(.statvar) button').forEach(b=>b.classList.toggle('on',b.dataset.var===(settings.variant==='short'?'short':'long'))); }
 document.querySelectorAll('.varsel:not(.statvar)').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; ac(); settings.variant=b.dataset.var; saveSettings(); paintVariant(); if(settings.variant==='short'&&!tutorDone('short')) offerTutor('short'); $('tourCap').textContent=`${settings.variant==='short'?'короткие · ':''}ступень ${tourStage(settings.variant)+1} из 4 · ${LEVELS[TOUR[tourStage(settings.variant)]][1]}`;}));
 paintVariant();
+document.querySelectorAll('.seg.iconsel').forEach(el=>el.addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return;
+  try{ await NAT().setIcon({name:b.dataset.icon}); settings.appIcon=b.dataset.icon; saveSettings(); paintSettings(); }catch(err){ toast('crown','Иконку не сменить',String(err&&err.message||err).slice(0,60)); } }));
 document.querySelectorAll('.seg.vib').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.vibro=b.dataset.vib==='on'; saveSettings(); paintSettings(); buzz(12);}));
 document.querySelectorAll('.seg.autosel').forEach(el=>el.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; settings.automove=b.dataset.auto==='on'; saveSettings(); paintSettings();}));
 $('cksets').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b||b.disabled) return; settings.ckset=b.dataset.ck; saveSettings(); paintSettings(); buildStatic(); if(G) render();});

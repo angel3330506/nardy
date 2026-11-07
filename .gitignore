@@ -3,3 +3,6 @@ __pycache__/
 *.zip
 .preview/
 dist/
+android-shell/nardy-ads/android/build/
+tools/i18n/left-en.json
+tools/i18n/missing.json

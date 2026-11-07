@@ -830,7 +830,7 @@ def board_glass():
     gloss = np.full((H, W), .25)
     fields = np.maximum(field_with_bays(40, 27, 15), field_with_bays(540, 27, 15))
     glass = np.ones((H, W, 3)) * np.array((.045, .05, .06))
-    # под стеклом — тёмный камень и две воровские звезды: восемь равных лучей,
+    # под стеклом — тёмный камень и две звёзды-розы ветров: восемь равных лучей,
     # у каждого луча одна половина залита белой краской, вторая — только тонкий контур
     stone = np.array((.10, .10, .11)) * (.75 + .5 * fbm(H, W, 40, 60, 43, 5)[..., None])
     glass = put(glass, fields, stone)
@@ -915,7 +915,7 @@ def board_night():
     h = h * (1 - bar) + bar * 24
     bl = rrect(499.2, 40, 500.8, 660, 0)
     alb = put(alb, bl, np.ones((H, W, 3)) * gold); metal = np.maximum(metal, bl)
-    # гранёные золотые воровские звёзды: высота из расстояния до контура
+    # гранёные золотые звёзды-розы ветров: высота из расстояния до контура
     def gold_star(cx, cy, R, r, base):
         nonlocal alb, h, metal
         sm = poly(star_poly(cx, cy, R, r, 8))
@@ -1113,7 +1113,7 @@ def checker_sprite(name, kind):
         base = (.94, .90, .80) if kind == 'ivory' else (.10, .10, .115)
         alb = np.ones((N, N, 3)) * np.array(base)
         alb = alb * (1 + (vnoise(N, N, 6, 6, 93) - .5)[..., None] * .06)
-        # воровская звезда-инкрустация
+        # восьмилучевая роза ветров-инкрустация
         sp = star_halves(0, 0, R * .55, R * .2, 8)
         def pm(pts):
             im = Image.new('L', (N, N), 0)

@@ -29,10 +29,23 @@ m = np.clip((R + 2 - d) / 4, 0, 1)[..., None]
 res = A * (1 - m) + out * m
 img = Image.fromarray(res.clip(0, 255).astype(np.uint8))
 img.save('boards/lid-plain.webp', quality=86, method=6)
-# белый Аревахач: тот же квадрат 544 px, что и золотой (intro-rev.webp), альфа — светлая инкрустация
+# белый и золотой Аревахач: тот же квадрат 544 px, маска — светлая инкрустация. Светлые волокна ореха (тонкие вертикальные
+# полоски между кольцами) из маски убираем: порог выше + медианный фильтр по вертикали (полоски в 1–3 px исчезают, края знака остаются)
+from scipy.ndimage import median_filter, gaussian_filter as gf
 S = 272; crop = A[cy - S:cy + S, cx - S:cx + S]
-lum = crop[..., :3].mean(-1); a = np.clip((lum - 150) / 50, 0, 1)
-rr = np.hypot(*np.mgrid[-S:S, -S:S]); a *= np.clip((S - rr) / 3, 0, 1)
-w = crop.copy(); w[..., 3] = a * 255
+lum = crop[..., :3].mean(-1)
+m = np.clip((lum - 175) / 35, 0, 1)
+m = median_filter(m, size=(1, 5))                       # поперёк волокон (они вертикальные) — тонкие линии пропадают
+m = np.minimum(m, median_filter(m, size=(3, 3)))
+rr = np.hypot(*np.mgrid[-S:S, -S:S]); m *= np.clip((S - rr) / 3, 0, 1)
+w = crop.copy(); w[..., 3] = m * 255
 Image.fromarray(w.astype(np.uint8)).resize((640, 640), Image.LANCZOS).save('boards/intro-rev-w.webp', quality=90, method=6)
+# золотой: тёплый градиент (светлее к центру) с мягкой светотенью от рельефа инкрустации
+yy2, xx2 = np.mgrid[-S:S, -S:S] / S
+g = np.clip(1 - np.hypot(xx2 + .25, yy2 + .3) * .55, 0, 1)[..., None]
+c0 = np.array([196, 134, 38.]); c1 = np.array([255, 224, 130.])
+col = c0 + (c1 - c0) * g
+shade = gf(lum, 2) / 255; shade = (shade - shade[m > .5].mean()) * .55 + 1
+gold = np.zeros((2 * S, 2 * S, 4)); gold[..., :3] = np.clip(col * shade[..., None], 0, 255); gold[..., 3] = m * 255
+Image.fromarray(gold.astype(np.uint8)).resize((640, 640), Image.LANCZOS).save('boards/intro-rev.webp', quality=90, method=6)
 print('ok')

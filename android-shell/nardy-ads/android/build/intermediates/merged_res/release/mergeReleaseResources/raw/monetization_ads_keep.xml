@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@layout/monetization_ads_*,
+    @font/monetization_ads_*,
+    @drawable/monetization_ads_*,
+    @drawable-hdpi/monetization_ads_*,
+    @drawable-mdpi/monetization_ads_*,
+    @drawable-xhdpi/monetization_ads_*,
+    @drawable-xxhdpi/monetization_ads_*,
+    @drawable-xxxhdpi/monetization_ads_*,
+    @raw/monetization_ads_*,
+    @anim/monetization_ads_*" />

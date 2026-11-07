@@ -909,6 +909,38 @@ function yaGameplay(on){ if(!YA||on===yaPlaying) return; yaPlaying=on; yaInit.th
 if(YA) document.addEventListener('visibilitychange',()=>{ try{ if(!AC) return; if(document.hidden) AC.suspend(); else if(!yaPaused) AC.resume(); }catch(e){} });
 if(YA) document.addEventListener('contextmenu',e=>e.preventDefault());
 if(YA) document.documentElement.classList.add('ya');
+
+/* ---------- реклама ----------
+   Только в Android-приложении (RuStore, Яндекс Реклама через плагин NardyAds) и в Яндекс Играх (их SDK).
+   На сайте и в айфоновском приложении рекламы нет. Полноэкранная — после законченной партии (Ещё партию / Меню),
+   не чаще раза в 3 минуты и не в первые 3 минуты; ролик за награду — дополнительная подсказка, когда бесплатные кончились. */
+const AD_IDS={interstitial:'demo-interstitial-yandex',rewarded:'demo-rewarded-yandex'};   // TODO: свои ID блоков из кабинета Яндекс Рекламы
+const NADS=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.NardyAds;
+const adsOn=()=>!!(YA||(/NardyAndroid/.test(navigator.userAgent)&&NADS()));
+let adLast=Date.now();
+try{ const n=NADS(); if(n&&/NardyAndroid/.test(navigator.userAgent)) n.configure(AD_IDS).catch(()=>{}); }catch(e){}
+const adMute=on=>{ try{ if(!AC) return; on?AC.suspend():(!document.hidden&&AC.resume()); }catch(e){} };
+// полноэкранная реклама в паузе между партиями; fn — что делать дальше (после закрытия рекламы или сразу)
+async function adBreak(fn){
+  if(!adsOn()||Date.now()-adLast<180e3){ fn(); return; }
+  adLast=Date.now(); adMute(true);
+  try{
+    if(YA){ const sdk=await yaInit; if(sdk&&sdk.adv) await new Promise(res=>sdk.adv.showFullscreenAdv({callbacks:{onClose:res,onError:res,onOffline:res}})); }
+    else await NADS().showInterstitial();
+  }catch(e){}
+  adMute(false); fn();
+}
+// ролик за награду; true — досмотрел
+async function adReward(){
+  if(!adsOn()) return false;
+  adMute(true); let ok=false;
+  try{
+    if(YA){ const sdk=await yaInit; if(sdk&&sdk.adv) await new Promise(res=>sdk.adv.showRewardedVideo({callbacks:{onRewarded:()=>{ok=true;},onClose:res,onError:res}})); }
+    else { const r=await NADS().showRewarded(); ok=!!(r&&r.rewarded); }
+  }catch(e){}
+  adMute(false); adLast=Math.max(adLast,Date.now()-120e3);   // после ролика — минута без полноэкранной
+  return ok;
+}
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id);
@@ -927,7 +959,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='122';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='123';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/intro-rev-w.webp":"c1e7a4bf","boards/intro-rev.webp":"9627dbfd","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -3387,7 +3419,15 @@ $('bMain').addEventListener('click',()=>{
   if(G.phase==='move'&&!G.steps.length&&!G.auto&&!busy) humanEnd();
 });
 $('bUndo').addEventListener('click',()=>{ G.hint=null; undo(); });
-$('bHint').addEventListener('click',()=>{ ac(); G.usedHint=true; showHint(); });
+$('bHint').addEventListener('click',async()=>{ ac();
+  if(!G||G.phase!=='move'||!isHuman(G.turn)||busy||G.auto||mode==='net'||mode==='puzzle') return;
+  const FREE=2;
+  if(adsOn()&&(G.hintsN||0)>=FREE&&!G.hint){
+    if(!await ask({title:'Ещё подсказка?',text:`Бесплатные подсказки на эту партию закончились (${FREE}). Посмотрите короткий ролик — и получите ещё одну.`,ok:'Смотреть ролик',cancel:'Не надо'})) return;
+    if(!await adReward()){ toast('dice','Ролик не досмотрен','подсказка не начислена'); return; }
+  }
+  if(!G.hint) G.hintsN=(G.hintsN||0)+1;
+  G.usedHint=true; showHint(); });
 $('bReview').addEventListener('click',()=>mode==='puzzle'?puzShowBest():showReview());
 $('bReviewClose').addEventListener('click',()=>{$('reviewSheet').hidden=true;});
 $('bStats').addEventListener('click',showStats);
@@ -3418,9 +3458,9 @@ $('dDraw').addEventListener('click',offerDraw);
 $('dNew').addEventListener('click',async()=>{ if(busy||G.auto) return; if(!await ask({title:'Начать заново?',text:'Текущая позиция пропадёт.',ok:'Начать заново',cancel:'Отмена'})) return; if(busy||G.auto) return; closeDrawer(); ac(); newGame(mode); });
 $('dRules').addEventListener('click',()=>{ closeDrawer(); $('rules').hidden=false; });
 $('dMain').addEventListener('click',()=>{ if(busy||G.auto) return; closeDrawer(); showMenu(); });
-$('bAgain').addEventListener('click',()=>{ac(); if(mode==='puzzle') return startPuzzle(); if(mode==='net'){ if(NET) netSend({t:'new'}); } else newGame(mode,false,G&&G.tour);});
+$('bAgain').addEventListener('click',()=>{ac(); if(mode==='puzzle') return startPuzzle(); if(mode!=='net'&&G&&G.phase==='over'){ adBreak(()=>newGame(mode,false,G&&G.tour)); return; } if(mode==='net'){ if(NET) netSend({t:'new'}); } else newGame(mode,false,G&&G.tour);});
 $('mTour').addEventListener('click',()=>openCase(()=>newGame('ai',false,true)));
-$('bToMenu').addEventListener('click',showMenu);
+$('bToMenu').addEventListener('click',()=>{ if(G&&G.phase==='over'&&mode!=='net'&&mode!=='puzzle') adBreak(showMenu); else showMenu(); });
 // крышка откидывается, под ней доска — и начинается партия
 let opening=false;
 // Экранный прямоугольник элемента внутри меню. Меню уменьшено через zoom, и Safari на iPhone отдаёт координаты внутри него

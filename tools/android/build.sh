@@ -8,7 +8,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); OUT=$(mkdir -p "$1" && cd "$1" && pwd); VC=${2:-1}; VN=${3:-1.0}
 cd "$OUT"; rm -rf app; mkdir app; cd app
 npm init -y >/dev/null
-npm i -s @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/haptics@7 @capacitor/app@7
+npm i -s @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/haptics@7 @capacitor/app@7 "$ROOT"/android-shell/nardy-ads
 mkdir www && cp -R "$ROOT"/index.html "$ROOT"/boards "$ROOT"/sounds "$ROOT"/icons www/   # запасная копия игры (если сайт недоступен)
 cp "$ROOT"/android-shell/capacitor.config.json .
 npx cap add android >/dev/null
@@ -43,6 +43,6 @@ cat >> $G <<GR
 android { signingConfigs { release { storeFile file(System.getenv('KEYSTORE')); storePassword System.getenv('KS_PASS'); keyAlias System.getenv('KEY_ALIAS') ?: 'nardy'; keyPassword System.getenv('KS_PASS') } }
   buildTypes { release { signingConfig signingConfigs.release } } }
 GR
-cd android && ./gradlew -q assembleRelease bundleRelease
+cd android && ./gradlew -q --init-script "$ROOT/tools/android/mirror.gradle" assembleRelease bundleRelease
 cp app/build/outputs/apk/release/app-release.apk "$OUT/Nardy-$VN.apk"; cp app/build/outputs/bundle/release/app-release.aab "$OUT/Nardy-$VN.aab"
 ls -la "$OUT"/Nardy-*

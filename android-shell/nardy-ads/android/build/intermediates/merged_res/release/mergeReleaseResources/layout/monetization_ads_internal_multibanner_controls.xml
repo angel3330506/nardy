@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.monetization.ads.nativeads.view.pager.MultiBannerControlsContainer xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="false"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/left_scroll_control_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|left"
+        android:paddingVertical="12dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="16dp"
+        android:src="@drawable/monetization_ads_internal_multibanner_left_button_icon" />
+
+    <ImageView
+        android:id="@+id/right_scroll_control_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|right"
+        android:paddingVertical="12dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="8dp"
+        android:src="@drawable/monetization_ads_internal_multibanner_right_button_icon" />
+
+    <ImageView
+        android:id="@+id/dot_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="10dp"
+        android:adjustViewBounds="true" />
+
+</com.monetization.ads.nativeads.view.pager.MultiBannerControlsContainer>

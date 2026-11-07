@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.monetization.ads.nativeads.ExtendedNativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.monetization.ads.fullscreen.template.view.ExtendedViewContainer
+                android:id="@+id/monetization_ads_media_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.monetization.ads.nativeads.CustomizableMediaView
+                    android:id="@+id/monetization_ads_media"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
+                    tools:background="@android:color/holo_green_light"
+                    tools:visibility="visible" />
+
+            </com.monetization.ads.fullscreen.template.view.ExtendedViewContainer>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/monetization_ads_internal_controls_background"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/monetization_ads_close"
+                    android:tag="close"
+                    android:layout_width="@dimen/monetization_ads_internal_close_size"
+                    android:layout_height="@dimen/monetization_ads_internal_close_size"
+                    android:paddingBottom="20dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="12dp"
+                    android:paddingTop="12dp"
+                    android:src="@drawable/monetization_ads_internal_close_light" />
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <include
+            layout="@layout/monetization_ads_internal_native_interstitial_content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+</com.monetization.ads.nativeads.ExtendedNativeAdView>

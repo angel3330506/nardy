@@ -1,0 +1,7 @@
+// Зеркало Maven Central (Google): при частых сборках repo.maven.apache.org отвечает 429 «слишком много запросов»
+def MIRROR = 'https://maven-central.storage-download.googleapis.com/maven2/'
+settingsEvaluated { s -> s.pluginManagement.repositories { maven { url MIRROR } } }
+allprojects {
+    buildscript { repositories { maven { url MIRROR } } }
+    repositories { maven { url MIRROR } }
+}

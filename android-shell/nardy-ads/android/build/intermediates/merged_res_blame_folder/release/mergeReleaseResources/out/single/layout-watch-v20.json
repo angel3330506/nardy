@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout-watch-v20/abc_alert_dialog_title_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout-watch-v20/abc_alert_dialog_title_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout-watch-v20/abc_alert_dialog_button_bar_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout-watch-v20/abc_alert_dialog_button_bar_material.xml"
+    }
+]

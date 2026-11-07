@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/item_parameter_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/debug_panel_key"
+        android:inputType="text"
+        android:maxLines="1"
+        android:textColor="?attr/debug_panel_label_primary"
+        android:textColorHint="?attr/debug_panel_label_secondary"
+        android:textSize="@dimen/debug_panel_text_body1"
+        tools:ignore="Autofill,LabelFor" />
+
+    <EditText
+        android:id="@+id/item_parameter_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/debug_panel_value"
+        android:inputType="text"
+        android:maxLines="1"
+        android:textColor="?attr/debug_panel_label_primary"
+        android:textColorHint="?attr/debug_panel_label_secondary"
+        android:textSize="@dimen/debug_panel_text_body1"
+        tools:ignore="Autofill,LabelFor" />
+
+    <TextView
+        android:id="@+id/item_add_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/debug_panel_space_small"
+        android:background="@drawable/debug_panel_item_action_button_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:minHeight="36dp"
+        android:paddingHorizontal="@dimen/debug_panel_space_medium"
+        android:text="@string/debug_panel_add" />
+
+</LinearLayout>

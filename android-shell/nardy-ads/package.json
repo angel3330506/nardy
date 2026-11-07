@@ -1,0 +1,9 @@
+{
+  "name": "nardy-ads",
+  "version": "1.0.0",
+  "description": "Реклама Яндекса (Yandex Mobile Ads 8) для Android-приложения «Нарды»: полноэкранная и за награду",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "capacitor": { "android": { "src": "android" } },
+  "files": ["android/src/main/", "android/build.gradle", "index.js"]
+}

@@ -1,0 +1,286 @@
+[
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_screen_simple_overlay_action_mode.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_screen_simple_overlay_action_mode.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_native_interstitial_landscape_sponsored_container.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_native_interstitial_landscape_sponsored_container.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_action_menu_item_layout.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_action_menu_item_layout.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_native_interstitial_landscape_vetrical_media.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_native_interstitial_landscape_vetrical_media.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_instream_ctv_skin_portrait.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_instream_ctv_skin_portrait.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/ime_secondary_split_test_activity.xml",
+        "source": "am.nardy.ads.nardy-ads-core-1.15.0-17:/layout/ime_secondary_split_test_activity.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_alert_dialog_title_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_alert_dialog_title_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_item_parameter_input.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_item_parameter_input.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/activity_debug.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/activity_debug.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_action_bar_title_item.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_action_bar_title_item.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_list_menu_item_icon.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_list_menu_item_icon.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_activity_chooser_view_list_item.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_activity_chooser_view_list_item.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_item_action_button.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_item_action_button.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_multibanner_controls.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_multibanner_controls.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_outstream_controls_default.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_outstream_controls_default.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/bridge_layout_main.xml",
+        "source": "am.nardy.ads.nardy-ads-release-35:/layout/bridge_layout_main.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/deubg_panel_item_header.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/deubg_panel_item_header.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_native_interstitial_content.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_native_interstitial_content.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_item_selector.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_item_selector.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_item_ad_unit.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_item_ad_unit.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_screen_toolbar.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_screen_toolbar.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/capacitor_bridge_layout_main.xml",
+        "source": "am.nardy.ads.nardy-ads-release-35:/layout/capacitor_bridge_layout_main.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_instream_skin_v2_redesign.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_instream_skin_v2_redesign.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_item_mediation_adapter.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_item_mediation_adapter.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_feed_item.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_feed_item.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/custom_dialog.xml",
+        "source": "am.nardy.ads.nardy-ads-core-1.15.0-17:/layout/custom_dialog.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_list_menu_item_checkbox.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_list_menu_item_checkbox.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_cascading_menu_item_layout.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_cascading_menu_item_layout.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_list_menu_item_layout.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_list_menu_item_layout.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_action_mode_bar.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_action_mode_bar.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_native_interstitial_portrait.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_native_interstitial_portrait.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/notification_template_part_time.xml",
+        "source": "am.nardy.ads.nardy-ads-core-1.15.0-17:/layout/notification_template_part_time.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/deubg_panel_item_key_value.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/deubg_panel_item_key_value.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/support_simple_spinner_dropdown_item.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/support_simple_spinner_dropdown_item.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_action_mode_close_item_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_action_mode_close_item_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_search_dropdown_item_icons_2line.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_search_dropdown_item_icons_2line.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_select_dialog_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_select_dialog_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_toolbar.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_toolbar.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/select_dialog_item_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/select_dialog_item_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_adtune_container.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_adtune_container.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_alert_dialog_button_bar_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_alert_dialog_button_bar_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_item_switch.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_item_switch.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/select_dialog_multichoice_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/select_dialog_multichoice_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_divkit.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_divkit.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_native_rewarded_portrait.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_native_rewarded_portrait.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/notification_template_part_chronometer.xml",
+        "source": "am.nardy.ads.nardy-ads-core-1.15.0-17:/layout/notification_template_part_chronometer.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_dialog_title_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_dialog_title_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/ime_base_split_test_activity.xml",
+        "source": "am.nardy.ads.nardy-ads-core-1.15.0-17:/layout/ime_base_split_test_activity.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/select_dialog_singlechoice_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/select_dialog_singlechoice_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_instream_skin_v2.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_instream_skin_v2.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_expanded_menu_layout.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_expanded_menu_layout.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_action_bar_up_container.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_action_bar_up_container.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_feed_progressbar.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_feed_progressbar.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_popup_menu_item_layout.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_popup_menu_item_layout.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_native_rewarded_controls.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_native_rewarded_controls.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_list_menu_item_radio.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_list_menu_item_radio.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_screen_content_include.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_screen_content_include.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_tooltip.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_tooltip.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_instream_ctv_skin_landscape.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_instream_ctv_skin_landscape.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_native_interstitial_landscape_horizontal_media.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_native_interstitial_landscape_horizontal_media.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_action_menu_layout.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_action_menu_layout.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_alert_dialog_material.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_alert_dialog_material.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_search_view.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_search_view.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_screen_simple.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_screen_simple.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/no_webview.xml",
+        "source": "am.nardy.ads.nardy-ads-release-35:/layout/no_webview.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_native_interstitial_close.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_native_interstitial_close.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_activity_chooser_view.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_activity_chooser_view.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_item_navigation.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_item_navigation.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/monetization_ads_internal_instream_skin_v1.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/monetization_ads_internal_instream_skin_v1.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/debug_panel_item_divider.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/layout/debug_panel_item_divider.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/layout/abc_popup_menu_header_item_layout.xml",
+        "source": "am.nardy.ads.nardy-ads-appcompat-1.7.0-30:/layout/abc_popup_menu_header_item_layout.xml"
+    }
+]

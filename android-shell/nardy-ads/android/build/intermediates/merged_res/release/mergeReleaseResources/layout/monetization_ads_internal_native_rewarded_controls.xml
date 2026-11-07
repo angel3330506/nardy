@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:orientation="horizontal"
+    tools:ignore="MergeRootFrame">
+
+    <ImageView
+        android:id="@+id/monetization_ads_feedback"
+        android:layout_width="@dimen/monetization_ads_internal_rewarded_control_icon_size"
+        android:layout_height="@dimen/monetization_ads_internal_rewarded_control_icon_size"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="@dimen/monetization_ads_internal_reward_header_control_margin"
+        android:src="@drawable/monetization_ads_internal_rewarded_feedback_with_padding"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_gravity="end"
+        android:layout_marginRight="8dp"
+        android:orientation="horizontal"
+        tools:ignore="UseCompoundDrawables">
+
+        <FrameLayout
+            android:id="@+id/timer_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center_vertical"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/monetization_ads_timer_value"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/monetization_ads_internal_rewarded_control_timer_height"
+                android:background="@drawable/monetization_ads_internal_rewarded_timer_background"
+                android:ellipsize="none"
+                android:gravity="center"
+                android:singleLine="true"
+                android:textColor="@color/monetization_ads_internal_text_color_white"
+                android:textSize="12dp"
+                tools:ignore="SpUsage"
+                tools:text="12" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/monetization_ads_close"
+            android:layout_width="@dimen/monetization_ads_internal_rewarded_control_icon_size"
+            android:layout_height="@dimen/monetization_ads_internal_rewarded_control_icon_size"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/monetization_ads_internal_rewarded_close_with_padding"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+</FrameLayout>

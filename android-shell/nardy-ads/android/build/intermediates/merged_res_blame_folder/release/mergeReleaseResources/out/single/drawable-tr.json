@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/drawable-tr/monetization_ads_instream_internal_skip_focused.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/drawable-tr/monetization_ads_instream_internal_skip_focused.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/drawable-tr/monetization_ads_instream_internal_skip_unfocused.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/drawable-tr/monetization_ads_instream_internal_skip_unfocused.xml"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/drawable-tr/monetization_ads_instream_internal_click_button.xml",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/drawable-tr/monetization_ads_instream_internal_click_button.xml"
+    }
+]

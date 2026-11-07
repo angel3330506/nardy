@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/drawable-ldpi-v4/monetization_ads_internal_instream_ic_sound_off_v2_focused.png",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/drawable-ldpi-v4/monetization_ads_internal_instream_ic_sound_off_v2_focused.png"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/drawable-ldpi-v4/monetization_ads_internal_instream_trademark_icon.png",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/drawable-ldpi-v4/monetization_ads_internal_instream_trademark_icon.png"
+    },
+    {
+        "merged": "am.nardy.ads.nardy-ads-release-3:/drawable-ldpi-v4/monetization_ads_internal_instream_ic_sound_on_v2_focused.png",
+        "source": "am.nardy.ads.nardy-ads-mobileads-8.6.0-21:/drawable-ldpi-v4/monetization_ads_internal_instream_ic_sound_on_v2_focused.png"
+    }
+]

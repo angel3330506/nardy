@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/debug_panel_space_medium_large_negative"
+    android:layout_marginVertical="@dimen/debug_panel_space_small_negative"
+    android:background="@drawable/debug_panel_item_navigation_background"
+    android:paddingHorizontal="@dimen/debug_panel_space_medium_large"
+    android:paddingVertical="@dimen/debug_panel_space_small">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|left"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/item_name"
+            style="@style/DebugPanelText.Body1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="@dimen/debug_panel_space_large"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/DebugPanelText.Body2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/debug_panel_ad_unit_format" />
+
+                <TextView
+                    style="@style/DebugPanelText.Body2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/debug_panel_ad_unit_id" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/item_ad_unit_format"
+                    style="@style/DebugPanelText.Body2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/debug_panel_label_primary" />
+
+                <TextView
+                    android:id="@+id/item_ad_unit_id"
+                    style="@style/DebugPanelText.Body2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/debug_panel_label_primary" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|right"
+        android:src="@drawable/debug_panel_icon_arrow_navigate" />
+
+</FrameLayout>

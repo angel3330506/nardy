@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/monetization_ads_close"
+        android:layout_width="68dp"
+        android:layout_height="68dp"
+        android:layout_gravity="top|end"
+        android:padding="16dp"
+        android:src="@drawable/monetization_ads_internal_landscape_close_button" />
+
+</merge>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.monetization.ads.nativeads.ExtendedNativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/root_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black">
+
+        <com.monetization.ads.nativeads.CustomizableMediaView
+            android:id="@+id/monetization_ads_media"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:visibility="gone"
+            tools:background="@android:color/holo_green_light"
+            tools:layout_height="200dp"
+            tools:visibility="visible" />
+
+        <include layout="@layout/monetization_ads_internal_native_rewarded_controls" />
+
+        <com.monetization.ads.fullscreen.template.view.CallToActionView
+            android:id="@+id/monetization_ads_call_to_action"
+            style="@style/MonetizationAdsInternal.RewardedCallToAction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="@dimen/monetization_ads_internal_call_to_action_margin_horizontal"
+            android:layout_marginRight="@dimen/monetization_ads_internal_call_to_action_margin_horizontal"
+            android:layout_marginBottom="@dimen/monetization_ads_internal_call_to_action_margin_vertical"
+            android:paddingLeft="@dimen/monetization_ads_internal_call_to_action_padding_horizontal"
+            android:paddingRight="@dimen/monetization_ads_internal_call_to_action_padding_horizontal"
+            android:textSize="@dimen/monetization_ads_internal_rewarded_call_to_action_text_size"
+            tools:text="Установить" />
+
+    </FrameLayout>
+
+</com.monetization.ads.nativeads.ExtendedNativeAdView>

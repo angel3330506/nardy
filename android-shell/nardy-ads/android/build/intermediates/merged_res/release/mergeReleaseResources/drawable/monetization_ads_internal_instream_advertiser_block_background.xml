@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/monetization_ads_internal_instream_advertiser_block_background_focused" android:state_focused="true" />
+    <item android:drawable="@drawable/monetization_ads_internal_instream_advertiser_block_background_unfocused" android:state_focused="false" />
+</selector>

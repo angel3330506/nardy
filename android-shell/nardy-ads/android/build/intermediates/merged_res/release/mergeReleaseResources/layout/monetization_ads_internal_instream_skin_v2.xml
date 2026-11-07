@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.monetization.ads.video.playback.view.ExtendedVideoAdControlsContainer xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:background="@color/monetization_ads_internal_instream_background"
+    tools:layout_height="300dp">
+
+    <FrameLayout
+        android:id="@+id/monetization_ads_video_container"
+        android:background="@color/monetization_ads_internal_instream_video_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/monetization_ads_feedback"
+        android:tag="instream_feedback"
+        android:layout_width="@dimen/monetization_instream_internal_adtune_size"
+        android:layout_height="@dimen/monetization_instream_internal_adtune_size"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="@dimen/monetization_instream_internal_adtune_corner_margin"
+        android:layout_marginRight="@dimen/monetization_instream_internal_adtune_corner_margin"
+        android:focusable="true"
+        android:nextFocusLeft="@id/monetization_ads_instream_mute"
+        android:nextFocusDown="@id/monetization_ads_instream_skip"
+        android:contentDescription="@string/monetization_ads_internal_instream_feedback"
+        tools:src="@drawable/monetization_ads_internal_instream_adtune_control_v2" />
+
+    <com.monetization.ads.fullscreen.template.view.ExtendedTextView
+        android:id="@+id/monetization_ads_warning"
+        android:tag="instream_warning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:alpha="0.4"
+        android:gravity="center"
+        android:textAllCaps="true"
+        android:textColor="@color/monetization_ads_internal_text_color_white"
+        android:textSize="@dimen/monetization_instream_internal_warning_text_size"
+        android:visibility="gone"
+        android:focusable="false"
+        tools:text="Есть противопоказания. Посоветуйтесь с врачом"
+        tools:visibility="visible" />
+
+    <com.monetization.ads.instream.view.InstreamMuteView
+        android:id="@+id/monetization_ads_instream_mute"
+        android:tag="instream_mute"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="@dimen/monetization_instream_internal_mute_width"
+        android:layout_height="@dimen/monetization_instream_internal_mute_height"
+        android:layout_gravity="start"
+        android:layout_marginLeft="@dimen/monetization_instream_internal_corner_margin"
+        android:layout_marginTop="@dimen/monetization_instream_internal_corner_margin"
+        android:focusable="true"
+        android:nextFocusRight="@+id/monetization_ads_feedback"
+        android:nextFocusDown="@id/monetization_ads_call_to_action"
+        app:monetization_internal_sound_off="@drawable/monetization_ads_internal_instream_ic_sound_off_v2"
+        app:monetization_internal_sound_on="@drawable/monetization_ads_internal_instream_ic_sound_on_v2" />
+
+    <LinearLayout
+        android:id="@+id/monetization_ads_qrcode_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:visibility="gone"
+        tools:visibility="visible"
+
+        android:layout_marginLeft="@dimen/monetization_instream_internal_controls_margin_horizontal"
+        android:layout_marginBottom="66dp"
+        android:background="@drawable/monetization_ads_internal_qrcode_view_background"
+        android:clipToOutline="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/monetization_ads_qrcode_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:layout_width="200dp"
+            tools:layout_height="200dp"
+            android:background="@drawable/monetization_ads_internal_qrcode_container_background"
+            android:clipToOutline="true"
+            android:padding="3dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="24dp"
+            android:autoSizeMinTextSize="1dp"
+            android:autoSizeTextType="uniform"
+            android:clipToOutline="true"
+            android:gravity="center"
+            android:padding="3dp"
+            android:text="@string/monetization_ads_internal_scan_qrcode"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/monetization_ads_instream_cta_container"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/monetization_instream_internal_advertiser_block_height"
+        android:layout_gravity="bottom|start"
+        android:layout_marginLeft="@dimen/monetization_instream_internal_controls_margin_horizontal"
+        android:layout_marginBottom="@dimen/monetization_instream_internal_controls_margin_vertical"
+        android:background="@drawable/monetization_ads_internal_instream_advertiser_block_background_unfocused">
+
+        <ImageView
+            android:id="@+id/monetization_ads_favicon"
+            android:focusable="false"
+            android:tag="instream_favicon"
+            android:layout_width="@dimen/monetization_instream_internal_advertiser_icon_size"
+            android:layout_height="@dimen/monetization_instream_internal_advertiser_icon_size"
+            android:layout_marginLeft="@dimen/monetization_instream_internal_advertiser_icon_margin_horizontal"
+            android:layout_marginTop="@dimen/monetization_instream_internal_advertiser_icon_margin_vertical"
+            android:layout_marginBottom="@dimen/monetization_instream_internal_advertiser_icon_margin_vertical"
+            tools:src="@drawable/monetization_ads_internal_google_play_icon_white" />
+
+        <TextView
+            android:id="@+id/monetization_ads_domain"
+            android:focusable="false"
+            android:tag="instream_domain"
+            android:layout_width="wrap_content"
+            android:maxLength="@integer/monetization_instream_internal_domain_max_length"
+            android:layout_height="@dimen/monetization_instream_internal_domain_view_height"
+            android:layout_gravity="center"
+            android:layout_marginLeft="@dimen/monetization_instream_internal_domain_margin_horizontal"
+            android:layout_marginRight="@dimen/monetization_instream_internal_domain_margin_horizontal"
+            android:layout_marginTop="@dimen/monetization_instream_internal_domain_margin_vertical"
+            android:layout_marginBottom="@dimen/monetization_instream_internal_domain_margin_vertical"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/monetization_ads_internal_text_color_white"
+            android:textSize="@dimen/monetization_instream_internal_domain_text_size"
+            tools:text="taxi.service.ru"
+            tools:ignore="SpUsage" />
+
+        <TextView
+            android:id="@+id/monetization_ads_call_to_action"
+            android:focusable="true"
+            android:nextFocusUp="@id/monetization_ads_instream_mute"
+            android:nextFocusRight="@id/monetization_ads_instream_skip"
+            android:tag="instream_call_to_action"
+            android:layout_width="@dimen/monetization_instream_internal_call_to_action_width"
+            android:layout_height="@dimen/monetization_instream_internal_call_to_action_height"
+            android:layout_marginLeft="@dimen/monetization_instream_internal_call_to_action_margin_horizontal"
+            android:layout_marginTop="@dimen/monetization_instream_internal_call_to_action_margin_vertical"
+            android:layout_marginRight="@dimen/monetization_instream_internal_call_to_action_margin_horizontal"
+            android:layout_marginBottom="@dimen/monetization_instream_internal_call_to_action_margin_vertical"
+            android:background="@drawable/monetization_ads_internal_instream_call_to_action_background"
+            android:gravity="center"
+            android:textColor="@color/monetization_ads_internal_call_to_action_text_color"
+            android:textSize="@dimen/monetization_instream_internal_call_to_action_text_size"
+            android:textStyle="bold"
+            tools:text="Перейти ➔"
+            tools:ignore="SpUsage" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/monetization_instream_internal_sponsored_block_height"
+        android:layout_gravity="start|bottom"
+        android:layout_marginLeft="@dimen/monetization_instream_internal_sponsored_margin_horizontal"
+        android:layout_marginBottom="@dimen/monetization_instream_internal_sponsored_margin_vertical"
+        android:alpha="0.4"
+        android:descendantFocusability="blocksDescendants"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/monetization_ads_sponsored"
+            android:tag="instream_sponsored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textColor="@color/monetization_ads_internal_text_color_white"
+            android:textSize="@dimen/monetization_instream_internal_sponsored_block_text_size"
+            android:visibility="gone"
+            tools:text="Реклама"
+            tools:visibility="visible"
+            tools:ignore="SpUsage" />
+
+        <TextView
+            android:id="@+id/monetization_ads_sponsored_delimiter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/monetization_ads_internal_text_divider_with_space"
+            android:textColor="@color/monetization_ads_internal_text_color_white"
+            android:textSize="@dimen/monetization_instream_internal_sponsored_block_text_size"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:ignore="SpUsage" />
+
+        <TextView
+            android:id="@+id/monetization_ads_ad_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/monetization_ads_internal_instream_ad_position"
+            android:textColor="@color/monetization_ads_internal_text_color_white"
+            android:textSize="@dimen/monetization_instream_internal_sponsored_block_text_size"
+            android:visibility="gone"
+            tools:text="1 из 2"
+            tools:visibility="visible"
+            tools:ignore="SpUsage" />
+
+        <TextView
+            android:id="@+id/monetization_ads_trademark_delimiter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/monetization_ads_internal_text_divider_with_space"
+            android:textColor="@color/monetization_ads_internal_text_color_white"
+            android:textSize="@dimen/monetization_instream_internal_sponsored_block_text_size"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:ignore="SpUsage" />
+
+
+        <ImageView
+            android:id="@+id/monetization_ads_trademark_icon"
+            android:layout_width="@dimen/monetization_instream_internal_trademark_icon_size"
+            android:layout_height="@dimen/monetization_instream_internal_trademark_icon_size"
+            android:layout_gravity="bottom"
+            android:tag="instream_trademark"
+            android:layout_marginBottom="@dimen/monetization_instream_internal_trademark_icon_margin_vertical"
+            android:visibility="gone"
+            tools:src="@drawable/monetization_ads_internal_instream_trademark_icon"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+
+    <ProgressBar
+        android:id="@+id/monetization_ads_instream_progress_display_view"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:tag="instream_progress_display_view"
+        android:layout_width="match_parent"
+        android:layout_gravity="bottom"
+        android:layout_height="@dimen/monetization_instream_internal_progress_bar_height_v2"
+        android:max="@integer/monetization_instream_internal_progress_bar_max"
+        android:focusable="false"
+        android:progressDrawable="@drawable/monetization_ads_instream_internal_progress_display_v2"
+        tools:progress="50" />
+
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/monetization_instream_internal_button_size"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="@dimen/monetization_instream_internal_button_margin_end"
+        android:layout_marginBottom="@dimen/monetization_instream_internal_controls_margin_vertical">
+
+        <LinearLayout
+            android:id="@+id/monetization_ads_instream_skip"
+            android:tag="instream_skip"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/monetization_instream_internal_button_size"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:focusable="true"
+            android:nextFocusLeft="@id/monetization_ads_call_to_action"
+            android:nextFocusUp="@id/monetization_ads_feedback"
+            android:background="@drawable/monetization_ads_internal_instream_advertiser_block_background">
+
+            <TextView
+                android:tag="instream_skip_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="@dimen/monetization_instream_internal_skip_block_margin_horizontal"
+                android:layout_marginRight="@dimen/monetization_instream_internal_skip_block_margin_horizontal"
+                android:gravity="center"
+                android:text="@string/monetization_ads_internal_instream_skip"
+                android:textColor="@color/monetization_ads_internal_text_color_white"
+                android:textSize="@dimen/monetization_instream_internal_skip_text_size"
+                tools:ignore="SpUsage" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|right"
+                android:layout_marginRight="@dimen/monetization_instream_internal_skip_block_margin_horizontal"
+                android:background="@drawable/monetization_ads_internal_instream_skip_arrow" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/monetization_ads_timer_value"
+            android:tag="instream_timer_value"
+            android:layout_width="@dimen/monetization_instream_internal_timer_view_width"
+            android:layout_height="@dimen/monetization_instream_internal_timer_view_height"
+            android:gravity="center"
+            android:textColor="@color/monetization_ads_internal_text_color_white"
+            android:textSize="@dimen/monetization_instream_internal_timer_view_text_size"
+            android:visibility="gone"
+            android:background="@drawable/monetization_ads_internal_instream_advertiser_block_background_unfocused"
+            tools:text="9"
+            android:focusable="false"
+            tools:visibility="gone"
+            tools:ignore="SpUsage" />
+
+    </FrameLayout>
+
+</com.monetization.ads.video.playback.view.ExtendedVideoAdControlsContainer>

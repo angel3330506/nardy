@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/monetization_ads_internal_instream_ic_sound_off_v2_focused" android:state_focused="true" />
+    <item android:drawable="@drawable/monetization_ads_internal_ic_sound_off_fullscreen_content_v2" android:state_focused="false" />
+</selector>

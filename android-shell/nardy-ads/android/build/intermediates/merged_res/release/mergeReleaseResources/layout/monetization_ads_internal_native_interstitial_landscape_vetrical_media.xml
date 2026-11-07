@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.monetization.ads.nativeads.ExtendedNativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white">
+
+        <com.monetization.ads.nativeads.CustomizableMediaView
+            android:id="@+id/monetization_ads_media"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone"
+            tools:background="@android:color/holo_green_light"
+            tools:visibility="visible" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                tools:ignore="UselessParent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    tools:ignore="NestedWeights">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:orientation="vertical">
+
+                        <FrameLayout
+                            android:layout_width="@dimen/monetization_ads_internal_landscape_vertical_icon_size"
+                            android:layout_height="@dimen/monetization_ads_internal_landscape_vertical_icon_size"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="16dp">
+
+                            <ImageView
+                                android:id="@+id/monetization_ads_icon_placeholder"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center_horizontal"
+                                android:adjustViewBounds="true"
+                                android:background="@drawable/monetization_ads_internal_icon_grey_solid_background_small_corners"
+                                android:padding="24dp"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/monetization_ads_internal_icon_empty"
+                                android:visibility="gone"
+                                tools:visibility="visible" />
+
+                            <com.monetization.ads.fullscreen.template.view.RoundImageView
+                                android:id="@+id/monetization_ads_icon_small"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:adjustViewBounds="true"
+                                android:background="@drawable/monetization_ads_internal_icon_grey_solid_background_small_corners"
+                                android:padding="24dp"
+                                android:scaleType="centerCrop"
+                                android:visibility="gone"
+                                app:monetization_internal_corner_radius="8dp"
+                                tools:visibility="visible" />
+
+                            <com.monetization.ads.fullscreen.template.view.RoundImageView
+                                android:id="@+id/monetization_ads_icon_large"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:adjustViewBounds="true"
+                                android:scaleType="centerCrop"
+                                android:visibility="gone"
+                                app:monetization_internal_corner_radius="16dp"
+                                tools:visibility="visible" />
+
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/monetization_ads_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="8dp"
+                            android:ellipsize="end"
+                            android:gravity="center_horizontal"
+                            android:maxWidth="320dp"
+                            android:maxLines="@integer/monetization_ads_internal_title_max_lines"
+                            android:textColor="@android:color/black"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:visibility="gone"
+                            tools:text="@string/monetization_ads_internal_tools_title_text"
+                            tools:visibility="visible" />
+
+                        <LinearLayout
+                            android:id="@+id/monetization_ads_rating_container"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="8dp"
+                            android:orientation="horizontal">
+
+                            <com.monetization.ads.fullscreen.template.view.ColorizedRatingView
+                                android:id="@+id/monetization_ads_rating"
+                                style="@style/MonetizationAdsInternal.RatingBar.Small"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:layout_marginTop="1dp"
+                                android:numStars="@integer/monetization_ads_internal_rating_num_stars"
+                                android:stepSize="@dimen/monetization_ads_internal_rating_step_size"
+                                tools:rating="@dimen/monetization_ads_internal_rating_tools_value" />
+
+                            <TextView
+                                android:id="@+id/monetization_ads_rating_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/monetization_ads_internal_rating_margin_end"
+                                android:layout_marginLeft="@dimen/monetization_ads_internal_rating_margin_end"
+                                android:ellipsize="end"
+                                android:maxLines="@integer/monetization_ads_internal_review_count_max_lines"
+                                android:textColor="@android:color/black"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                tools:text="@string/monetization_ads_internal_tools_rating_text" />
+
+                            <TextView
+                                android:id="@+id/monetization_ads_price"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="16dp"
+                                android:layout_marginLeft="16dp"
+                                android:ellipsize="end"
+                                android:maxLines="@integer/monetization_ads_internal_price_max_lines"
+                                android:textColor="@color/monetization_ads_internal_grey_text_color"
+                                android:textSize="16sp"
+                                android:visibility="gone"
+                                tools:text="@string/monetization_ads_internal_tools_price_text"
+                                tools:visibility="visible" />
+
+                        </LinearLayout>
+
+                        <com.monetization.ads.fullscreen.template.view.CroppedTextView
+                            android:id="@+id/monetization_ads_body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="8dp"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:gravity="center_horizontal"
+                            android:maxWidth="320dp"
+                            android:maxLines="3"
+                            android:textColor="@color/monetization_ads_internal_grey_text_color"
+                            android:textSize="@dimen/monetization_ads_internal_body_text_size"
+                            android:visibility="gone"
+                            tools:text="@string/monetization_ads_internal_tools_body_text"
+                            tools:visibility="visible" />
+
+                        <com.monetization.ads.fullscreen.template.view.CallToActionView
+                            android:id="@+id/monetization_ads_call_to_action"
+                            style="@style/MonetizationAdsInternal.CallToAction"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginTop="12dp"
+                            android:background="@drawable/monetization_ads_internal_call_to_action_blue_solid_background"
+                            android:maxWidth="320dp"
+                            android:minWidth="280dp"
+                            android:paddingStart="20dp"
+                            android:paddingEnd="20dp"
+                            android:textColor="@android:color/white"
+                            android:textSize="18sp"
+                            android:visibility="gone"
+                            app:monetization_internal_icon="@drawable/monetization_ads_internal_google_play_icon_white"
+                            app:monetization_internal_icon_offset="@dimen/monetization_ads_internal_call_to_action_icon_offset"
+                            app:monetization_internal_icon_size="@dimen/monetization_ads_internal_call_to_action_icon_size"
+                            tools:text="@string/monetization_ads_internal_tools_call_to_action_text"
+                            tools:visibility="visible" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/monetization_ads_warning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="16dp"
+                    android:ellipsize="marquee"
+                    android:gravity="center_horizontal"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:textColor="@color/monetization_ads_internal_grey_text_color"
+                    android:textSize="@dimen/monetization_ads_internal_warning_text_size"
+                    android:visibility="gone"
+                    tools:text="@string/monetization_ads_internal_tools_warning_text"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <include layout="@layout/monetization_ads_internal_native_interstitial_landscape_sponsored_container" />
+
+    <include layout="@layout/monetization_ads_internal_native_interstitial_close" />
+
+</com.monetization.ads.nativeads.ExtendedNativeAdView>

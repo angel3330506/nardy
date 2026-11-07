@@ -128,11 +128,24 @@ svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 /* ---------- конец партии ----------
    победа: правая половина доски захлопывается крышкой на левую (как нарды в меню), Аревахач на крышке вспыхивает золотом;
    поражение: соперник стучит по столу, свет чуть меркнет */
-#endCase{position:absolute;inset:0;z-index:1;pointer-events:none;perspective:2400px}
+#endCase{position:absolute;inset:0;z-index:1;pointer-events:none;perspective:2600px;perspective-origin:50% 40%;--T:12px}
+/* левая половина доски — со своей боковиной и тенью, как закрытые нарды в меню */
+#endCase .ecBase{position:absolute;left:0;top:0;width:50%;height:100%;background:var(--ecimg) left/auto 100% no-repeat;
+  filter:drop-shadow(0 var(--side,6px) 0 #2a180c) drop-shadow(0 12px 30px rgba(0,0,0,.6))}
+/* тень поднимающейся крышки на столе и доске */
+#endCase .ecShade{position:absolute;top:0;height:100%;left:50%;width:50%;border-radius:12px;background:rgba(0,0,0,.55);opacity:0}
 #endCase .ecLid{position:absolute;left:50%;top:0;width:50%;height:100%;transform-origin:left center;transform-style:preserve-3d}
-#endCase .ecIn,#endCase .ecOut{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+#endCase .ecIn,#endCase .ecOut{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
 #endCase .ecIn{background:var(--ecimg) right/auto 100% no-repeat}
-#endCase .ecOut{background:var(--eclid) center/100% 100% no-repeat;transform:rotateY(180deg);border-radius:10px}
+#endCase .ecOut{background:var(--eclid) center/100% 100% no-repeat;transform:translateZ(calc(var(--T) * -1)) rotateY(180deg);border-radius:10px}
+#endCase .ecDim{position:absolute;inset:0;background:#000;opacity:0}
+/* торцы крышки: свободный край и верх/низ — дерево, видны, пока крышка в воздухе */
+#endCase .ecE{position:absolute;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(255,220,170,.10) 45%,rgba(0,0,0,.45)),#4a2a14 url(boards/walnut-plank.webp) center/cover;box-shadow:inset 0 0 0 1px rgba(20,10,4,.55)}
+#endCase .ecR{left:100%;top:1%;height:98%;width:var(--T);transform-origin:left center;transform:rotateY(90deg)}
+#endCase .ecT{left:1%;width:98%;top:0;height:var(--T);transform-origin:center top;transform:rotateX(-90deg);background:linear-gradient(180deg,rgba(255,225,180,.16),rgba(0,0,0,.25)),#4a2a14 url(boards/walnut-plank.webp) center/cover}
+#endCase .ecB{left:1%;width:98%;top:100%;height:var(--T);transform-origin:center top;transform:rotateX(-90deg);background:linear-gradient(0deg,rgba(0,0,0,.2),rgba(0,0,0,.5)),#3a2010 url(boards/walnut-plank.webp) center/cover}
+/* закрытые нарды лежат на основании — у крышки своя боковина и тень */
+#endCase.shut .ecOut{box-shadow:0 0 0 1px rgba(20,10,4,.5)}
 #endCase .ecRev{position:absolute;left:8.52%;top:24.1%;width:32.97%;height:51.8%;opacity:0;filter:drop-shadow(0 0 18px rgba(255,200,110,.85))}
 #endCase .ecSpark{position:absolute;left:25%;top:50%;width:0;height:0}
 #endCase .ecSpark i{position:absolute;left:0;top:0;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#ffe3a0;box-shadow:0 0 8px 2px rgba(255,205,110,.9)}
@@ -563,7 +576,7 @@ html.lite .d3.grab .cube,html.lite .d3.grab .shadow{animation:none}
         <g id="lFx"></g>
       </svg>
       <div class="dice3d" id="dice3d"></div>
-      <div id="endCase" hidden aria-hidden="true"><div class="ecLid"><div class="ecIn"></div><div class="ecOut"></div></div><img class="ecRev" alt="" src="boards/intro-rev.webp" draggable="false"><div class="ecSpark"></div></div>
+      <div id="endCase" hidden aria-hidden="true"><div class="ecBase"></div><div class="ecShade"></div><div class="ecLid"><div class="ecIn"><i class="ecDim"></i></div><div class="ecOut"><i class="ecDim"></i></div><div class="ecE ecR"></div><div class="ecE ecT"></div><div class="ecE ecB"></div></div><img class="ecRev" alt="" src="boards/intro-rev.webp" draggable="false"><div class="ecSpark"></div></div>
       <div id="loseDim" aria-hidden="true"></div>
     </div>
   </div>
@@ -898,7 +911,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='113';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='114';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/intro-rev-w.webp":"af4818c9","boards/intro-rev.webp":"212eecdb","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -1860,32 +1873,53 @@ function aiPlay(){
 function endFxReset(){
   const ec=$('endCase'); if(!ec) return;
   ec.hidden=true; ec.querySelectorAll('*').forEach(e=>e.getAnimations().forEach(a=>a.cancel())); ec.querySelector('.ecSpark').innerHTML='';
-  $('boardImg').style.clipPath=''; $('board').getAnimations().forEach(a=>a.cancel()); diceBox.getAnimations().forEach(a=>a.cancel());
+  $('boardImg').style.opacity=''; ec.classList.remove('shut'); ec.querySelector('.ecShade').style.opacity=''; $('board').getAnimations().forEach(a=>a.cancel()); diceBox.getAnimations().forEach(a=>a.cancel());
   $('loseDim').classList.remove('on'); $('bAgain').classList.remove('rematch');
 }
 const calm=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
-// победа: шашки убираются, правая половина захлопывается крышкой на левую, Аревахач вспыхивает золотом
+// победа: шашки убираются, правая половина захлопывается крышкой на левую, Аревахач вспыхивает золотом.
+// Объём: у крышки деревянные торцы, внутренняя сторона темнеет по мере подъёма, внешняя светлеет к концу,
+// на стол и доску падает тень крышки — чем выше крышка, тем дальше, шире и мягче тень
 function winAnim(done){
   if(calm()){ done(); return; }
-  const ec=$('endCase'), lid=ec.querySelector('.ecLid'), rev=ec.querySelector('.ecRev'), sp=ec.querySelector('.ecSpark');
+  const ec=$('endCase'), lid=ec.querySelector('.ecLid'), rev=ec.querySelector('.ecRev'), sp=ec.querySelector('.ecSpark'), sh=ec.querySelector('.ecShade');
+  const [dIn,dOut]=ec.querySelectorAll('.ecDim'), fw=$('frame').clientWidth;
   ec.style.setProperty('--ecimg',`url(${$('boardImg').src})`); ec.style.setProperty('--eclid',`url(${av('boards/lid.webp')})`);
+  ec.style.setProperty('--T',Math.max(6,fw*.018)+'px'); ec.classList.remove('shut');
   $('board').animate([{opacity:1},{opacity:0}],{duration:450,fill:'forwards'});
   diceBox.animate([{opacity:1},{opacity:0}],{duration:450,fill:'forwards'});
   setTimeout(()=>{
     if(G.phase!=='over') return;
-    ec.hidden=false; $('boardImg').style.clipPath='inset(-40px 50% -40px -40px)';   // под крышкой — стол, а не вторая половина доски
-    lid.animate([{transform:'rotateY(0deg)'},{transform:'rotateY(-180deg)'}],{duration:1150,easing:'cubic-bezier(.55,0,.35,1)',fill:'forwards'});
+    ec.hidden=false; $('boardImg').style.opacity='0';            // дальше доска — это основание и крышка
+    const D=1250, N=24, ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+    const lk=[], sk=[], ik=[], ok=[], fi=[], fo=[];
+    for(let k=0;k<=N;k++){
+      const t=k/N, th=ease(t)*Math.PI, c=Math.cos(th), h=Math.sin(th);        // угол крышки, высота свободного края
+      lk.push({offset:t,transform:`rotateY(${-th*180/Math.PI}deg)`});
+      // тень крышки на столе: свет сверху-слева, поэтому край крышки на высоте z отбрасывает тень на z·k правее;
+      // тень — полоса от петли (50%) до тени свободного края; в конце — тень лежащей крышки на основании
+      const tipX=50+50*c+50*h*.4, L=Math.min(50,tipX), Wd=Math.abs(tipX-50)+.0001, tail=t>.5?(t-.5)*2:0;
+      sk.push({offset:t,left:L+'%',width:Wd+'%',transform:`translate(${tail*fw*.004}px,${h*fw*.02+tail*fw*.01}px)`,filter:`blur(${2+h*fw*.02+tail*fw*.008}px)`,opacity:.25+h*.3+tail*.2});
+      ik.push({offset:t,opacity:Math.min(.55,Math.max(0,Math.sin(Math.min(th,Math.PI/2))*.55))});
+      ok.push({offset:t,opacity:th<Math.PI/2?.5:.5*(1-(th-Math.PI/2)/(Math.PI/2))});
+      // стороны крышки меняются, когда она встаёт ребром (Safari не всегда прячет обратную сторону сам)
+      fi.push({offset:t,opacity:th<Math.PI/2?1:0}); fo.push({offset:t,opacity:th<Math.PI/2?0:1});
+    }
+    const o={duration:D,easing:'linear',fill:'forwards'};
+    lid.animate(lk,o); sh.animate(sk,o); dIn.animate(ik,o); dOut.animate(ok,o);
+    lid.querySelector('.ecIn').animate(fi,o); lid.querySelector('.ecOut').animate(fo,o);
     setTimeout(()=>{
       if(G.phase!=='over') return;
+      ec.classList.add('shut');
       synthKnock(.8,0); synthKnock(.4,.05); buzz(18);
       $('frame').animate([{translate:'0 0'},{translate:'0 3px'},{translate:'0 0'}],{duration:200,easing:'ease-out'});
       // Аревахач на крышке вспыхивает золотом и гаснет обратно в белую инкрустацию; искры разлетаются
       rev.animate([{opacity:0,transform:'scale(1)'},{opacity:1,transform:'scale(1.04)',offset:.25},{opacity:1,transform:'scale(1)',offset:.55},{opacity:0,transform:'scale(1)'}],{duration:1700,easing:'ease-out',fill:'forwards'});
       const n=lite()?8:16; sp.innerHTML='<i></i>'.repeat(n);
-      sp.querySelectorAll('i').forEach((e,k)=>{ const a=k/n*Math.PI*2+Math.random()*.3, r=(70+Math.random()*90)*$('frame').clientWidth/1100;
+      sp.querySelectorAll('i').forEach((e,k)=>{ const a=k/n*Math.PI*2+Math.random()*.3, r=(70+Math.random()*90)*fw/1100;
         e.animate([{transform:'translate(0,0) scale(.4)',opacity:0},{opacity:1,offset:.15},{transform:`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px) scale(1)`,opacity:0}],{duration:1100+Math.random()*500,delay:250,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}); });
       setTimeout(()=>{ if(G.phase==='over') done(); },1500);
-    },1150);
+    },D);
   },500);
 }
 // поражение: соперник стучит по столу (кофе плещется), свет чуть меркнет

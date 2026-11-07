@@ -38,7 +38,10 @@ m = np.clip((lum - 175) / 35, 0, 1)
 m = median_filter(m, size=(1, 5))                       # поперёк волокон (они вертикальные) — тонкие линии пропадают
 m = np.minimum(m, median_filter(m, size=(3, 3)))
 rr = np.hypot(*np.mgrid[-S:S, -S:S]); m *= np.clip((S - rr) / 3, 0, 1)
-w = crop.copy(); w[..., 3] = m * 255
+# знак — сплошной диск до внешнего кольца: в просветах между кольцами — тёмное дерево самой крышки,
+# сквозь знак ничего не просвечивает (под ним — крышка с дорисованным деревом, оно полосатое)
+disc = np.clip((266 - rr) / 2.5, 0, 1)
+w = crop.copy(); w[..., 3] = np.maximum(m, disc) * 255
 Image.fromarray(w.astype(np.uint8)).resize((640, 640), Image.LANCZOS).save('boards/intro-rev-w.webp', quality=90, method=6)
 # золотой: тёплый градиент (светлее к центру) с мягкой светотенью от рельефа инкрустации
 yy2, xx2 = np.mgrid[-S:S, -S:S] / S
@@ -46,6 +49,8 @@ g = np.clip(1 - np.hypot(xx2 + .25, yy2 + .3) * .55, 0, 1)[..., None]
 c0 = np.array([196, 134, 38.]); c1 = np.array([255, 224, 130.])
 col = c0 + (c1 - c0) * g
 shade = gf(lum, 2) / 255; shade = (shade - shade[m > .5].mean()) * .55 + 1
-gold = np.zeros((2 * S, 2 * S, 4)); gold[..., :3] = np.clip(col * shade[..., None], 0, 255); gold[..., 3] = m * 255
+gold = np.zeros((2 * S, 2 * S, 4)); gc = np.clip(col * shade[..., None], 0, 255)
+dark = np.array([28., 17., 9.])                      # просветы золотого знака — почти чёрное дерево
+gold[..., :3] = gc * m[..., None] + dark * (1 - m[..., None]); gold[..., 3] = np.maximum(m, disc) * 255
 Image.fromarray(gold.astype(np.uint8)).resize((640, 640), Image.LANCZOS).save('boards/intro-rev.webp', quality=90, method=6)
 print('ok')

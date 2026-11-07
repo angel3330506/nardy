@@ -44,6 +44,9 @@ def render(name, out_png, size, die=False):
         bs.inputs['Subsurface Weight'].default_value = .6; bs.inputs['Subsurface Radius'].default_value = (.2, .08, .02)
         bs.inputs['Roughness'].default_value = .12; bs.inputs['Coat Weight'].default_value = 1.0
         mt = N.new('ShaderNodeTexImage'); mt.image = mimg; Lk(tc.outputs['UV'], mt.inputs['Vector']); Lk(mt.outputs['Color'], bs.inputs['Metallic'])
+    elif die == 'gold':                                       # золотой кубик: полированный металл, точки — эмаль
+        mt = N.new('ShaderNodeTexImage'); mt.image = mimg; Lk(tc.outputs['UV'], mt.inputs['Vector']); Lk(mt.outputs['Color'], bs.inputs['Metallic'])
+        bs.inputs['Roughness'].default_value = .2; bs.inputs['Coat Weight'].default_value = .3
     elif not die and L['metal'].max() > 0:                   # металлические шашки и ободок перламутра
         mt = N.new('ShaderNodeTexImage'); mt.image = mimg; Lk(tc.outputs['UV'], mt.inputs['Vector']); Lk(mt.outputs['Color'], bs.inputs['Metallic'])
         bs.inputs['Roughness'].default_value = .22
@@ -77,6 +80,6 @@ def render(name, out_png, size, die=False):
 CHECKERS = ('silver',) if 'silver' in sys.argv else ('ivory', 'onyx', 'beech', 'walnut') if 'old' in sys.argv else ('pomegranate', 'pearl', 'copper', 'bronze', 'gold')
 for k in (() if 'dice' in sys.argv else CHECKERS):
     render(f'piece-ck-{k}', os.path.join(OUTD, f'ck-{k}.png'), 128)
-for mat in (('bone', 'wood', 'amber') if 'dice' in sys.argv else ()):
+for mat in ((('gold',) if 'gold' in sys.argv else ('bone', 'wood', 'amber')) if 'dice' in sys.argv else ()):
     for v in range(1, 7):
         render(f'piece-die-{mat}-{v}', os.path.join(OUTD, f'die-{v}.png' if mat == 'bone' else f'die-{mat}-{v}.png'), 256, die=mat)

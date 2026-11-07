@@ -91,9 +91,13 @@ def die_face(v, mat='bone'):
         rng = np.random.default_rng(v)
         cloud = ndi.gaussian_filter(rng.random((N, N)), 30); cloud = (cloud - cloud.min()) / (np.ptp(cloud) + 1e-6)
         alb = np.array((.55, .22, .03)) * (.7 + .6 * cloud)[..., None]
+    elif mat == 'gold':      # золото: награда за 7 дней задачи дня подряд — полированный металл, тёмные точки
+        rng = np.random.default_rng(70 + v)
+        brush = ndi.gaussian_filter(rng.random((N, N)), (0.5, 6))
+        alb = np.array((.95, .74, .36)) * (.9 + .2 * brush)[..., None]
     else:
         alb = np.ones((N, N, 3)) * np.array((.90, .86, .76))
-    pipcol = {'bone': ((.55, .05, .05), (.03, .025, .02)), 'wood': ((.30, .08, .03), (.12, .06, .03)), 'amber': ((.95, .78, .40), (.95, .78, .40))}[mat]
+    pipcol = {'bone': ((.55, .05, .05), (.03, .025, .02)), 'wood': ((.30, .08, .03), (.12, .06, .03)), 'amber': ((.95, .78, .40), (.95, .78, .40)), 'gold': ((.45, .06, .04), (.07, .045, .03))}[mat]
     pr = .2 if v == 1 else .15
     metal = np.zeros((N, N))
     for k in PIPS[v]:
@@ -104,14 +108,20 @@ def die_face(v, mat='bone'):
         paint = np.clip((.92 - d) * 25, 0, 1)
         alb = alb * (1 - paint[..., None]) + np.array(pipcol[0] if v == 1 else pipcol[1]) * paint[..., None]
         if mat == 'amber': metal = np.maximum(metal, paint)   # золотые точки
-    return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), .6), metal=metal, mat=np.array(['bone', 'wood', 'amber'].index(mat)))
+    if mat == 'gold':
+        pits = np.zeros((N, N))
+        for k in PIPS[v]:
+            cx, cy = (k % 3 - 1) * .5, (k // 3 - 1) * .5
+            pits = np.maximum(pits, np.clip((.92 - np.hypot(x - cx, y - cy) / pr) * 25, 0, 1))
+        metal = 1 - pits                                        # корпус — металл, точки — эмаль
+    return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), .6), metal=metal, mat=np.array(['bone', 'wood', 'amber', 'gold'].index(mat)))
 
 
 if __name__ == '__main__':
     out = os.path.join(os.path.dirname(__file__), '..', '.preview')
     for k in ('ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold', 'silver'):
         np.savez_compressed(os.path.join(out, f'piece-ck-{k}.npz'), **checker(k))
-    for mat in ('bone', 'wood', 'amber'):
+    for mat in ('bone', 'wood', 'amber', 'gold'):
         for v in range(1, 7):
             np.savez_compressed(os.path.join(out, f'piece-die-{mat}-{v}.npz'), **die_face(v, mat))
     print('saved pieces')

@@ -650,5 +650,20 @@
 "Шеш-беш!": "Shesh-besh!",
 "Ду-шеш": "Du-shesh",
 "Ду-шеш!": "Du-shesh!",
-"Счёт #": "Score #"
+"Счёт #": "Score #",
+"Соседи по двору": "Neighbors in the yard",
+"ещё не играли": "not played yet",
+"# партия": "# game",
+"# партии": "# games",
+"# партий": "# games",
+"побед # (#%)": "won # (#%)",
+"побед # (—)": "won # (—)",
+"марсов #": "mars #",
+"коксов #": "koks #",
+"Вдвоём # : #": "Two players # : #",
+"Арам # : #": "Aram # : #",
+"Дядя Ашот # : #": "Uncle Ashot # : #",
+"Бабушка Сирануш # : #": "Grandma Siranush # : #",
+"Варпет Гурген # : #": "Master Gurgen # : #",
+"статистика — с новых партий": "stats start from new games"
 }

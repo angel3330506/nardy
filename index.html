@@ -213,7 +213,7 @@ html.lite .d3.tap .contact,html.lite .d3.tap .mover,html.lite .d3.tap::before{an
   display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:16%;
 }
 /* внутренний сердечник: закрывает щели между скруглёнными гранями, когда кубик повёрнут ребром */
-.d3 .core{position:absolute;inset:3%;border-radius:16%;background:#d8cdb0}
+.d3 .core{position:absolute;inset:3%;border-radius:16%;background:var(--core,#d8cdb0)}
 .d3 .face i{visibility:hidden}
 /* лежащий кубик: боковые грани и сердечник скрыты, иначе при повороте на 90° их рёбра просвечивают тонкими линиями */
 .d3.still .face:not(.top),.d3.still .core{visibility:hidden}
@@ -1019,7 +1019,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='130';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='131';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-gold-1.png":"606f1c7a","boards/die-gold-2.png":"68eb7219","boards/die-gold-3.png":"4abf64c2","boards/die-gold-4.png":"7ff8a963","boards/die-gold-5.png":"9f589a63","boards/die-gold-6.png":"f67c180d","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/goldrev-thumb.webp":"f68582fd","boards/goldrev.webp":"f4f6f7dd","boards/intro-rev-w.webp":"c1e7a4bf","boards/intro-rev.webp":"9627dbfd","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-goldrev-long.png":"b706af0c","boards/pt-goldrev-short.png":"0d9bdbb6","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -1101,6 +1101,7 @@ const SHORT_MID=new Set(['ararat','yerevan','pomegranate','sevan','goldrev']);
 const DICE={bone:'',wood:'wood-',amber:'amber-',gold:'gold-'};
 // золотые кубики — награда за 7 дней задачи дня подряд (достижение puz7)
 const goldDiceOpen=()=>{ try{ return !!JSON.parse(localStorage.getItem('nardy-stats-v1')||'{}').ach?.puz7; }catch(e){ return false; } };
+const DICE_CORE={bone:'#d8cdb0',wood:'#a8743f',amber:'#7a3416',gold:'#7d5a24'};   // цвет сердечника кубика под набор, иначе на рёбрах при броске светлая полоса
 const diceImg=f=>`${av(`boards/die-${DICE[settings.dice==='gold'&&!goldDiceOpen()?'bone':settings.dice]??''}${f}.png`)}`;
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
 for(const id of ['app','menu']){ $(id).style.setProperty('--table',`url(${av(`boards/table.webp`)})`); $(id).style.setProperty('--leaf',`url(${av(`boards/leafshade.webp`)})`); }
@@ -1594,6 +1595,7 @@ function dieEl(v){
     faces+=`<div class="core" style="transform:rotateX(${a}deg) rotateY(${b}deg) translateZ(calc(var(--ds) * .47))"></div>`;
   }
   el.innerHTML=`<div class="shadow"></div><div class="contact"></div><div class="mover"><div class="cube">${faces}</div></div>`;
+  el.style.setProperty('--core',DICE_CORE[settings.dice==='gold'&&!goldDiceOpen()?'bone':settings.dice]||DICE_CORE.bone);
   el.dataset.v=v;
   return el;
 }

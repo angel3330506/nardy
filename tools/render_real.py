@@ -126,7 +126,7 @@ def hinge(alb, h, metal, x, y):
     return alb, h, metal
 
 
-def board_arevakhach(layers=False, center=None):
+def board_arevakhach(layers=False, center=None, soft_bays=False):
     """layers=True — вместо картинки вернуть слои для 3D-рендера (tools/blender_board.py): высоты, маски дерева и металла.
     Тогда «основное дерево» = (1,0,0), «светлый бук» = (0,1,0): после всех затемнений R и G — доли и тон каждого."""
     STAIN = (.30, .165, .075)                                 # «орех» на буке, как на фото
@@ -180,7 +180,11 @@ def board_arevakhach(layers=False, center=None):
     h += band * 1.8 - stip * 1.0
     alb = alb * (1 - stip[..., None] * .3)
     db = ndi.distance_transform_edt(bays > .5) / S
-    h -= 10 * bayd * (1 - np.exp(-db / 5))
+    cut = bayd * (1 - np.exp(-db / 5))
+    if soft_bays:   # тёмный лак («Золотой аревахач»): углубление, уходящее в поле, бликует светлой «коробкой» — оставляем арку только в бордюре
+        yy_ = np.mgrid[0:H, 0:W][0] / S; dpt = np.minimum(yy_ - 40, 660 - yy_); inb = np.clip((40 - dpt) / 22, 0, 1); inb = inb * inb * (3 - 2 * inb)   # плавно гаснет к полю
+        cut = ndi.gaussian_filter(cut * inb, 1.2 * S); bayd = bayd * inb
+    h -= 10 * cut
     alb = alb * (1 - (bayd * .25)[..., None])
     h -= holes * 3; alb = alb * (1 - holes[..., None] * .55)
     # пункты: инкрустация из светлого бука, выжженный контур
@@ -456,7 +460,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == 'layers':
         sys.exit(dump_layers(sys.argv[2]))
     if sys.argv[1:] == ['goldrev']:
-        to_generic('goldrev', board_arevakhach(layers=True)); sys.exit()
+        to_generic('goldrev', board_arevakhach(layers=True, soft_bays=True)); sys.exit()
     if sys.argv[1:] == ['new']:
         to_generic('pomegranate', board_arevakhach(layers=True, center=pomegranate_center))
         to_generic('sevan', board_arevakhach(layers=True, center=sevan_center)); sys.exit()

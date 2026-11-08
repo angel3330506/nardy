@@ -353,7 +353,8 @@ def board_lid_layers():
 
 
 # Дерево как на «Армении»: фото шпона ореха с сильным рисунком волокон. Тон у каждой доски свой.
-WOOD_TONE = {'ararat': ((.52, .33, .15), (.30, .17, .07)), 'lid': ((.52, .33, .15), (.30, .17, .07)),
+WOOD_TONE = {'goldrev': ((.20, .11, .055), (.075, .04, .02)),   # награда за 30 дней задачи дня: тёмный орех, инкрустация — золото
+             'ararat': ((.52, .33, .15), (.30, .17, .07)), 'lid': ((.52, .33, .15), (.30, .17, .07)),
              'pomegranate': ((.46, .28, .13), (.26, .14, .06)), 'sevan': ((.50, .32, .15), (.28, .16, .07))}
 RED = ((.62, .12, .08), (.40, .06, .04))                         # красная инкрустация (падук, тон граната)
 FIELD_TONE = {'sevan': ((.20, .34, .52), (.08, .17, .30))}      # поля «Севана» — шпон, тонированный в цвет озера
@@ -440,8 +441,12 @@ def to_generic(name, L):
         fld = np.maximum(rrect(34, 34, 466, 666, 8), rrect(534, 34, 966, 666, 8))[..., None]
         dark = dark * (1 - fld) + photo_wood(h_, w_, *FIELD_TONE[name], seed=13, vertical=True, contrast=.6) * fld
     red = photo_wood(h_, w_, *RED, seed=14, vertical=True, contrast=.5)
+    if name == 'goldrev':                                     # вся светлая инкрустация — полированное золото
+        gold = np.array((.95, .74, .36))[None, None] * (.92 + .16 * photo_wood(h_, w_, (1, 1, 1), (.6, .6, .6), seed=15, vertical=True, contrast=.2).mean(-1, keepdims=True))
+        light = gold; metal = np.maximum(metal, np.clip(G_ * 1.15, 0, 1))
+        L = dict(L); L['metal'] = metal[..., 0]
     alb = dark * R + light * G_ + red * B_ * (1 - metal)
-    alb = alb * (1 - metal) + a * metal
+    alb = alb * (1 - metal) + a * metal if name != 'goldrev' else alb
     out = dict(h=L['h'], alb=alb, gloss=np.ones_like(L['h']), metal=L['metal'], alpha=L['body'])
     np.savez_compressed(os.path.join(os.path.dirname(__file__), '..', '.preview', f'layers-{name}.npz'),
                         **{k: np.asarray(v, np.float32) for k, v in out.items()})
@@ -450,6 +455,8 @@ def to_generic(name, L):
 if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == 'layers':
         sys.exit(dump_layers(sys.argv[2]))
+    if sys.argv[1:] == ['goldrev']:
+        to_generic('goldrev', board_arevakhach(layers=True)); sys.exit()
     if sys.argv[1:] == ['new']:
         to_generic('pomegranate', board_arevakhach(layers=True, center=pomegranate_center))
         to_generic('sevan', board_arevakhach(layers=True, center=sevan_center)); sys.exit()

@@ -21,7 +21,7 @@ jobs:
         run: |
           mkdir app && cd app
           npm init -y >/dev/null
-          npm i @capacitor/core@7 @capacitor/cli@7 @capacitor/ios@7 @capacitor/haptics@7 ../ios-shell/nardy-native
+          npm i @capacitor/core@7 @capacitor/cli@7 @capacitor/ios@7 @capacitor/haptics@7 @capacitor/share@7 @capacitor/filesystem@7 ../ios-shell/nardy-native
           mkdir www && cp -R ../index.html ../manifest.webmanifest ../privacy.html ../og.jpg ../boards ../sounds ../icons www/
           cp ../ios-shell/capacitor.config.json .
           npx cap add ios

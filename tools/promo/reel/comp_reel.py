@@ -17,10 +17,12 @@ if not os.path.exists(cache):
 plate = Image.open(cache).convert('RGB')
 cam = {int(f): (x, y, d) for f, x, y, d in json.load(open(os.path.join(R, 'cam.json')))}
 lastf = max(cam)
-cards = {n: Image.open(os.path.join(CARDS, n + '.png')).convert('RGBA') for n in ['t1', 't2', 't3', 't4', 'end'] + ['n%d' % i for i in range(1, 6)]}
-# надписи: (имя, начало, конец)
+# надписи: (имя, начало, конец); другой ролик — свой план в JSON (TL=файл: {"txt": [...], "hit": .., "total": ..})
 TXT = [('t1', .5, 4.8), ('t2', 5.2, 10.35), ('t3', 10.55, 13.15), ('t4', 13.35, 17.15)] + \
       [('n%d' % (5 - i), 5.4 + i, 6.4 + i) for i in range(5)]
+if os.environ.get('TL'):
+    tl = json.load(open(os.environ['TL'])); TXT = [tuple(x) for x in tl['txt']]; HIT = tl['hit']; TOTAL = tl['total']
+cards = {n: Image.open(os.path.join(CARDS, n + '.png')).convert('RGBA') for n in {x[0] for x in TXT} | {'end'}}
 def layer(im, a, dy=0, s=1.0):
     if a <= 0: return None
     if s != 1.0:
@@ -45,7 +47,8 @@ for f in list(frames)[:LIMIT]:
         if os.path.exists(ph): bg.alpha_composite(Image.open(ph))
         for n, t0, t1 in TXT:
             k = min(ease((t - t0) / .35), 1 - ease((t - t1 + .25) / .25)) if t0 <= t <= t1 else 0
-            if n[0] == 'n': l = layer(cards[n], k, 0, 1 + .25 * (1 - ease((t - t0) / .25)))     # цифра «впрыгивает»
+            if n[0] == 'q': l = layer(cards[n], k, 0, 1 + .08 * (1 - ease((t - t0) / .3)))        # реплика — мягкий «поп»
+            elif n[0] == 'n' and n[1:].isdigit(): l = layer(cards[n], k, 0, 1 + .25 * (1 - ease((t - t0) / .25)))     # цифра «впрыгивает»
             else: l = layer(cards[n], k, 26 * (1 - ease((t - t0) / .45)))                          # надпись всплывает
             if l: bg.alpha_composite(l)
     else:                                                   # финальная карточка: медленный наезд

@@ -3,7 +3,7 @@
 import sys, os, subprocess, wave
 import numpy as np
 from scipy.signal import butter, sosfilt, fftconvolve
-SR = 48000; DUR = 21.0
+SR = 48000; DUR = 34.0 if os.environ.get('PLAN') == 'pov' else 21.0
 out = np.zeros((int(SR * DUR), 2))
 rng = np.random.default_rng(3)
 def env(n, a, d, shape=2.0):
@@ -56,21 +56,36 @@ def load(name):
     raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', p, '-f', 'f32le', '-ac', '1', '-ar', str(SR), '-'], capture_output=True).stdout
     x = np.frombuffer(raw, np.float32).astype(float); return x / (np.abs(x).max() + 1e-9)
 
-put(0.0, whoosh(1.3, 250, 2400, .55), .55)                  # телефон прилетает снизу
-put(1.05, thump(.7, 42), .35)
-put(5.0, whoosh(.9, 300, 1500, .5), .3)                     # наезд на доску
-for i, t in enumerate((5.4, 6.4, 7.4, 8.4, 9.4)):          # отсчёт 5…1
-    put(t, tick(1250 if i < 4 else 1500), .55 if i < 4 else .7)
-put(10.4, whoosh(.8, 1500, 400, .4), .3)                    # отъезд, показ ответа
-put(10.45, tap(), .5)
-for t, n in ((10.98, 'chip-lay-1.m4a'), (11.72, 'chip-lay-2.m4a')):   # две шашки ложатся на поля
-    x = load(n)
-    if x is not None: put(t - .03, x, .75)
-put(13.33, chime(), .9); put(13.33, pop(), .35)             # «Верно!»
-put(13.3, whoosh(.7, 400, 1300, .5), .18)
-put(17.25, whoosh(1.0, 200, 6000, .9), .95)                 # финал: телефон влетает в камеру
-put(18.2, thump(.5, 52), .75); put(18.2, shimmer(.9), .9)
-put(18.35, chime(2.2), .45)
+PLAN = os.environ.get('PLAN', 'puzzle')
+if PLAN == 'pov':                                            # ролик «POV: соседи по двору»
+    put(0.0, whoosh(1.3, 250, 2400, .55), .55); put(1.05, thump(.7, 42), .35)
+    for t in (6.4, 12.55, 22.68): put(t, whoosh(.45, 600, 3800, .4), .45)          # смена соседа — резкий «вжух»
+    for t in (1.65, 3.9, 8.2, 10.8, 14.35, 18.35, 24.55, 26.7): put(t, pop(), .5)     # реплики
+    for t, n in ((2.75, 'dice-throw-1.m4a'), (9.05, 'dice-throw-2.m4a'), (15.4, 'dice-throw-3.m4a'), (25.52, 'dice-throw-1.m4a')):
+        x = load(n)
+        if x is not None: put(t, x, .5)
+    for k, t in enumerate((4.5, 5.0, 5.5, 6.0, 16.9, 17.4, 27.1, 27.6, 28.1, 28.6)):
+        x = load('chip-lay-%d.m4a' % (k % 3 + 1))
+        if x is not None: put(t, x, .55)
+    put(17.95, thump(.5, 60), .55)                              # проигрыш: стук по столу
+    put(19.85, whoosh(.5, 500, 1600, .4), .2)
+    put(30.0, whoosh(1.0, 200, 6000, .9), .95); put(30.95, thump(.5, 52), .75); put(30.95, shimmer(.9), .9); put(31.1, chime(2.2), .45)
+else:
+    put(0.0, whoosh(1.3, 250, 2400, .55), .55)                  # телефон прилетает снизу
+    put(1.05, thump(.7, 42), .35)
+    put(5.0, whoosh(.9, 300, 1500, .5), .3)                     # наезд на доску
+    for i, t in enumerate((5.4, 6.4, 7.4, 8.4, 9.4)):          # отсчёт 5…1
+        put(t, tick(1250 if i < 4 else 1500), .55 if i < 4 else .7)
+    put(10.4, whoosh(.8, 1500, 400, .4), .3)                    # отъезд, показ ответа
+    put(10.45, tap(), .5)
+    for t, n in ((10.98, 'chip-lay-1.m4a'), (11.72, 'chip-lay-2.m4a')):   # две шашки ложатся на поля
+        x = load(n)
+        if x is not None: put(t - .03, x, .75)
+    put(13.33, chime(), .9); put(13.33, pop(), .35)             # «Верно!»
+    put(13.3, whoosh(.7, 400, 1300, .5), .18)
+    put(17.25, whoosh(1.0, 200, 6000, .9), .95)                 # финал: телефон влетает в камеру
+    put(18.2, thump(.5, 52), .75); put(18.2, shimmer(.9), .9)
+    put(18.35, chime(2.2), .45)
 ir = rng.standard_normal(int(.6 * SR)) * np.exp(-np.arange(int(.6 * SR)) / SR / .12) * .03
 for c in range(2): out[:, c] += fftconvolve(out[:, c], ir)[:len(out)] * .6
 out /= max(1e-9, np.abs(out).max()) / .89

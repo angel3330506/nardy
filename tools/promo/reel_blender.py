@@ -1,7 +1,7 @@
 # Ролик для Reels «Задача дня» (на основе phone_blender.py): телефон в Blender, на экране — покадровая запись интерфейса (ui/0001.jpg…).
 # Камера сама летит к местам нажатий, телефон парит, поворачивается горизонтально и в конце влетает в камеру.
 # Запуск: python (с bpy) phone_blender.py  — переменные: UI (папка кадров), OUT (папка рендера), FRAMES, SAMPLES, START, END
-import os, math
+import json, os, math
 import numpy as np
 import bpy, bmesh
 from mathutils import Vector, Euler
@@ -140,6 +140,8 @@ def oc(x): x = min(1, max(0, x)); return 1 - (1 - x)**3
 K = [(0, 0, 0, DL), (5.0, 0, 0, DL), (5.9, 55, 0, DL/1.35), (10.4, 105, 5, DL/1.62),
      (11.2, 30, 0, DL/1.25), (13.3, 30, 0, DL/1.25), (14.0, 0, -5, DL/1.22), (17.2, 0, -5, DL/1.30)]
 END = 17.25
+if os.environ.get('KEYS'):                                   # другой ролик: ключи камеры и момент вылета из JSON
+    K = [tuple(k) for k in json.loads(os.environ['KEYS'])]; END = float(os.environ['ENDT'])
 def cam_at(t):
     for (t0, x0, y0, d0), (t1, x1, y1, d1) in zip(K, K[1:]):
         if t0 <= t <= t1:

@@ -39,13 +39,41 @@ def save(name, *layers):
     for l in layers: im = Image.alpha_composite(im, l)
     im.save(os.path.join(OUT, name + '.png'))
 FT, FB = font('Forum.ttf', 118), font('Onest.ttf', 50)
-save('t1', text_layer(['90% не найдут', 'лучший ход'], 300, FT, GOLD, grad=True),
-           text_layer(['Задача дня · Нарды'], 1480, FB, CREAM))
-save('t2', text_layer(['Выпало 4–6.', 'Как сходишь?'], 300, FT, GOLD, grad=True),
-           text_layer(['Пиши ответ', 'в комментариях ↓'], 1380, font('OnestB.ttf', 58), CREAM))
-save('t3', text_layer(['Ответ:'], 300, FT, GOLD, grad=True), text_layer(['12 → 16,  15 → 21'], 470, font('Forum.ttf', 96), CREAM))
-save('t4', text_layer(['Перекрыл сопернику', 'почти все ходы'], 300, font('Forum.ttf', 100), GOLD, grad=True),
-           text_layer(['Новая задача — каждый день'], 1480, FB, CREAM))
+SET = sys.argv[4] if len(sys.argv) > 4 else 'puzzle'
+def bubble(text, y, size=50, maxw=860):                         # реплика соседа: светлое облачко, как в игре, только крупнее
+    fnt = font('OnestB.ttf', size); im = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    words, lines = text.split(), ['']
+    for w_ in words:
+        t = (lines[-1] + ' ' + w_).strip()
+        if tlen(d, t, fnt) > maxw - 90 and lines[-1]: lines.append(w_)
+        else: lines[-1] = t
+    lh = size * 1.3; bw = max(tlen(d, l, fnt) for l in lines) + 90; bh = lh * len(lines) + 60; x0 = (W - bw) / 2
+    sh = Image.new('L', (W, H), 0); ImageDraw.Draw(sh).rounded_rectangle((x0, y + 14, x0 + bw, y + bh + 14), 40, fill=150)
+    im.putalpha(sh.filter(ImageFilter.GaussianBlur(18))); d = ImageDraw.Draw(im)
+    d.rounded_rectangle((x0, y, x0 + bw, y + bh), 40, fill=(244, 234, 214, 255))
+    d.polygon([(W / 2 - 26, y), (W / 2 + 26, y), (W / 2 + 4, y - 30)], fill=(244, 234, 214, 255))   # хвостик вверх — к телефону
+    for i, l in enumerate(lines): draw_line(d, (W - tlen(d, l, fnt)) / 2, y + 30 + i * lh, l, fnt, (58, 34, 20, 255))
+    return im
+if SET == 'pov':
+    FN, FS = font('Forum.ttf', 128), font('Onest.ttf', 48)
+    save('intro', text_layer(['POV: играешь в нарды', 'с соседями по двору'], 300, font('Forum.ttf', 96), GOLD, grad=True))
+    for k, name, trait in (('aram', 'Арам', 'новичок · радуется каждому дублю'), ('ashot', 'Дядя Ашот', 'никогда никуда не спешит'),
+                           ('siran', 'Бабушка Сирануш', 'сначала чай, потом марс'), ('gurgen', 'Варпет Гурген', 'у него всё по плану')):
+        save('n_' + k, text_layer([name], 300, FN if len(name) < 12 else font('Forum.ttf', 108), GOLD, grad=True), text_layer([trait], 470, FS, CREAM))
+    for k, t in (('q1', 'Давай, кто кого!'), ('q2', 'Ду-шеш! Вот это я понимаю!'), ('q3', 'Садись, сыграем. Не торопись.'), ('q4', 'Думай, думай, я не спешу.'),
+                 ('q5', 'Садись, чай остынет.'), ('q6', 'Марс, родной. Иди чай пей.'), ('q7', 'Нарды — это терпение.'), ('q8', 'Так и было задумано.')):
+        save(k, bubble('«' + t + '»', 1390))
+    save('outro', text_layer(['А ты с кем', 'сыграешь?'], 300, FT if 'FT' in dir() else font('Forum.ttf', 118), GOLD, grad=True),
+                  text_layer(['Отметь друга, который', 'играет как бабушка Сирануш ↓'], 1440, font('Onest.ttf', 46), CREAM))
+else:
+    FT, FB = font('Forum.ttf', 118), font('Onest.ttf', 50)
+    save('t1', text_layer(['90% не найдут', 'лучший ход'], 300, FT, GOLD, grad=True),
+               text_layer(['Задача дня · Нарды'], 1480, FB, CREAM))
+    save('t2', text_layer(['Выпало 4–6.', 'Как сходишь?'], 300, FT, GOLD, grad=True),
+               text_layer(['Пиши ответ', 'в комментариях ↓'], 1380, font('OnestB.ttf', 58), CREAM))
+    save('t3', text_layer(['Ответ:'], 300, FT, GOLD, grad=True), text_layer(['12 → 16,  15 → 21'], 470, font('Forum.ttf', 96), CREAM))
+    save('t4', text_layer(['Перекрыл сопернику', 'почти все ходы'], 300, font('Forum.ttf', 100), GOLD, grad=True),
+               text_layer(['Новая задача — каждый день'], 1480, FB, CREAM))
 # отсчёт 5…1 — кольцо с цифрой под надписью
 for n in range(1, 6):
     im = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im); cx, cy, r = W // 2, 1580, 70

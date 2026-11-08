@@ -64,6 +64,8 @@ parts = []
 parts.append(slab('frame', BW, BH, BR, -TH/2, TH/2, ti, bevel=.11, seg=8))
 parts.append(slab('front', BW-.10, BH-.10, BR-.05, TH/2-.01, TH/2+.012, blackg, bevel=.012, seg=3))
 parts.append(slab('screen', SW, SH, .62, TH/2+.0125, TH/2+.0135, scr, uv=True))
+# Dynamic Island: чёрная «пилюля» 126×37 pt у верхнего края экрана (в горизонтальном положении — слева)
+isl = slab('island', 1.26, .37, .185, TH/2+.0136, TH/2+.0146, pmat('island', **{'Base Color': (.002, .002, .002, 1), 'Roughness': .55, 'Specular IOR Level': .15})); isl.location = (0, SH/2 - .11 - .185, 0); parts.append(isl)
 parts.append(slab('back', BW-.10, BH-.10, BR-.05, -TH/2-.012, -TH/2+.01, backg, bevel=.012, seg=3))
 # камерное «плато» на спине (полоса во всю ширину) и три объектива
 pl = slab('plateau', BW-.34, 2.0, .55, -TH/2-.10, -TH/2-.01, backg, bevel=.06, seg=5); pl.location = (0, BH/2-1.25, 0); parts.append(pl)

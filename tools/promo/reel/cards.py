@@ -40,7 +40,7 @@ def save(name, *layers):
     im.save(os.path.join(OUT, name + '.png'))
 FT, FB = font('Forum.ttf', 118), font('Onest.ttf', 50)
 SET = sys.argv[4] if len(sys.argv) > 4 else 'puzzle'
-def bubble(text, y, size=50, maxw=860):                         # реплика соседа: светлое облачко, как в игре, только крупнее
+def bubble(text, y, size=50, maxw=980):                         # реплика соседа: светлое облачко, как в игре, только крупнее
     fnt = font('OnestB.ttf', size); im = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     words, lines = text.split(), ['']
     for w_ in words:

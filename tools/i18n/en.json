@@ -719,5 +719,10 @@
 "Начатую партию доиграет Арам, выбранный соперник сядет со следующей.": "The current game will be finished by Aram; the selected opponent sits down from the next one.",
 "Начатую партию доиграет дядя Ашот, выбранный соперник сядет со следующей.": "The current game will be finished by uncle Ashot; the selected opponent sits down from the next one.",
 "Начатую партию доиграет бабушка Сирануш, выбранный соперник сядет со следующей.": "The current game will be finished by grandma Siranush; the selected opponent sits down from the next one.",
-"Начатую партию доиграет варпет Гурген, выбранный соперник сядет со следующей.": "The current game will be finished by varpet Gurgen; the selected opponent sits down from the next one."
+"Начатую партию доиграет варпет Гурген, выбранный соперник сядет со следующей.": "The current game will be finished by varpet Gurgen; the selected opponent sits down from the next one.",
+"Ход #, выпало #–#": "Move #, rolled #–#",
+"— грубая ошибка": "— blunder",
+"— ошибка": "— mistake",
+"— неточность": "— inaccuracy",
+"Вы сыграли": "You played"
 }

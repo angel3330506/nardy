@@ -436,7 +436,7 @@ html.land .menu-in{padding-right:calc(clamp(34px,calc(10 * var(--vh)),44px) + 16
 .review .bad{border-color:#c0484a}.review small{color:var(--muted)}
 .review .rvpair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;border:0;background:none;padding:0}
 .review figure{margin:0;border:0;background:none;padding:0}.review figcaption{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.3}.review figcaption b{color:var(--gold-hi)}
-.review .rvb{display:block;width:100%;height:auto;border-radius:8px}
+.review .rvb{display:block;width:100%;height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 .hintmark{animation:pulse 1s ease-in-out infinite}
 /* интерактивный стол: стакан чая и сахар на фоновой картинке; горячие зоны ставит скрипт по положению фона */
 .tablefx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
@@ -1023,7 +1023,7 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='136';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='137';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
 /*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-gold-1.png":"606f1c7a","boards/die-gold-2.png":"68eb7219","boards/die-gold-3.png":"4abf64c2","boards/die-gold-4.png":"7ff8a963","boards/die-gold-5.png":"9f589a63","boards/die-gold-6.png":"f67c180d","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/goldrev-med-l.webp":"875c719a","boards/goldrev-med-r.webp":"beae367a","boards/goldrev-thumb.webp":"1b2ad914","boards/goldrev.webp":"898ad659","boards/intro-rev-w.webp":"c1e7a4bf","boards/intro-rev.webp":"9627dbfd","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-goldrev-long.png":"b706af0c","boards/pt-goldrev-short.png":"0d9bdbb6","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
@@ -2746,36 +2746,39 @@ function analyzeTurn(){
   const loss=b.v-V(G.s,0);
   if(loss>4) G.mistakes.push({n:G.turns[0],dice:t.dice,loss,played:pathText(t.played),best:pathText(b.path),s0:t.ctx.s,pSteps:t.played,bSteps:b.path,sh:SH()});
 }
-// мини-доска для разбора: позиция перед ходом (всегда со стороны белых) и стрелки шагов хода
+// мини-доска для разбора: та же доска и шашки, что в игре; позиция перед ходом (со стороны белых),
+// шашка, которой ходили, обведена, на месте, куда она встаёт, — её полупрозрачная копия, между ними стрелка
 let revSvgN=0;
 function revBoard(s0,steps,col){
-  const id='rv'+(++revSvgN), R=30, sp=n=>n>5?150/(n-1):Math.min(56,150/Math.max(1,n-1));
-  const slot=(i,k,n)=>i==='bar'?[500,400]:i==='off'?[1055,350]:[ptX(i),isTop(i)?70+k*(n>1?sp(n):0):630-k*(n>1?sp(n):0)];
-  let g='<rect x="0" y="0" width="1100" height="700" rx="26" fill="#2a1a0e"/><rect x="30" y="30" width="440" height="640" rx="10" fill="#3b2614"/><rect x="530" y="30" width="440" height="640" rx="10" fill="#3b2614"/><rect x="1020" y="40" width="70" height="620" rx="16" fill="#1c120a"/>';
-  for(let i=0;i<24;i++){ const x=ptX(i), t=isTop(i), y0=t?30:670, y1=t?300:400;
-    g+=`<path d="M${x-33} ${y0}L${x+33} ${y0}L${x} ${y1}Z" fill="${i%2?'#d8b878':'#7a5230'}" opacity=".9"/><text x="${x}" y="${t?22:692}" text-anchor="middle" font-size="22" fill="#c9a46a">${i+1}</text>`; }   // номера — как в подписи (от головы белых)
-  const chk=(x,y,pl)=>`<circle cx="${x}" cy="${y}" r="${R}" fill="${pl?'#3a2416':'#f3ead6'}" stroke="${pl?'#140b05':'#a8916a'}" stroke-width="4"/>`;
-  for(let i=0;i<24;i++){ const n=s0.n[i]; if(!n) continue; const pl=s0.o[i], vis=Math.min(n,5);
-    for(let k=0;k<vis;k++){ const [x,y]=slot(i,k,vis); g+=chk(x,y,pl); }
-    if(n>5){ const [x,y]=slot(i,vis-1,vis); g+=`<text x="${x}" y="${y+11}" text-anchor="middle" font-size="32" font-weight="700" fill="${s0.o[i]?'#f3d993':'#3a2416'}">${n}</text>`; } }
-  if(s0.bar) for(const pl of [0,1]) if(s0.bar[pl]) g+=chk(500,pl?300:400,pl)+(s0.bar[pl]>1?`<text x="500" y="${(pl?300:400)+11}" text-anchor="middle" font-size="32" font-weight="700" fill="${pl?'#f3d993':'#3a2416'}">${s0.bar[pl]}</text>`:'');
-  if(s0.off[0]) g+=`<text x="1055" y="640" text-anchor="middle" font-size="34" font-weight="700" fill="#f3d993">${s0.off[0]}</text>`;
-  // стрелки: шаги по очереди, каждый — от верхней шашки стопки к месту, куда она встанет
-  let cur=s0, arr='';
+  const id='rv'+(++revSvgN), ck=skin().ck;
+  const sp=n=>n>3?STACK_MAX/(n-1):60;
+  const slot=(i,k,n)=>i==='bar'?[500,415+k*44]:i==='off'?[1055,350]:[ptX(i),isTop(i)?70+k*sp(n):630-k*sp(n)];
+  let g=`<image href="${av(`boards/${settings.skin}.webp`)}" x="0" y="0" width="1100" height="700"/>`;
+  for(let i=0;i<24;i++) g+=`<text x="${ptX(i)}" y="${isTop(i)?24:690}" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="21" fill="#f3e3bf" stroke="rgba(0,0,0,.75)" stroke-width="5" paint-order="stroke">${i+1}</text>`;
+  for(let i=0;i<24;i++){ const n=s0.n[i]; for(let k=0;k<n;k++){ const [x,y]=slot(i,k,n); g+=checker(x,y,s0.o[i],k===n-1&&n>=COUNT_FROM?n:0,ck); } }
+  if(s0.bar) for(const pl of [0,1]) for(let k=0;k<s0.bar[pl];k++) g+=checker(500,pl?285-k*44:415+k*44,pl,0,ck);
+  if(s0.off[0]) g+=`<text x="1055" y="660" text-anchor="middle" font-family="Onest,sans-serif" font-weight="700" font-size="30" fill="#f3d993" stroke="rgba(0,0,0,.7)" stroke-width="5" paint-order="stroke">${s0.off[0]}</text>`;
+  let cur=s0, rings='', ghosts='', arr='';
   for(const st of steps||[]){
-    const nF=st.src==='bar'?1:Math.min(cntAt(cur,st.src,0),5), nT=st.to==='off'?1:Math.min((cur.o[st.to]===0?cur.n[st.to]:0)+1,5);
-    const a=slot(st.src,Math.max(0,nF-1),Math.max(1,nF)), z=slot(st.to,nT-1,nT);
-    const mx=(a[0]+z[0])/2, my=(a[1]+z[1])/2, dx=z[0]-a[0], dy=z[1]-a[1], L=Math.hypot(dx,dy)||1, bend=Math.min(90,L*.25);
-    const cx=mx-dy/L*bend*(isTop(typeof st.src==='number'?st.src:0)?-1:1), cy=my+dx/L*bend*(isTop(typeof st.src==='number'?st.src:0)?-1:1);
-    arr+=`<circle cx="${a[0]}" cy="${a[1]}" r="${R+4}" fill="none" stroke="${col}" stroke-width="7"/><path d="M${a[0]} ${a[1]}Q${cx} ${cy} ${z[0]} ${z[1]}" fill="none" stroke="${col}" stroke-width="11" stroke-linecap="round" marker-end="url(#${id})"/>`;
+    const nF=st.src==='bar'?1:cntAt(cur,st.src,0), nT=st.to==='off'?1:(cur.o[st.to]===0?cur.n[st.to]:0)+1;
+    const a=st.src==='bar'?slot('bar',0,1):slot(st.src,nF-1,nF), z=st.to==='off'?slot('off',0,1):slot(st.to,nT-1,nT);
+    rings+=`<circle cx="${a[0]}" cy="${a[1]}" r="34" fill="none" stroke="${col}" stroke-width="6"/>`;
+    if(st.to!=='off') ghosts+=`<g opacity=".55">${checker(z[0],z[1],0,0,ck)}</g><circle cx="${z[0]}" cy="${z[1]}" r="34" fill="none" stroke="${col}" stroke-width="5" stroke-dasharray="10 7"/>`;
+    // дуга выгибается к середине доски; концы — у краёв шашек
+    const mx=(a[0]+z[0])/2, my=(a[1]+z[1])/2, same=isTop(typeof st.src==='number'?st.src:0)===(st.to==='off'?isTop(typeof st.src==='number'?st.src:0):isTop(st.to));
+    const qx=mx, qy=same?my+(350-my)*.9:my, dx=z[0]-a[0], dy=z[1]-a[1], L=Math.hypot(dx,dy)||1;
+    const cx=same?qx:mx-dy/L*70, cy=same?qy:my+dx/L*70;
+    const cut=(p,q,r)=>{ const vx=q[0]-p[0], vy=q[1]-p[1], l=Math.hypot(vx,vy)||1; return [p[0]+vx/l*r,p[1]+vy/l*r]; };
+    const A=cut(a,[cx,cy],36), Z=cut(z,[cx,cy],40), d=`M${A[0].toFixed(1)} ${A[1].toFixed(1)}Q${cx.toFixed(1)} ${cy.toFixed(1)} ${Z[0].toFixed(1)} ${Z[1].toFixed(1)}`;
+    arr+=`<path d="${d}" fill="none" stroke="rgba(0,0,0,.55)" stroke-width="15" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" marker-end="url(#${id})"/>`;
     cur=st.ns||cur;
   }
-  return `<svg viewBox="0 0 1100 700" class="rvb"><defs><marker id="${id}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.2" markerHeight="3.2" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="${col}"/></marker></defs>${g}<g style="filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))">${arr}</g></svg>`;
+  return `<svg viewBox="0 0 1100 700" class="rvb"><defs><marker id="${id}" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10Z" fill="${col}" stroke="rgba(0,0,0,.5)" stroke-width=".8"/></marker></defs>${g}${ghosts}${rings}${arr}</svg>`;
 }
 function showReview(){
   const m=G.mistakes.slice().sort((a,b)=>b.loss-a.loss).slice(0,6).sort((a,b)=>a.n-b.n);
   $('reviewList').innerHTML=m.length?m.map(x=>`<div class="${x.loss>25?'bad':''}"><b>Ход ${x.n}, выпало ${x.dice.join('–')}</b> — ${x.loss>25?'грубая ошибка':x.loss>10?'ошибка':'неточность'}
-    ${x.s0?`<div class="rvpair"><figure>${revBoard(x.s0,x.pSteps,'#e0605a')}<figcaption>Вы сыграли: ${x.played||'—'}</figcaption></figure><figure>${revBoard(x.s0,x.bSteps,'#f3d993')}<figcaption>Сильнее: <b>${x.best}</b></figcaption></figure></div>`
+    ${x.s0?`<div class="rvpair"><figure>${revBoard(x.s0,x.pSteps,'#ff7a6b')}<figcaption>Вы сыграли: ${x.played||'—'}</figcaption></figure><figure>${revBoard(x.s0,x.bSteps,'#ffd66e')}<figcaption>Сильнее: <b>${x.best}</b></figcaption></figure></div>`
     :`<br>Вы сыграли: ${x.played||'—'}<br>Сильнее: <b>${x.best}</b>`}</div>`).join(''):'<div>Ошибок не найдено — отличная партия!</div>';
   $('reviewSheet').hidden=false;
 }

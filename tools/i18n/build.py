@@ -15,7 +15,11 @@ def tr(t):
     r = core(t)
     if r is not None: return r
     parts = re.split(r'(\.\s+|!\s+|\?\s+|:\s+|\s—\s|;\s+|\s·\s)', t)
-    return ''.join((core(x) if core(x) is not None else x) if CYR.search(x) else x for x in parts)
+    def one(x):
+        if not CYR.search(x): return x
+        w = re.match(r'^(\s*)([\s\S]*?)(\s*)$', x); c = core(w.group(2))
+        return x if c is None else w.group(1) + c + w.group(3)
+    return ''.join(one(x) for x in parts)
 hp = os.path.join(D, 'harvest.json')
 if os.path.exists(hp):
     miss = sorted({re.sub(r'\d+', '#', h) for h in json.load(open(hp, encoding='utf-8')) if CYR.search(tr(h))})

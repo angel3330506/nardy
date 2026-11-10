@@ -79,18 +79,20 @@ def build():
     INK = np.maximum(INK, lines(segs, 1.25, aa=.45))
     vines = [ink(f'vine{k}', True) for k in range(6)]
     fins = [ink(f'fin{k}', True) for k in range(6)]
-    sc = .43
+    VH, FH = 84, 27                                           # все завитки и «пламя» — одной высоты и ровно по оси пункта
     for i in range(24):
         x, t = ptX(i), is_top(i); k = (i * 5) % 6
-        v = vines[k]; vh, vw = v.shape[0] / 2 * sc, v.shape[1] / 2 * sc
-        stamp(INK, v, x - vw / 2, (bayY + 8) if t else (700 - bayY - 8 - vh), sc, flipv=not t, fliph=(i % 2 == 1))
-        f = fins[(k + 2) % 6]; fh, fw = f.shape[0] / 2 * sc, f.shape[1] / 2 * sc
-        stamp(INK, f, x - fw / 2, (TIP - 1) if t else (700 - TIP + 1 - fh), sc, flipv=not t)
-    # ромб в центре половины
+        v = vines[k]; sc = min(VH / (v.shape[0] / 2), 42 / (v.shape[1] / 2)); vh, vw = v.shape[0] / 2 * sc, v.shape[1] / 2 * sc
+        stamp(INK, v, x - vw / 2, (bayY + 6) if t else (700 - bayY - 6 - vh), sc, flipv=not t, fliph=(i % 2 == 1))
+        f = fins[0]; fs = FH / (f.shape[0] / 2); fh, fw = f.shape[0] / 2 * fs, f.shape[1] / 2 * fs
+        stamp(INK, f, x - fw / 2, (TIP - 1) if t else (700 - TIP + 1 - fh), fs, flipv=not t)
+    # ромб в центре половины: узор обрезан по себе и стоит ровно в центре рамки
     dm = ink('diamond'); R = 80
+    ys, xs = np.nonzero(dm > .25); dm = dm[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    dsc = .86 * R / (max(dm.shape) / 4)
     for cx in (250, 750):
-        dsc = 2 * R / (dm.shape[1] / 2)
-        stamp(INK, dm, cx - R, 350 - dm.shape[0] / 2 * dsc / 2, dsc)
+        dw, dh = dm.shape[1] / 2 * dsc, dm.shape[0] / 2 * dsc
+        stamp(INK, dm, cx - dw / 2, 350 - dh / 2, dsc)
         INK = np.maximum(INK, lines([[(cx, 350 - R), (cx + R, 350), (cx, 350 + R), (cx - R, 350), (cx, 350 - R)]], 1.15, aa=.45))
     # узорные вставки у длинных краёв поля, как на фото
     side = ink('side'); s2 = ink('side2'); ssc = .52

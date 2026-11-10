@@ -315,6 +315,12 @@ border-radius:12px;opacity:0}
 #introCase{position:absolute;left:0;top:0;background:center/100% 100% no-repeat;will-change:transform;
   filter:drop-shadow(0 6px 0 #2a180c) drop-shadow(0 22px 26px rgba(0,0,0,.6)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
 body.intro #menu .case{visibility:hidden}
+/* «Гравюра»: заставка «резец гравёра» — рисунок проступает на чистой крышке, за фронтом бежит светящийся кончик резца */
+#introCase .engr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#introCase .burin{position:absolute;left:50%;top:50%;width:3.4%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .25s;
+  background:radial-gradient(circle,#fff 0,#fff4d2 26%,rgba(255,204,120,.6) 52%,rgba(255,190,90,0) 74%);box-shadow:0 0 16px 7px rgba(255,200,110,.5)}
+#introCase .swordFlash{position:absolute;left:47.9%;top:27.6%;width:26%;height:7%;translate:-50% -50%;rotate:-18deg;border-radius:50%;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(255,246,230,.95) 0,rgba(235,70,45,.55) 38%,rgba(235,60,40,0) 72%)}
 #intro .irev{position:absolute;left:0;top:0;width:100px;height:100px;opacity:0;pointer-events:none;will-change:transform,opacity}
 #introRev{filter:drop-shadow(0 0 28px rgba(255,196,110,.45))}
 body.intro #menu .mside{opacity:0;transform:translateX(60px)}
@@ -1026,10 +1032,10 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='147';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='148';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
-/*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-khatam.png":"8a67a596","boards/ck-khatamd.png":"fc76598b","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-khatam.png":"ba9fea77","boards/ckside-khatamd.png":"bb2cd930","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-gold-1.png":"606f1c7a","boards/die-gold-2.png":"68eb7219","boards/die-gold-3.png":"4abf64c2","boards/die-gold-4.png":"7ff8a963","boards/die-gold-5.png":"9f589a63","boards/die-gold-6.png":"f67c180d","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/goldrev-med-l.webp":"875c719a","boards/goldrev-med-r.webp":"beae367a","boards/goldrev-thumb.webp":"1b2ad914","boards/goldrev.webp":"898ad659","boards/gravura-lid.webp":"62c35a03","boards/gravura-thumb.webp":"8ccf7340","boards/gravura.webp":"8d2f6ae3","boards/intro-rev-w.webp":"c1e7a4bf","boards/intro-rev.webp":"9627dbfd","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-goldrev-long.png":"b706af0c","boards/pt-goldrev-short.png":"0d9bdbb6","boards/pt-gravura-long.png":"e2440a04","boards/pt-gravura-short.png":"e2440a04","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
+/*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-khatam.png":"8a67a596","boards/ck-khatamd.png":"fc76598b","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-khatam.png":"ba9fea77","boards/ckside-khatamd.png":"bb2cd930","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-gold-1.png":"606f1c7a","boards/die-gold-2.png":"68eb7219","boards/die-gold-3.png":"4abf64c2","boards/die-gold-4.png":"7ff8a963","boards/die-gold-5.png":"9f589a63","boards/die-gold-6.png":"f67c180d","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/goldrev-med-l.webp":"875c719a","boards/goldrev-med-r.webp":"beae367a","boards/goldrev-thumb.webp":"1b2ad914","boards/goldrev.webp":"898ad659","boards/gravura-lid-order.png":"89774fcd","boards/gravura-lid-plain.webp":"e9366ab5","boards/gravura-lid.webp":"62c35a03","boards/gravura-thumb.webp":"8ccf7340","boards/gravura.webp":"8d2f6ae3","boards/intro-rev-w.webp":"c1e7a4bf","boards/intro-rev.webp":"9627dbfd","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-goldrev-long.png":"b706af0c","boards/pt-goldrev-short.png":"0d9bdbb6","boards/pt-gravura-long.png":"e2440a04","boards/pt-gravura-short.png":"e2440a04","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
 const av=p=>p+'?v='+(AV[p]||APP_VERSION);
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
@@ -3764,7 +3770,7 @@ function runIntro(){
   const I=$('intro'), gold=$('introRev'), white=$('introRevW'), cs=$('case'), gc=$('introCase'), bg=I.querySelector('.ibg');
   document.body.classList.add('intro'); I.hidden=false; off(); fitMenu();
   gc.style.backgroundImage=`url(${lidRev()?av('boards/lid-plain.webp'):lidUrl()})`;      // крышка без Аревахача — он ещё в воздухе
-  if(!lidRev()) gold.style.display=white.style.display='none';          // у «Гравюры» на крышке всадник — Аревахач не падает
+  if(!lidRev()) gold.style.display=white.style.display='none';          // у «Гравюры» на крышке всадник — Аревахач не падает (своя заставка ниже)
   // копия нард стоит ровно по центру экрана; размер — как у настоящих нард в меню (их место меряем без сдвигов)
   let W, H, cw, ch, sliding=false, done=false;
   // Safari по-разному отдаёт координаты внутри меню с zoom (в одних версиях уже с учётом масштаба, в других — без).
@@ -3789,6 +3795,57 @@ function runIntro(){
     I.hidden=true; gc.getAnimations().forEach(a=>a.cancel());
     document.body.classList.remove('intro','introOut'); };
   I.addEventListener('pointerdown',finish,{once:true});
+  const slideOut=hold=>{
+    T(()=>{ if(done) return; sliding=true; introRecenter=null; const to=measure();
+      gc.animate([{transform:gc.style.transform},{transform:`translate(${to.x}px,${to.y}px)`}],{duration:900,easing:'cubic-bezier(.45,0,.2,1)',fill:'forwards'});
+      document.body.classList.add('introOut'); document.body.classList.remove('intro'); cs.style.visibility='hidden'; },hold);
+    T(()=>{ cs.style.visibility='';                                       // под копией уже настоящие нарды (с тенью листвы) — копия плавно растворяется
+      gc.animate([{opacity:1},{opacity:0}],{duration:450,easing:'ease-in-out',fill:'forwards'}).onfinish=finish; },hold+900);
+  };
+  if(!lidRev()){ engraveIntro(); return; }
+  // «Гравюра»: из темноты проступает чистая белая крышка, по ней бежит резец — гравировка проявляется в порядке
+  // boards/gravura-lid-order.png (tools/gravura_intro_order.py): уголки, затем конь и всадник вдоль линий, последним — меч, он вспыхивает
+  function engraveIntro(){
+    gc.style.backgroundImage=`url(${av('boards/gravura-lid-plain.webp')})`;
+    const LW=825, LH=1050, cv=document.createElement('canvas'); cv.width=LW; cv.height=LH; cv.className='engr';
+    const tip=document.createElement('i'); tip.className='burin'; const fl=document.createElement('i'); fl.className='swordFlash';
+    gc.append(cv,tip,fl);
+    const ld=u=>new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=u; setTimeout(()=>res(null),3000); });
+    bg.animate([{opacity:1},{opacity:0}],{duration:1100,easing:'ease-in',fill:'forwards'});
+    Promise.all([ld(lidUrl()),ld(av('boards/gravura-lid-order.png')),ld(av('boards/gravura-lid-plain.webp'))]).then(([full,ord])=>{
+      if(done) return;
+      if(!full||!ord){ cv.remove(); gc.style.backgroundImage=`url(${lidUrl()})`; slideOut(600); return; }
+      const x=cv.getContext('2d'), oc=document.createElement('canvas'); oc.width=LW; oc.height=LH;
+      const ox=oc.getContext('2d',{willReadFrequently:true}); ox.drawImage(ord,0,0,LW,LH);
+      const od=ox.getImageData(0,0,LW,LH).data;
+      // пиксели гравировки, отсортированные по моменту появления (сортировка подсчётом: 255 уровней)
+      const cnt=new Uint32Array(257); for(let i=0;i<od.length;i+=4) if(od[i]) cnt[od[i]]++;
+      const pos=new Uint32Array(257); for(let v=1;v<257;v++) pos[v]=pos[v-1]+cnt[v-1];
+      const n=pos[256], seq=new Uint32Array(n);
+      for(let i=0,q=0;i<od.length;i+=4,q++){ const v=od[i]; if(v) seq[pos[v]++]=q; }
+      const md=x.createImageData(LW,LH), a=md.data, D=2800;
+      let k=0, tx=null, ty=null, t0=0;
+      setTimeout(()=>{ t0=performance.now(); requestAnimationFrame(step); },500);     // сначала полсекунды — чистая крышка
+      function step(now){
+        if(done) return;
+        const p=Math.min(1,(now-t0)/D), e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2, to=Math.floor(n*e);
+        let sx=0, sy=0, c=0;
+        for(;k<to;k++){ const q=seq[k], j=q*4; a[j]=a[j+1]=a[j+2]=a[j+3]=255;
+          if(od[j]>=77){ sx+=q%LW; sy+=(q/LW)|0; c++; } }               // резец ведём по новым пикселям всадника (уголки рисуются разом)
+        x.globalCompositeOperation='source-over'; x.putImageData(md,0,0);
+        x.globalCompositeOperation='source-in'; x.drawImage(full,0,0,LW,LH);
+        if(c){ const px=sx/c, py=sy/c; tx=tx==null?px:tx+(px-tx)*.3; ty=ty==null?py:ty+(py-ty)*.3;
+          tip.style.left=tx/LW*100+'%'; tip.style.top=ty/LH*100+'%'; tip.style.opacity='1'; }
+        if(p<1) return requestAnimationFrame(step);
+        tip.style.opacity='0';
+        // меч вспыхивает, тихий звон
+        fl.animate([{opacity:0,transform:'scale(.5)'},{opacity:1,transform:'scale(1.06)',offset:.3},{opacity:0,transform:'scale(1.25)'}],{duration:700,easing:'ease-out'});
+        clink(1); buzz(12);
+        gc.style.backgroundImage=`url(${lidUrl()})`;
+        slideOut(1100);
+      }
+    });
+  }
   // 1. из темноты медленно проявляется золотой Аревахач
   gold.animate([{...box(big()*.9,-40),opacity:0,filter:'brightness(.2) drop-shadow(0 0 0 rgba(255,196,110,0))'},
     {...box(big(),-12),opacity:1,filter:'brightness(1) drop-shadow(0 0 28px rgba(255,196,110,.45))'}],{duration:1600,easing:'cubic-bezier(.3,.4,.3,1)',fill:'forwards'});
@@ -3812,11 +3869,7 @@ function runIntro(){
       land(); synthKnock(.7,0); synthKnock(.35,.05); buzz(16);
       gc.animate([{translate:'0 0'},{translate:'0 3px'},{translate:'0 0'}],{duration:180,easing:'ease-out'});
       // 4. нарды секунду стоят по центру, потом уезжают на своё место в меню, справа выезжает меню
-      T(()=>{ if(done) return; sliding=true; introRecenter=null; const to=measure();
-        gc.animate([{transform:gc.style.transform},{transform:`translate(${to.x}px,${to.y}px)`}],{duration:900,easing:'cubic-bezier(.45,0,.2,1)',fill:'forwards'});
-        document.body.classList.add('introOut'); document.body.classList.remove('intro'); cs.style.visibility='hidden'; },1000);
-      T(()=>{ cs.style.visibility='';                                       // под копией уже настоящие нарды (с тенью листвы) — копия плавно растворяется
-        gc.animate([{opacity:1},{opacity:0}],{duration:450,easing:'ease-in-out',fill:'forwards'}).onfinish=finish; },1900);
+      slideOut(1000);
     })(t0);
   },1900);
 }

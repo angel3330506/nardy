@@ -19,6 +19,10 @@ def part(name):
     return a[..., :3], a[..., 3]
 
 
+PARTS = []                                                 # (имя, маска на всю крышку, цвет) — для порядка «резца» в заставке
+PLAIN = bool(os.environ.get('PLAIN'))                     # чистая крышка без гравировки (фон заставки)
+
+
 def put(alb, ink, name, cx, cy, fh=False, fv=False, width=None):
     c, m = part(name)
     if fh: c, m = c[:, ::-1], m[:, ::-1]
@@ -26,6 +30,9 @@ def put(alb, ink, name, cx, cy, fh=False, fv=False, width=None):
     z = PH * K if width is None else width * K / m.shape[1]
     c = ndi.zoom(c, (z, z, 1), order=1); m = np.clip(ndi.zoom(m, z, order=1), 0, 1)
     h, w = m.shape; x0, y0 = int(cx * K - w / 2), int(cy * K - h / 2)
+    full = np.zeros((H, W)); full[y0:y0 + h, x0:x0 + w] = m; fc = np.ones((H, W, 3)); fc[y0:y0 + h, x0:x0 + w] = c
+    PARTS.append((name, full, fc))
+    if PLAIN: return
     alb[y0:y0 + h, x0:x0 + w] = alb[y0:y0 + h, x0:x0 + w] * (1 - m[..., None]) + alb[y0:y0 + h, x0:x0 + w] * c * m[..., None]
     ink[y0:y0 + h, x0:x0 + w] = np.maximum(ink[y0:y0 + h, x0:x0 + w], m)
 
@@ -51,6 +58,7 @@ def build():
 
 if __name__ == '__main__':
     out = build()
-    np.savez_compressed(os.path.join(ROOT, '.preview', 'layers-gravura-lid.npz'), **{k: np.asarray(v, np.float32) for k, v in out.items()})
+    name = 'gravura-lid-plain' if PLAIN else 'gravura-lid'
+    np.savez_compressed(os.path.join(ROOT, '.preview', f'layers-{name}.npz'), **{k: np.asarray(v, np.float32) for k, v in out.items()})
     Image.fromarray((out['alb'] * 255).astype(np.uint8)).resize((LW // 2, LH // 2)).save(os.path.join(ROOT, '.preview', 'gravura-lid-alb.png'))
-    print('saved layers gravura-lid')
+    print('saved layers', name)

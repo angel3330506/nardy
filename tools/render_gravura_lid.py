@@ -39,7 +39,7 @@ def build():
     alb = np.ones((H, W, 3)) * np.array((.84, .83, .80)) * (.975 + .05 * fbm(H, W, 3, 4, 31, 3))[..., None]
     ink = np.zeros((H, W))
     # Давид Сасунский на коне — оригинальная гравюра (tools/tex/uzor/david-src.png, сгенерирована в Figma по описанию)
-    put(alb, ink, 'lid-david', LW / 2, LH * .47, width=608)
+    put(alb, ink, 'lid-david', LW / 2, LH * .47, width=517)
     cw, chh = 160 * PH / 2, 180 * PH / 2
     for fh in (False, True):
         for fv in (False, True):

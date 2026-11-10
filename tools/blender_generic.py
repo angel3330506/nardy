@@ -71,7 +71,7 @@ bg = world.node_tree.nodes['Background']; world.node_tree.links.new(env.outputs[
 key = bpy.data.lights.new('key', 'AREA'); key.shape = 'RECTANGLE'; key.size = 9; key.size_y = 5; key.energy = 5000
 ko = bpy.data.objects.new('key', key); sc.collection.objects.link(ko)
 ko.location = (-4.5, 5.0, 8); ko.rotation_euler = (math.radians(-40), math.radians(-35), 0)
-cam = bpy.data.cameras.new('cam'); cam.type = 'ORTHO'; cam.ortho_scale = WW / 2 / U
+cam = bpy.data.cameras.new('cam'); cam.type = 'ORTHO'; cam.ortho_scale = max(WW, HH) / 2 / U   # по большей стороне: у крышки она — высота
 co_ = bpy.data.objects.new('cam', cam); sc.collection.objects.link(co_); sc.camera = co_
 co_.location = (WW / 4 / U, -HH / 4 / U, 20)
 

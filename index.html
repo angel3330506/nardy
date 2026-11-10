@@ -297,6 +297,9 @@ border-radius:12px;opacity:0}
 .case.open .lid{transform:rotateY(180deg)}
 /* 3D включаем только на время раскрытия: на iPhone 3D-слой внутри прокручиваемого меню мог «съедать» фон-стол целиком */
 #menu:not(.opening) .case,#menu:not(.opening) .case .lid{transform-style:flat}
+/* «Гравюра»: торцы крышки — белый акрил, а не орех */
+.case.acryl .slab,#endCase.acryl .ecE{background:linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.35) 45%,rgba(0,0,0,.22)),#dedbd4}
+.case.acryl{filter:drop-shadow(0 var(--side,6px) 0 #b9b5ad) drop-shadow(0 22px 26px rgba(0,0,0,.6)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
 #menu:not(.opening) .case .slab{display:none}
 /* прозрачная плёнка поверх доски: браузеры (например, Яндекс) не принимают её за картинку и не показывают свои кнопки «найти/сохранить» */
 .case::after{content:"";position:absolute;inset:0;z-index:5}
@@ -1023,10 +1026,10 @@ function probeFps(){
 }
 // GAME_VERSION — для людей, меняется при крупных обновлениях; APP_VERSION — номер сборки для кэша, растёт при каждой выкладке
 const GAME_VERSION='1.0';
-const APP_VERSION='141';   // совпадает с V в sw.js: номер сборки (имя кэша)
+const APP_VERSION='142';   // совпадает с V в sw.js: номер сборки (имя кэша)
 // AV — короткие хеши содержимого картинок (их пишет tools/stamp.py): адрес меняется, только когда меняется сам файл,
 // поэтому после обновления заново качается лишь то, что изменилось
-/*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-khatam.png":"8a67a596","boards/ck-khatamd.png":"fc76598b","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-khatam.png":"ba9fea77","boards/ckside-khatamd.png":"bb2cd930","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-gold-1.png":"606f1c7a","boards/die-gold-2.png":"68eb7219","boards/die-gold-3.png":"4abf64c2","boards/die-gold-4.png":"7ff8a963","boards/die-gold-5.png":"9f589a63","boards/die-gold-6.png":"f67c180d","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/goldrev-med-l.webp":"875c719a","boards/goldrev-med-r.webp":"beae367a","boards/goldrev-thumb.webp":"1b2ad914","boards/goldrev.webp":"898ad659","boards/gravura-thumb.webp":"8ccf7340","boards/gravura.webp":"8d2f6ae3","boards/intro-rev-w.webp":"c1e7a4bf","boards/intro-rev.webp":"9627dbfd","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-goldrev-long.png":"b706af0c","boards/pt-goldrev-short.png":"0d9bdbb6","boards/pt-gravura-long.png":"2b63381b","boards/pt-gravura-short.png":"2b63381b","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
+/*AV*/const AV={"boards/ararat-thumb.webp":"72ff05c2","boards/ararat.webp":"7c44b1ce","boards/ck-beech.png":"ef00f4f8","boards/ck-bronze.png":"db6b57b9","boards/ck-copper.png":"761c282a","boards/ck-gold.png":"87fddeef","boards/ck-ivory.png":"372b72ce","boards/ck-khatam.png":"8a67a596","boards/ck-khatamd.png":"fc76598b","boards/ck-onyx.png":"bfb41b3a","boards/ck-pearl.png":"83aaf841","boards/ck-pomegranate.png":"73a5236d","boards/ck-silver.png":"18222740","boards/ck-walnut.png":"1857427e","boards/ckside-beech.png":"2e4a01b1","boards/ckside-bronze.png":"700fbb0d","boards/ckside-copper.png":"54a53742","boards/ckside-gold.png":"f3c3b036","boards/ckside-ivory.png":"cce1b2d9","boards/ckside-khatam.png":"ba9fea77","boards/ckside-khatamd.png":"bb2cd930","boards/ckside-onyx.png":"3695f6bf","boards/ckside-pearl.png":"d9c5e6f3","boards/ckside-pomegranate.png":"79fe0975","boards/ckside-silver.png":"6d16c666","boards/ckside-walnut.png":"bc0fa647","boards/die-1.png":"2d6046dd","boards/die-2.png":"dba1ef51","boards/die-3.png":"c4754c62","boards/die-4.png":"c26495e1","boards/die-5.png":"49661381","boards/die-6.png":"3d46b683","boards/die-amber-1.png":"105d06f3","boards/die-amber-2.png":"f7695264","boards/die-amber-3.png":"518fcc5b","boards/die-amber-4.png":"82e42d65","boards/die-amber-5.png":"a53a1fed","boards/die-amber-6.png":"6114a46b","boards/die-gold-1.png":"606f1c7a","boards/die-gold-2.png":"68eb7219","boards/die-gold-3.png":"4abf64c2","boards/die-gold-4.png":"7ff8a963","boards/die-gold-5.png":"9f589a63","boards/die-gold-6.png":"f67c180d","boards/die-wood-1.png":"f9fecd23","boards/die-wood-2.png":"dad9e71b","boards/die-wood-3.png":"ebe40557","boards/die-wood-4.png":"f8c4f6d2","boards/die-wood-5.png":"239c202c","boards/die-wood-6.png":"ea05a4a3","boards/glass-thumb.webp":"5db12bdb","boards/glass.webp":"3fe1cddb","boards/goldrev-med-l.webp":"875c719a","boards/goldrev-med-r.webp":"beae367a","boards/goldrev-thumb.webp":"1b2ad914","boards/goldrev.webp":"898ad659","boards/gravura-lid.webp":"ea96f494","boards/gravura-thumb.webp":"8ccf7340","boards/gravura.webp":"8d2f6ae3","boards/intro-rev-w.webp":"c1e7a4bf","boards/intro-rev.webp":"9627dbfd","boards/leafshade.webp":"8666bd89","boards/lid-plain.webp":"32dbab24","boards/lid.webp":"47f4a845","boards/maple.webp":"c7e0d43c","boards/night-thumb.webp":"61a42599","boards/night.webp":"96cd9880","boards/plaque.webp":"6c60c0b6","boards/pomegranate-thumb.webp":"d5574e56","boards/pomegranate.webp":"a89189f5","boards/prop-beads.webp":"01fd0477","boards/prop-cup.webp":"67e8e539","boards/prop-pack.webp":"a1f55e5d","boards/pt-ararat-long.png":"b706af0c","boards/pt-ararat-short.png":"0d9bdbb6","boards/pt-glass-long.png":"2474d3b3","boards/pt-glass-short.png":"2474d3b3","boards/pt-goldrev-long.png":"b706af0c","boards/pt-goldrev-short.png":"0d9bdbb6","boards/pt-gravura-long.png":"2b63381b","boards/pt-gravura-short.png":"2b63381b","boards/pt-night-long.png":"c9576df0","boards/pt-night-short.png":"c9576df0","boards/pt-pomegranate-long.png":"b706af0c","boards/pt-pomegranate-short.png":"0d9bdbb6","boards/pt-sevan-long.png":"b706af0c","boards/pt-sevan-short.png":"0d9bdbb6","boards/pt-yerevan-long.png":"f28ec383","boards/pt-yerevan-short.png":"78fa0ed8","boards/sevan-thumb.webp":"35db3522","boards/sevan.webp":"56ec51be","boards/table.webp":"d353fc6c","boards/walnut-plank.webp":"3f05219c","boards/yerevan-thumb.webp":"4817779b","boards/yerevan.webp":"64e36c39"};/*/AV*/
 const av=p=>p+'?v='+(AV[p]||APP_VERSION);
 const NS='http://www.w3.org/2000/svg';
 const f2=v=>(+v).toFixed(1);
@@ -1112,9 +1115,13 @@ const DICE_CORE={bone:'#d8cdb0',wood:'#a8743f',amber:'#7a3416',gold:'#7d5a24'}; 
 const diceImg=f=>`${av(`boards/die-${DICE[settings.dice==='gold'&&!goldDiceOpen()?'bone':settings.dice]??''}${f}.png`)}`;
 // картинки грузим заранее, чтобы смена доски и первые шашки не мигали
 for(const id of ['app','menu']){ $(id).style.setProperty('--table',`url(${av(`boards/table.webp`)})`); $(id).style.setProperty('--leaf',`url(${av(`boards/leafshade.webp`)})`); }
-$('case').style.setProperty('--lid',`url(${av(`boards/lid.webp`)})`);
-(function lidLoad(n){ const u=av('boards/lid.webp'), im=new Image();
-  im.onload=()=>$('case').style.setProperty('--lid',`url(${u}${n?'&r='+n:''})`); im.onerror=()=>n<5&&setTimeout(()=>lidLoad(n+1),1200*(n+1)); im.src=n?u+'&r='+n:u; })(0);
+// крышка нард в меню: своя у «Гравюры» (всадник на белом акриле), у остальных досок — общая с Аревахачем
+const LIDS={gravura:'boards/gravura-lid.webp'};
+const lidSkin=()=>{ try{ return settings.skin; }catch(e){ try{ return JSON.parse(localStorage.getItem('nardy-settings-v1')||'{}').skin; }catch(_){ return ''; } } };
+const lidUrl=()=>av(LIDS[lidSkin()]||'boards/lid.webp'), lidRev=()=>!LIDS[lidSkin()];   // lidRev — на крышке Аревахач
+$('case').style.setProperty('--lid',`url(${lidUrl()})`);
+(function lidLoad(n){ const u=lidUrl(), im=new Image();
+  im.onload=()=>{ if(u===lidUrl()) $('case').style.setProperty('--lid',`url(${u}${n?'&r='+n:''})`); }; im.onerror=()=>n<5&&setTimeout(()=>lidLoad(n+1),1200*(n+1)); im.src=n?u+'&r='+n:u; })(0);
 for(const c of Object.keys(CK)){const im=new Image();im.src=`${av(`boards/ckside-${c}.png`)}`;}
 
 /* ---------- правила ---------- */
@@ -2004,14 +2011,14 @@ async function shareCard(){
   const won=mode==='pvp'||G.winner===(mode==='net'?G.me:0), W=1200, H=630;
   const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
   try{ await document.fonts.load('64px Forum'); await document.fonts.load('28px Onest'); }catch(e){}
-  const [tab,lid,rev]=await Promise.all([loadImg(av('boards/table.webp')),loadImg(av('boards/lid.webp')),loadImg(av('boards/intro-rev.webp'))]);
+  const [tab,lid,rev]=await Promise.all([loadImg(av('boards/table.webp')),loadImg(lidUrl()),loadImg(av('boards/intro-rev.webp'))]);
   x.fillStyle='#1c120a'; x.fillRect(0,0,W,H);
   if(tab){ const k=Math.max(W/tab.width,H/tab.height); x.drawImage(tab,(W-tab.width*k)/2,(H-tab.height*k)/2,tab.width*k,tab.height*k); }
   const g=x.createRadialGradient(W*.62,H*.5,80,W*.62,H*.5,760); g.addColorStop(0,'rgba(12,8,5,.35)'); g.addColorStop(1,'rgba(8,5,3,.86)'); x.fillStyle=g; x.fillRect(0,0,W,H);
   // закрытые нарды слева, Аревахач на крышке — золотой
   const lh=520, lw=lh*550/700, lx=70, ly=(H-lh)/2;
   x.save(); x.shadowColor='rgba(0,0,0,.65)'; x.shadowBlur=40; x.shadowOffsetY=18; if(lid) x.drawImage(lid,lx,ly,lw,lh); x.restore();
-  if(rev&&won){ const d=lw*544/825; x.globalAlpha=.92; x.drawImage(rev,lx+lw/2-d/2,ly+lh/2-d/2,d,d); x.globalAlpha=1; }
+  if(rev&&won&&lidRev()){ const d=lw*544/825; x.globalAlpha=.92; x.drawImage(rev,lx+lw/2-d/2,ly+lh/2-d/2,d,d); x.globalAlpha=1; }
   // текст справа
   const tx=lx+lw+70, gold='#f1d48a', muted='rgba(239,230,212,.78)';
   const title=$('wTitle').textContent;
@@ -2070,7 +2077,7 @@ function winAnim(done){
   if(calm()){ done(); return; }
   const ec=$('endCase'), lid=ec.querySelector('.ecLid'), rev=ec.querySelector('.ecRev'), sp=ec.querySelector('.ecSpark'), sh=ec.querySelector('.ecShade');
   const [dIn,dOut]=ec.querySelectorAll('.ecDim'), fw=$('frame').clientWidth;
-  ec.style.setProperty('--ecimg',`url(${$('boardImg').src})`); ec.style.setProperty('--eclid',`url(${av('boards/lid.webp')})`);
+  ec.style.setProperty('--ecimg',`url(${$('boardImg').src})`); ec.style.setProperty('--eclid',`url(${lidUrl()})`); ec.classList.toggle('acryl',!lidRev());
   ec.style.setProperty('--T',Math.max(12,fw*.036)+'px');   // толщина крышки ec.classList.remove('shut');
   $('board').animate([{opacity:1},{opacity:0}],{duration:450,fill:'forwards'});
   diceBox.animate([{opacity:1},{opacity:0}],{duration:450,fill:'forwards'});
@@ -2104,7 +2111,7 @@ function winAnim(done){
       synthKnock(.8,0); synthKnock(.4,.05); buzz(18);
       $('frame').animate([{translate:'0 0'},{translate:'0 3px'},{translate:'0 0'}],{duration:200,easing:'ease-out'});
       // Аревахач на крышке вспыхивает золотом и гаснет обратно в белую инкрустацию; искры разлетаются
-      rev.animate([{opacity:0,transform:'scale(1)'},{opacity:1,transform:'scale(1.04)',offset:.25},{opacity:1,transform:'scale(1)',offset:.55},{opacity:0,transform:'scale(1)'}],{duration:1700,easing:'ease-out',fill:'forwards'});
+      if(lidRev()) rev.animate([{opacity:0,transform:'scale(1)'},{opacity:1,transform:'scale(1.04)',offset:.25},{opacity:1,transform:'scale(1)',offset:.55},{opacity:0,transform:'scale(1)'}],{duration:1700,easing:'ease-out',fill:'forwards'});
       const n=lite()?8:16; sp.innerHTML='<i></i>'.repeat(n);
       sp.querySelectorAll('i').forEach((e,k)=>{ const a=k/n*Math.PI*2+Math.random()*.3, r=(70+Math.random()*90)*fw/1100;
         e.animate([{transform:'translate(0,0) scale(.4)',opacity:0},{opacity:1,offset:.15},{transform:`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px) scale(1)`,opacity:0}],{duration:1100+Math.random()*500,delay:250,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'}); });
@@ -3249,6 +3256,7 @@ function checker(x,y,pl,cnt,ck=skin().ck){
 function buildStatic(){
   const k=settings.skin, sk=SKINS[k];
   $('case').style.setProperty('--inside',`url(${av(`boards/${k}.webp`)})`);   // под крышкой в меню — выбранная доска
+  $('case').style.setProperty('--lid',`url(${lidUrl()})`); $('case').classList.toggle('acryl',!lidRev());   // крышка в меню — под выбранную доску
   const bsrc=av(`boards/${k}.webp`); if($('boardImg').getAttribute('src')!==bsrc) $('boardImg').src=bsrc; if(k==='goldrev') document.querySelectorAll('#frame .revGlow').forEach((el,i)=>{ const u=av(`boards/goldrev-med-${'lr'[i]}.webp`); if(el.getAttribute('src')!==u) el.src=u; });   // свечение медальонов — заранее
   const ck=skin().ck;
   $('chip0').innerHTML=`<image href="${av(`boards/ck-${ck.w.img}.png`)}" x="-30" y="-30" width="60" height="60"/>`;
@@ -3754,7 +3762,8 @@ function runIntro(){
   if((MOCK&&!sp.has('intro'))||sp.get('room')||matchMedia('(prefers-reduced-motion: reduce)').matches){ off(); return requestAnimationFrame(yaReady); }
   const I=$('intro'), gold=$('introRev'), white=$('introRevW'), cs=$('case'), gc=$('introCase'), bg=I.querySelector('.ibg');
   document.body.classList.add('intro'); I.hidden=false; off(); fitMenu();
-  gc.style.backgroundImage=`url(${av('boards/lid-plain.webp')})`;      // крышка без Аревахача — он ещё в воздухе
+  gc.style.backgroundImage=`url(${lidRev()?av('boards/lid-plain.webp'):lidUrl()})`;      // крышка без Аревахача — он ещё в воздухе
+  if(!lidRev()) gold.style.display=white.style.display='none';          // у «Гравюры» на крышке всадник — Аревахач не падает
   // копия нард стоит ровно по центру экрана; размер — как у настоящих нард в меню (их место меряем без сдвигов)
   let W, H, cw, ch, sliding=false, done=false;
   // Safari по-разному отдаёт координаты внутри меню с zoom (в одних версиях уже с учётом масштаба, в других — без).
@@ -3774,7 +3783,7 @@ function runIntro(){
   const put=(el,x,y,d,rot)=>{ el.style.transform=`translate(${x-B/2}px,${y-B/2}px) rotate(${rot}deg) scale(${d/B})`; };
   const box=(d,rot)=>({transform:`translate(${W/2-B/2}px,${H/2-B/2}px) rotate(${rot}deg) scale(${d/B})`});
   const timers=[], T=(f,ms)=>timers.push(setTimeout(f,ms));
-  const land=()=>{ gc.style.backgroundImage=`url(${av('boards/lid.webp')})`; gold.getAnimations().forEach(a=>a.cancel()); gold.style.opacity=white.style.opacity='0'; };
+  const land=()=>{ gc.style.backgroundImage=`url(${lidUrl()})`; gold.getAnimations().forEach(a=>a.cancel()); gold.style.opacity=white.style.opacity='0'; };
   const finish=()=>{ if(done) return; done=true; yaReady(); timers.forEach(clearTimeout); introRecenter=null; cs.style.visibility="";
     I.hidden=true; gc.getAnimations().forEach(a=>a.cancel());
     document.body.classList.remove('intro','introOut'); };
@@ -3782,7 +3791,7 @@ function runIntro(){
   // 1. из темноты медленно проявляется золотой Аревахач
   gold.animate([{...box(big()*.9,-40),opacity:0,filter:'brightness(.2) drop-shadow(0 0 0 rgba(255,196,110,0))'},
     {...box(big(),-12),opacity:1,filter:'brightness(1) drop-shadow(0 0 28px rgba(255,196,110,.45))'}],{duration:1600,easing:'cubic-bezier(.3,.4,.3,1)',fill:'forwards'});
-  const pre=['boards/lid.webp','boards/lid-plain.webp'].map(u=>{ const im=new Image(); im.src=av(u); return im; });
+  const pre=[lidUrl(),av('boards/lid-plain.webp')].map(u=>{ const im=new Image(); im.src=u; return im; });
   const ready=()=>Promise.all(pre.map(im=>new Promise(res=>{ if(im.complete) return res(); im.onload=im.onerror=res; setTimeout(res,2600); })));
   T(async()=>{
     await ready(); if(done) return;

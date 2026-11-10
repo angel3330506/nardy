@@ -1,4 +1,4 @@
-# Крышка нард «Гравюра» для главного меню — по фото настоящей крышки: белый акрил, в центре всадник на коне
+# Крышка нард «Гравюра» для главного меню — по фото настоящей крышки: белый акрил, в центре Давид Сасунский на коне
 # (гравировка, клинок и пламя — красным), в углах и посередине длинных краёв — узорные уголки.
 # Части вырезаны из выпрямленного фото (tools/tex/uzor/lid-*.png: цвет штриха + прозрачность), масштаб как на фото.
 # Результат: .preview/layers-gravura-lid.npz для tools/blender_generic.py (крышка 825×1050, как boards/lid.webp).
@@ -19,11 +19,11 @@ def part(name):
     return a[..., :3], a[..., 3]
 
 
-def put(alb, ink, name, cx, cy, fh=False, fv=False):
+def put(alb, ink, name, cx, cy, fh=False, fv=False, width=None):
     c, m = part(name)
     if fh: c, m = c[:, ::-1], m[:, ::-1]
     if fv: c, m = c[::-1], m[::-1]
-    z = PH * K
+    z = PH * K if width is None else width * K / m.shape[1]
     c = ndi.zoom(c, (z, z, 1), order=1); m = np.clip(ndi.zoom(m, z, order=1), 0, 1)
     h, w = m.shape; x0, y0 = int(cx * K - w / 2), int(cy * K - h / 2)
     alb[y0:y0 + h, x0:x0 + w] = alb[y0:y0 + h, x0:x0 + w] * (1 - m[..., None]) + alb[y0:y0 + h, x0:x0 + w] * c * m[..., None]
@@ -38,7 +38,8 @@ def build():
     h = 22 * np.clip(d / 14, 0, 1) ** .6                      # скруглённая кромка крышки
     alb = np.ones((H, W, 3)) * np.array((.84, .83, .80)) * (.975 + .05 * fbm(H, W, 3, 4, 31, 3))[..., None]
     ink = np.zeros((H, W))
-    put(alb, ink, 'lid-rider', LW / 2, LH * .45)
+    # Давид Сасунский на коне — оригинальная гравюра (tools/tex/uzor/david-src.png, сгенерирована в Figma по описанию)
+    put(alb, ink, 'lid-david', LW / 2, LH * .47, width=608)
     cw, chh = 160 * PH / 2, 180 * PH / 2
     for fh in (False, True):
         for fv in (False, True):

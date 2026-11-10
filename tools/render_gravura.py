@@ -70,7 +70,7 @@ def build():
     alb = alb * (1 - band[..., None] * .05)
     # гравировка
     INK = np.zeros((H, W))
-    TIP = 238
+    TIP = 205                                                  # пункты короче: между ними и ромбом — простор, как на настоящей доске
     segs = []
     for i in range(24):
         x, t = ptX(i), is_top(i)
@@ -79,7 +79,7 @@ def build():
     INK = np.maximum(INK, lines(segs, 1.25, aa=.45))
     vines = [ink(f'vine{k}', True) for k in range(6)]
     fins = [ink(f'fin{k}', True) for k in range(6)]
-    sc = .53
+    sc = .43
     for i in range(24):
         x, t = ptX(i), is_top(i); k = (i * 5) % 6
         v = vines[k]; vh, vw = v.shape[0] / 2 * sc, v.shape[1] / 2 * sc
@@ -87,7 +87,7 @@ def build():
         f = fins[(k + 2) % 6]; fh, fw = f.shape[0] / 2 * sc, f.shape[1] / 2 * sc
         stamp(INK, f, x - fw / 2, (TIP - 1) if t else (700 - TIP + 1 - fh), sc, flipv=not t)
     # ромб в центре половины
-    dm = ink('diamond'); R = 108
+    dm = ink('diamond'); R = 80
     for cx in (250, 750):
         dsc = 2 * R / (dm.shape[1] / 2)
         stamp(INK, dm, cx - R, 350 - dm.shape[0] / 2 * dsc / 2, dsc)

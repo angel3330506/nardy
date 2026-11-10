@@ -36,7 +36,7 @@ SHAPES = {
     'sevan': lambda i, long: with_bay(i, shape_inlay(i, 218 if long else 150), 28, 16, 62),
     'yerevan': lambda i, long: with_bay(i, polys([teardrop(ptX(i), True, 262 if long else 196, 42)]), 30, 14, 58),
     'night': lambda i, long: polys([[(ptX(i) - 33, 40), (ptX(i) + 33, 40), (ptX(i), 296)]]),
-    'gravura': lambda i, long: np.maximum(bay(i, 34, 30), polys([[(ptX(i) - 34, 62), (ptX(i) + 34, 62), (ptX(i), 240)]])),
+    'gravura': lambda i, long: np.maximum(bay(i, 34, 30), polys([[(ptX(i) - 34, 62), (ptX(i) + 34, 62), (ptX(i), 207)]])),
     'glass': lambda i, long: with_bay(i, polys([[(ptX(i) - 27, 58), (ptX(i) + 27, 58), (ptX(i), 290)]]), 27, 15, 58),
 }
 

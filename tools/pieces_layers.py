@@ -30,6 +30,29 @@ def checker(kind):
         alb = alb * (1 - np.clip(pat, 0, 1)[..., None] * .55)
         metal = np.ones((N, N)) * (1 - np.clip(pat, 0, 1) * .5)
         return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), 1.0), metal=metal)
+    if kind in ('khatam', 'khatamd'):
+        # шашки с нард «Гравюра»: точёное дерево (светлое золотистое / тёмный орех), в центре — хатам:
+        # мозаика-звезда из перламутра и чёрного дерева (8 ромбов-лучей и 8 ромбов между ними)
+        im = np.asarray(Image.open(os.path.join(TEX, 'white_maple_veneer.jpg' if kind == 'khatam' else 'walnut_veneer.jpg')).convert('RGB').resize((N, N)), float) / 255
+        col = np.array((.64, .52, .32)) if kind == 'khatam' else np.array((.36, .19, .10))
+        lum = im.mean(-1); alb = col * (lum / lum.mean())[..., None] ** 1.3
+        h = h + g(.92, .012, .02)
+        ang = np.arctan2(y, x); rr = r
+        disc = np.clip((.5 - rr) * R / 1.2, 0, 1)                         # вставка
+        def rhomb(cr, a0, L, Wd):                                         # ромб вдоль луча: центр на радиусе cr, угол a0
+            px, py = rr * np.cos(ang - a0) - cr, rr * np.sin(ang - a0)
+            return np.clip((1 - np.abs(px) / L - np.abs(py) / Wd) * 14, 0, 1)
+        rays = sum(rhomb(.21, k * math.pi / 4, .19, .07) for k in range(8))
+        mids = sum(rhomb(.36, k * math.pi / 4 + math.pi / 8, .11, .09) for k in range(8))
+        star = np.clip(rays + mids, 0, 1) * disc
+        lightc, darkc = np.array((.95, .94, .90)), np.array((.05, .045, .04))
+        bgc, fgc = (darkc, lightc) if kind == 'khatam' else (lightc, darkc)
+        ins = bgc * (1 - star[..., None]) + fgc * star[..., None]
+        ins = ins * (1 + .06 * (np.sin(ang * 23) * np.cos(rr * 60))[..., None])   # перламутр переливается
+        alb = alb * (1 - disc[..., None]) + ins * disc[..., None]
+        rim = np.exp(-((rr - .5) / .018) ** 2); alb = alb * (1 - rim[..., None] * .5)
+        h = h - disc * .006
+        return dict(h=h, alb=alb, alpha=alpha, gloss=np.full((N, N), 1.0), metal=np.zeros((N, N)))
     if kind == 'pearl':
         # перламутр: белый с радужными переливами, тонкий серебряный ободок
         rng = np.random.default_rng(7)
@@ -119,7 +142,7 @@ def die_face(v, mat='bone'):
 
 if __name__ == '__main__':
     out = os.path.join(os.path.dirname(__file__), '..', '.preview')
-    for k in ('ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold', 'silver'):
+    for k in ('ivory', 'onyx', 'beech', 'walnut', 'pomegranate', 'pearl', 'copper', 'bronze', 'gold', 'silver', 'khatam', 'khatamd'):
         np.savez_compressed(os.path.join(out, f'piece-ck-{k}.npz'), **checker(k))
     for mat in ('bone', 'wood', 'amber', 'gold'):
         for v in range(1, 7):

@@ -77,7 +77,7 @@ def render(name, out_png, size, die=False):
     print('saved', out_png)
 
 
-CHECKERS = ('silver',) if 'silver' in sys.argv else ('ivory', 'onyx', 'beech', 'walnut') if 'old' in sys.argv else ('pomegranate', 'pearl', 'copper', 'bronze', 'gold')
+CHECKERS = ('khatam', 'khatamd') if 'khatam' in sys.argv else ('silver',) if 'silver' in sys.argv else ('ivory', 'onyx', 'beech', 'walnut') if 'old' in sys.argv else ('pomegranate', 'pearl', 'copper', 'bronze', 'gold')
 for k in (() if 'dice' in sys.argv else CHECKERS):
     render(f'piece-ck-{k}', os.path.join(OUTD, f'ck-{k}.png'), 128)
 for mat in ((('gold',) if 'gold' in sys.argv else ('bone', 'wood', 'amber')) if 'dice' in sys.argv else ()):

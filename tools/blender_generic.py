@@ -80,6 +80,7 @@ sc.cycles.samples = int(os.environ.get('SAMPLES', 128)); sc.cycles.use_denoising
 sc.render.resolution_x, sc.render.resolution_y = WW, HH
 sc.render.film_transparent = True
 sc.view_settings.view_transform = 'Standard'; sc.view_settings.look = 'Medium High Contrast'
+sc.view_settings.exposure = float(os.environ.get('EXPOSURE', 0))   # белой доске (gravura) нужна поправка, иначе свет выбивает её в чистый белый
 sc.render.image_settings.file_format = 'PNG'; sc.render.image_settings.color_mode = 'RGBA'
 sc.render.filepath = os.path.join(ROOT, '.preview', f'blender-{NAME}.png')
 bpy.ops.render.render(write_still=True)

@@ -9,9 +9,11 @@ TEX = os.path.join(ROOT, 'tools', 'tex')
 KINDS = {'beech': ('white_maple_veneer.jpg', (.80, .58, .38)), 'walnut': ('walnut_veneer.jpg', (.36, .21, .11)),
          'ivory': (None, (.88, .84, .74)), 'onyx': (None, (.03, .03, .035)),
          'pomegranate': ('walnut_veneer.jpg', (.30, .045, .04)), 'pearl': (None, (.92, .91, .90)),
-         'copper': ('METAL', (.86, .45, .26)), 'bronze': ('METAL', (.30, .20, .12)), 'gold': ('METAL', (.95, .74, .36)), 'silver': ('METAL', (.86, .87, .88))}
+         'copper': ('METAL', (.86, .45, .26)), 'bronze': ('METAL', (.30, .20, .12)), 'gold': ('METAL', (.95, .74, .36)), 'silver': ('METAL', (.86, .87, .88)),
+         'khatam': ('white_maple_veneer.jpg', (.64, .52, .32)), 'khatamd': ('walnut_veneer.jpg', (.36, .19, .10))}
 import sys as _s
-if 'silver' in _s.argv: KINDS = {'silver': KINDS['silver']}
+if 'khatam' in _s.argv: KINDS = {k: KINDS[k] for k in ('khatam', 'khatamd')}
+elif 'silver' in _s.argv: KINDS = {'silver': KINDS['silver']}
 elif 'new' in _s.argv: KINDS = {k: v for k, v in KINDS.items() if k in ('pomegranate', 'pearl', 'copper', 'bronze', 'gold')}
 for name, (tex, tint) in KINDS.items():
     bpy.ops.wm.read_factory_settings(use_empty=True)

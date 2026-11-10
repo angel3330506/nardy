@@ -36,26 +36,31 @@ SHAPES = {
     'sevan': lambda i, long: with_bay(i, shape_inlay(i, 218 if long else 150), 28, 16, 62),
     'yerevan': lambda i, long: with_bay(i, polys([teardrop(ptX(i), True, 262 if long else 196, 42)]), 30, 14, 58),
     'night': lambda i, long: polys([[(ptX(i) - 33, 40), (ptX(i) + 33, 40), (ptX(i), 296)]]),
+    'gravura': lambda i, long: np.maximum(bay(i, 34, 30), polys([[(ptX(i) - 34, 62), (ptX(i) + 34, 62), (ptX(i), 240)]])),
     'glass': lambda i, long: with_bay(i, polys([[(ptX(i) - 27, 58), (ptX(i) + 27, 58), (ptX(i), 290)]]), 27, 15, 58),
 }
 
 
-def glow(mask):
+GLOW_COL = {'gravura': (.86, .60, .18)}                 # на белой доске белое свечение не видно — золотистое
+
+
+def glow(mask, col_=(1.0, .97, .9)):
     """мягкое свечение формы: без обводки и резких краёв — заливка с размытой кромкой и плавный ореол вокруг"""
     m = np.clip(mask, 0, 1)
     fill = ndi.gaussian_filter(m, 2.2)                      # кромка размыта — граница не читается
     halo = ndi.gaussian_filter(ndi.grey_dilation(m, size=9), 8)
     a = np.clip(fill * .6 + halo * .34, 0, .8)            # полупрозрачно: рисунок доски просвечивает
-    col = np.zeros(m.shape + (3,)); col[...] = (1.0, .97, .9)
+    col = np.zeros(m.shape + (3,)); col[...] = col_
     return np.dstack([col, a])
 
 
 if __name__ == '__main__':
     for skin, fn in SHAPES.items():
+        if sys.argv[1:] and skin not in sys.argv[1:]: continue
         for kind, i in (('long', I_LONG), ('short', I_SHORT)):
             m = fn(i, kind == 'long')
             x0, y0 = int((ptX(i) - 40) * S), int(40 * S)
             win = m[y0:y0 + 330 * S, x0:x0 + 80 * S]
-            rgba = glow(win)
+            rgba = glow(win, GLOW_COL.get(skin, (1.0, .97, .9)))
             Image.fromarray((rgba * 255).astype(np.uint8), 'RGBA').save(os.path.join(OUT, f'pt-{skin}-{kind}.png'), optimize=True)
         print('saved', skin)

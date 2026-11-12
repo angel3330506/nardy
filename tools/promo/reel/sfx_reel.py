@@ -3,7 +3,7 @@
 import sys, os, subprocess, wave
 import numpy as np
 from scipy.signal import butter, sosfilt, fftconvolve
-SR = 48000; DUR = 34.0 if os.environ.get('PLAN') == 'pov' else 21.0
+SR = 48000; DUR = {'pov': 34.0, 'grav': 26.0}.get(os.environ.get('PLAN'), 21.0)
 out = np.zeros((int(SR * DUR), 2))
 rng = np.random.default_rng(3)
 def env(n, a, d, shape=2.0):
@@ -57,7 +57,23 @@ def load(name):
     x = np.frombuffer(raw, np.float32).astype(float); return x / (np.abs(x).max() + 1e-9)
 
 PLAN = os.environ.get('PLAN', 'puzzle')
-if PLAN == 'pov':                                            # ролик «POV: соседи по двору»
+if PLAN == 'grav':                                           # ролик «Гравюра»
+    put(0.0, whoosh(1.3, 250, 2400, .55), .55); put(1.05, thump(.7, 42), .35)
+    n = int(2.9 * SR); sc = rng.standard_normal(n); sc = np.diff(np.concatenate([[0], sc]))     # резец: тихий шорох по акрилу
+    scr_env = (np.sin(np.linspace(0, np.pi, n)) ** .6) * (.6 + .4 * np.abs(np.sin(np.linspace(0, 60, n))))
+    put(1.65, sc * scr_env * .18, .5)
+    put(4.55, chime(1.6), .55); put(4.55, shimmer(.7), .5)    # меч вспыхнул
+    put(6.1, whoosh(.9, 1500, 400, .4), .3)                    # нарды уезжают в меню
+    put(9.15, tap(), .5); put(9.3, whoosh(.9, 300, 1500, .5), .35)   # крышка открывается
+    put(12.35, pop(), .5)                                        # реплика судьи
+    for t, nm in ((13.95, 'dice-throw-2.m4a'), (18.15, 'dice-throw-1.m4a')):
+        x = load(nm)
+        if x is not None: put(t, x, .5)
+    for k, t in enumerate((15.6, 16.2, 21.7)):
+        x = load('chip-lay-%d.m4a' % (k % 3 + 1))
+        if x is not None: put(t, x, .55)
+    put(22.0, whoosh(1.0, 200, 6000, .9), .95); put(22.95, thump(.5, 52), .75); put(22.95, shimmer(.9), .9); put(23.1, chime(2.2), .45)
+elif PLAN == 'pov':                                            # ролик «POV: соседи по двору»
     put(0.0, whoosh(1.3, 250, 2400, .55), .55); put(1.05, thump(.7, 42), .35)
     for t in (6.4, 12.55, 22.68): put(t, whoosh(.45, 600, 3800, .4), .45)          # смена соседа — резкий «вжух»
     for t in (1.65, 3.9, 8.2, 10.8, 14.35, 18.35, 24.55, 26.7): put(t, pop(), .5)     # реплики

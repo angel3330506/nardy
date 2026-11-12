@@ -54,7 +54,16 @@ def bubble(text, y, size=50, maxw=980):                         # реплика
     d.polygon([(W / 2 - 26, y), (W / 2 + 26, y), (W / 2 + 4, y - 30)], fill=(244, 234, 214, 255))   # хвостик вверх — к телефону
     for i, l in enumerate(lines): draw_line(d, (W - tlen(d, l, fnt)) / 2, y + 30 + i * lh, l, fnt, (58, 34, 20, 255))
     return im
-if SET == 'pov':
+if SET == 'grav':                                              # ролик «Гравюра»: нашёл дома нарды — перенёс в игру
+    FG, FS = font('Forum.ttf', 104), font('Onest.ttf', 48)
+    save('g_intro', text_layer(['Нашёл дома', 'старые нарды'], 280, font('Forum.ttf', 112), GOLD, grad=True), text_layer(['…и перенёс их в игру'], 1450, font('Onest.ttf', 54), CREAM))
+    save('g_lid', text_layer(['На крышке —', 'Давид Сасунский'], 280, FG, GOLD, grad=True))
+    save('g_board', text_layer(['Доска «Гравюра»'], 300, FG, GOLD, grad=True), text_layer(['белый акрил и гравировка,', 'как у настоящих'], 1450, FS, CREAM))
+    save('g_judge', text_layer(['Новый соперник —', 'судья Левон'], 280, FG, GOLD, grad=True), text_layer(['считает каждый бросок'], 1450, FS, CREAM))
+    save('q_judge', bubble('«Играем честно. Бросай.»', 1390))
+    save('outro', text_layer(['А ты бы сыграл', 'на такой?'], 280, font('Forum.ttf', 112), GOLD, grad=True),
+                  text_layer(['Пиши в комментариях ↓'], 1450, font('OnestB.ttf', 54), CREAM))
+elif SET == 'pov':
     FN, FS = font('Forum.ttf', 128), font('Onest.ttf', 48)
     save('intro', text_layer(['POV: играешь в нарды', 'с соседями по двору'], 300, font('Forum.ttf', 96), GOLD, grad=True))
     for k, name, trait in (('aram', 'Арам', 'новичок · радуется каждому дублю'), ('ashot', 'Дядя Ашот', 'никогда никуда не спешит'),

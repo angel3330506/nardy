@@ -739,7 +739,6 @@
 "Напоминание включено": "Reminder is on",
 "каждый вечер в 19:00, если задача не решена": "every evening at 7 pm if the puzzle isn't solved",
 "Напоминать о задаче дня?": "Remind you about the daily puzzle?",
-"Каждый вечер в 19:00 — короткое уведомление, если задача ещё не решена. Чтобы серия не прервалась.": "Every evening at 7 pm — a short notification if the puzzle isn't solved yet. So your streak doesn't break.",
 "Напоминать": "Remind me",
 "Шутник Вазген": "Vazgen the Joker",
 "шутник Вазген": "Vazgen the Joker",
@@ -783,5 +782,6 @@
 "Обыграть шутника Вазгена": "Beat Vazgen the Joker",
 "Решение судьи": "Judge's ruling",
 "Обыграть судью Левона": "Beat Judge Levon",
-"Новогодняя": "New Year"
+"Новогодняя": "New Year",
+"Напомним вечером, если вы ещё не решили задачу дня. Так серия не прервётся.": "We'll remind you in the evening if you haven't solved the daily puzzle yet. That way your streak won't break."
 }

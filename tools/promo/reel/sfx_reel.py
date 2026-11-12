@@ -66,12 +66,11 @@ if PLAN == 'grav':                                           # ролик «Гр
     put(6.1, whoosh(.9, 1500, 400, .4), .3)                    # нарды уезжают в меню
     put(9.15, tap(), .5); put(9.3, whoosh(.9, 300, 1500, .5), .35)   # крышка открывается
     put(12.35, pop(), .5)                                        # реплика судьи
-    for t, nm in ((13.95, 'dice-throw-2.m4a'), (18.15, 'dice-throw-1.m4a')):
-        x = load(nm)
-        if x is not None: put(t, x, .5)
-    for k, t in enumerate((15.6, 16.2, 21.7)):
-        x = load('chip-lay-%d.m4a' % (k % 3 + 1))
-        if x is not None: put(t, x, .55)
+    def need(nm):
+        x = load(nm); assert x is not None, 'нет звука игры ' + nm + ' (второй аргумент — папка sounds/)'; return x
+    for t, nm in ((13.95, 'dice-throw-2.m4a'), (18.15, 'dice-throw-1.m4a')): put(t, need(nm), 1.2)   # кубики (по кадрам записи)
+    put(18.1, tap(), .45); put(19.98, tap(), .5)                 # нажатие «бросить», выбор фишки
+    for k, t in enumerate((15.66, 16.12, 21.8)): put(t, need('chip-lay-%d.m4a' % (k % 3 + 1)), 1.25)   # фишки ложатся
     put(22.0, whoosh(1.0, 200, 6000, .9), .95); put(22.95, thump(.5, 52), .75); put(22.95, shimmer(.9), .9); put(23.1, chime(2.2), .45)
 elif PLAN == 'pov':                                            # ролик «POV: соседи по двору»
     put(0.0, whoosh(1.3, 250, 2400, .55), .55); put(1.05, thump(.7, 42), .35)

@@ -57,7 +57,7 @@ def bubble(text, y, size=50, maxw=980):                         # реплика
 if SET == 'grav':                                              # ролик «Гравюра»: нашёл дома нарды — перенёс в игру
     FG, FS = font('Forum.ttf', 104), font('Onest.ttf', 48)
     save('g_intro', text_layer(['Нашёл дома', 'старые нарды'], 280, font('Forum.ttf', 112), GOLD, grad=True), text_layer(['…и перенёс их в игру'], 1450, font('Onest.ttf', 54), CREAM))
-    save('g_lid', text_layer(['На крышке —', 'Давид Сасунский'], 280, FG, GOLD, grad=True))
+    save('g_lid', text_layer(['На крышке —', 'тот самый всадник'], 280, FG, GOLD, grad=True))
     save('g_board', text_layer(['Доска «Гравюра»'], 300, FG, GOLD, grad=True), text_layer(['белый акрил и гравировка,', 'как у настоящих'], 1450, FS, CREAM))
     save('g_judge', text_layer(['Новый соперник —', 'судья Левон'], 280, FG, GOLD, grad=True), text_layer(['считает каждый бросок'], 1450, FS, CREAM))
     save('q_judge', bubble('«Играем честно. Бросай.»', 1390))

@@ -18,7 +18,7 @@ yy, xx = np.mgrid[0:LH, 0:LW].astype(float)
 rider = sword = None
 for name, m, c in L.PARTS:
     md, cd = down(m), c.reshape(LH, K, LW, K, 3).mean((1, 3))
-    if name == 'lid-david':
+    if name in ('lid-david', 'lid-rider'):
         red = (cd[..., 0] - cd[..., 1] > .12) & (md > .2)
         red = ndi.binary_opening(red, iterations=1); red = ndi.binary_dilation(red, iterations=2) & (md > .05)
         rider = (md > .05) & ~red; sword = red

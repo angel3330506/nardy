@@ -357,12 +357,14 @@ def board_lid_layers():
 
 
 # Дерево как на «Армении»: фото шпона ореха с сильным рисунком волокон. Тон у каждой доски свой.
-WOOD_TONE = {'goldrev': ((.20, .11, .055), (.075, .04, .02)),   # награда за 30 дней задачи дня: тёмный орех, инкрустация — золото
+WOOD_TONE = {'winter': ((.26, .15, .08), (.12, .065, .03)),   # «Новогодняя»: тёмный орех, поле — ночной синий
+             'goldrev': ((.20, .11, .055), (.075, .04, .02)),   # награда за 30 дней задачи дня: тёмный орех, инкрустация — золото
              'ararat': ((.52, .33, .15), (.30, .17, .07)), 'lid': ((.52, .33, .15), (.30, .17, .07)),
              'pomegranate': ((.46, .28, .13), (.26, .14, .06)), 'sevan': ((.50, .32, .15), (.28, .16, .07))}
 RED = ((.62, .12, .08), (.40, .06, .04))                         # красная инкрустация (падук, тон граната)
-FIELD_TONE = {'sevan': ((.20, .34, .52), (.08, .17, .30))}      # поля «Севана» — шпон, тонированный в цвет озера
-INLAY = ((.97, .90, .74), (.88, .76, .56))                    # светлый клён/бук инкрустации
+FIELD_TONE = {'sevan': ((.20, .34, .52), (.08, .17, .30)), 'winter': ((.10, .17, .32), (.035, .065, .14))}      # поля «Севана» — шпон, тонированный в цвет озера
+INLAY = ((.97, .90, .74), (.88, .76, .56))
+INLAY_WINTER = ((.96, .96, .95), (.84, .86, .88))             # «серебристый» клён для новогодней доски                    # светлый клён/бук инкрустации
 
 
 
@@ -434,11 +436,46 @@ def sevan_center(alb, h, cx, light):
     h += np.clip(shore + church, 0, 1) * 1.0 - wave_l * .5
     return alb, h
 
+def winter_center(alb, h, cx, light):
+    """Новогодний медальон: шестилучевая снежинка из светлой инкрустации (лучи с веточками и ромбиком в центре),
+    вокруг — кольцо красных гранатовых зёрен, между ними мелкие светлые звёздочки. Контуры — выжженная линия."""
+    cy = 350
+    segs = []
+    for k in range(6):
+        a_ = math.radians(90 + 60 * k); ca, sa = math.cos(a_), math.sin(a_)
+        segs.append([(cx + ca * 10, cy - sa * 10), (cx + ca * 78, cy - sa * 78)])
+        for t, L_ in ((30, 20), (50, 16), (66, 10)):              # веточки на луче
+            bx, by = cx + ca * t, cy - sa * t
+            for sgn in (-1, 1):
+                b_ = a_ + sgn * math.radians(50)
+                segs.append([(bx, by), (bx + math.cos(b_) * L_, by - math.sin(b_) * L_)])
+    flake = lines(segs, 4.2, aa=.4)
+    hexa = poly([(cx + 14 * math.cos(math.radians(30 + 60 * k)), cy - 14 * math.sin(math.radians(30 + 60 * k))) for k in range(6)])
+    flake = np.clip(np.maximum(flake, hexa), 0, 1)
+    for k in range(6):                                          # кристаллики на концах лучей
+        a_ = math.radians(90 + 60 * k)
+        flake = np.maximum(flake, circle(cx + math.cos(a_) * 82, cy - math.sin(a_) * 82, 4.5))
+    seeds = np.zeros((H, W))
+    for k in range(24):
+        a_ = 2 * math.pi * k / 24
+        r_ = 96
+        seeds = np.maximum(seeds, oval_mask(cx + r_ * math.cos(a_), cy + r_ * math.sin(a_), 3.6, 5.2) if False else circle(cx + r_ * math.cos(a_), cy + r_ * math.sin(a_), 4.4))
+    stars = np.zeros((H, W))
+    for k in range(6):
+        a_ = math.radians(60 * k)
+        stars = np.maximum(stars, circle(cx + 62 * math.cos(a_), cy - 62 * math.sin(a_), 2.4))
+    alb = _paint(alb, flake, (0, 1, 0)); alb = _paint(alb, stars, (0, 1, 0)); alb = _paint(alb, seeds, (0, 0, 1))
+    burn = outline(flake, .8) + outline(seeds, .6) * .8
+    alb = alb * (1 - np.clip(burn, 0, 1)[..., None] * .75)
+    h += flake * 1.0 + seeds * .9 + stars * .5
+    return alb, h
+
+
 def to_generic(name, L):
     """Слои board_arevakhach/board_lid_layers (R — тёмное дерево, G — инкрустация) → цветные слои для blender_generic.py."""
     h_, w_ = L['h'].shape
     dark = photo_wood(h_, w_, *WOOD_TONE[name], seed=11, vertical=True, contrast=.85)
-    light = photo_wood(h_, w_, *INLAY, seed=12, vertical=True, contrast=.3)
+    light = photo_wood(h_, w_, *(INLAY_WINTER if name == 'winter' else INLAY), seed=12, vertical=True, contrast=.3)
     a = L['alb']; R, G_, B_ = a[..., :1], a[..., 1:2], a[..., 2:3]
     metal = L['metal'][..., None]
     if name in FIELD_TONE:                                    # поля другим тоном, рама остаётся орехом
@@ -459,6 +496,8 @@ def to_generic(name, L):
 if __name__ == '__main__':
     if len(sys.argv) == 3 and sys.argv[1] == 'layers':
         sys.exit(dump_layers(sys.argv[2]))
+    if sys.argv[1:] == ['winter']:
+        to_generic('winter', board_arevakhach(layers=True, center=winter_center)); sys.exit()
     if sys.argv[1:] == ['goldrev']:
         to_generic('goldrev', board_arevakhach(layers=True, soft_bays=True)); sys.exit()
     if sys.argv[1:] == ['new']:

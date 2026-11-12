@@ -8,7 +8,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); OUT=$(mkdir -p "$1" && cd "$1" && pwd); VC=${2:-1}; VN=${3:-1.0}
 cd "$OUT"; rm -rf app; mkdir app; cd app
 npm init -y >/dev/null
-npm i -s @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/haptics@7 @capacitor/app@7 @capacitor/share@7 @capacitor/filesystem@7 "$ROOT"/android-shell/nardy-ads
+npm i -s @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/haptics@7 @capacitor/app@7 @capacitor/share@7 @capacitor/filesystem@7 @capacitor/local-notifications@7 "$ROOT"/android-shell/nardy-ads
 mkdir www && cp -R "$ROOT"/index.html "$ROOT"/boards "$ROOT"/sounds "$ROOT"/icons www/   # запасная копия игры (если сайт недоступен)
 cp "$ROOT"/android-shell/capacitor.config.json .
 npx cap add android >/dev/null
@@ -33,6 +33,11 @@ for d,px in {'mdpi':48,'hdpi':72,'xhdpi':96,'xxhdpi':144,'xxxhdpi':192}.items():
     fg=Image.new('RGBA',(int(px*2.25),int(px*2.25)),(0,0,0,0)); s=int(px*1.5); fg.paste(ic.resize((s,s),Image.LANCZOS),((fg.width-s)//2,)*2)
     fg.save(f'{res}/mipmap-{d}/ic_launcher_foreground.png')
 open(f'{res}/values/ic_launcher_background.xml','w').write('<?xml version="1.0" encoding="utf-8"?>\n<resources><color name="ic_launcher_background">#2a1a10</color></resources>\n')
+# значок уведомлений (напоминание о задаче дня): белый силуэт Аревахача на прозрачном
+rev=Image.open(f'{root}/boards/intro-rev-w.webp').convert('RGBA').getchannel('A')
+for d,px in {'mdpi':24,'hdpi':36,'xhdpi':48,'xxhdpi':72,'xxxhdpi':96}.items():
+    os.makedirs(f'{res}/drawable-{d}',exist_ok=True)
+    a=rev.resize((px,px),Image.LANCZOS); im=Image.new('RGBA',(px,px),(255,255,255,0)); im.putalpha(a); im.save(f'{res}/drawable-{d}/ic_stat_nardy.png')
 sp=Image.open(f'{root}/ios-shell/splash-2732.png').convert('RGB')
 for f in glob.glob(f'{res}/drawable*/splash.png'):
     w,h=Image.open(f).size; s=max(w,h); im=sp.resize((s,s),Image.LANCZOS); im.crop(((s-w)//2,(s-h)//2,(s-w)//2+w,(s-h)//2+h)).save(f)

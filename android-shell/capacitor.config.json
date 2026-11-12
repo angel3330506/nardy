@@ -4,7 +4,9 @@
   "webDir": "www",
   "server": {
     "url": "https://angel3330506.github.io/nardy/",
-    "allowNavigation": ["angel3330506.github.io"]
+    "allowNavigation": [
+      "angel3330506.github.io"
+    ]
   },
   "android": {
     "backgroundColor": "#0c0b0a",
@@ -12,5 +14,11 @@
     "allowMixedContent": false,
     "captureInput": true,
     "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_nardy",
+      "iconColor": "#d9b56a"
+    }
   }
 }

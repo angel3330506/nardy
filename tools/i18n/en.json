@@ -726,5 +726,19 @@
 "— неточность": "— inaccuracy",
 "Вы сыграли": "You played",
 "Гравюра": "Engraving",
-"Хатам": "Khatam"
+"Хатам": "Khatam",
+"Напоминание о задаче дня": "Daily puzzle reminder",
+"Каждый вечер": "Every evening",
+"Выключено": "Off",
+"В 19:00, если задача ещё не решена, — чтобы не прервать серию.": "At 7 pm, if the puzzle isn't solved yet — so your streak doesn't break.",
+"Задача дня ждёт": "Daily puzzle is waiting",
+"Серия: # дн. подряд — не прерывайте её": "Streak: # days in a row — don't break it",
+"Новая позиция: найдите лучший ход за пару минут": "New position: find the best move in a couple of minutes",
+"Уведомления запрещены": "Notifications are blocked",
+"разрешите их «Нардам» в настройках телефона": "allow them for Nardy in phone settings",
+"Напоминание включено": "Reminder is on",
+"каждый вечер в 19:00, если задача не решена": "every evening at 7 pm if the puzzle isn't solved",
+"Напоминать о задаче дня?": "Remind you about the daily puzzle?",
+"Каждый вечер в 19:00 — короткое уведомление, если задача ещё не решена. Чтобы серия не прервалась.": "Every evening at 7 pm — a short notification if the puzzle isn't solved yet. So your streak doesn't break.",
+"Напоминать": "Remind me"
 }

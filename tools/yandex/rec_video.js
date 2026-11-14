@@ -4,8 +4,8 @@ const {chromium}=require('playwright'); const fs=require('fs'); const D=process.
 (async()=>{ const b=await chromium.launch();
  const c=await b.newContext({viewport:{width:960,height:540},deviceScaleFactor:2,userAgent:'Mozilla/5.0 NardyApp NardyAndroid'}); const p=await c.newPage();
  await p.goto('http://localhost:8765/index.html?mock');
- await p.evaluate(()=>{ localStorage.clear(); localStorage.setItem('nardy-tutorial-v1','1');
-   localStorage.setItem('nardy-settings-v1',JSON.stringify({sound:false,lang:'ru',skin:'ararat',tod:'day',level:'medium',automove:false,variant:'long'})); });
+ await p.evaluate(L=>{ localStorage.clear(); localStorage.setItem('nardy-tutorial-v1','1');
+   localStorage.setItem('nardy-settings-v1',JSON.stringify({sound:false,lang:L,skin:'ararat',tod:'day',level:'medium',automove:false,variant:'long'})); },process.env.LANG_UI||'ru');
  await p.reload(); await p.waitForTimeout(2500);
  await p.evaluate(()=>__t.ev("rollOff=function(){ busy=false; G.ro=false; G.phase='roll'; G.turn=0; render(); }; 0"));
  await p.click('#mAi'); await p.waitForTimeout(2200);

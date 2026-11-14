@@ -406,99 +406,6 @@ def pomegranate_center(alb, h, cx, light):
     return alb, h
 
 
-def pomegranate_carved(alb, h, cx, light):
-    """Гранат резьбой по дереву (барельеф, без цветной инкрустации): фон медальона выбран на глубину и забит
-    точечной насечкой, над ним — выпуклый плод с дольками и короной, ветка с тремя листьями и половинка с зёрнами-бусинами.
-    Цвет — то же дерево: в углублениях морилка гуще, на выступах — светлее (протёрто)."""
-    cy = 350
-    yy, xx = np.mgrid[0:H, 0:W] / S
-    R0 = 103.5
-    disc = circle(cx, cy, R0)
-    rel = np.zeros((H, W))
-    def dome(x, y, r, k, p=.5):
-        d = np.clip(1 - ((xx - x) ** 2 + (yy - y) ** 2) / r ** 2, 0, 1)
-        return k * d ** p
-    # плод: чуть приплюснутый шар с едва заметными гранями, «плечики» плавно сходятся к шейке
-    fx, fy, rx, ry = cx - 10, cy + 18, 52, 47
-    R = ry
-    pts = []
-    for t in np.linspace(0, 2 * math.pi, 720, endpoint=False):
-        f = 1 + .014 * math.cos(6 * t + .3)
-        x, y = rx * math.cos(t) * f, ry * math.sin(t) * f
-        if math.sin(t) > 0: y *= 1 - .06 * math.sin(t) ** 3
-        w = 0.0
-        pts.append((fx + x, fy + y))
-    body = poly(pts)
-    d = ndi.distance_transform_edt(body > .5) / S
-    rho2 = ((xx - fx) / rx) ** 2 + ((yy - fy) / ry) ** 2
-    fruit = body * (16 * np.sqrt(np.clip(1 - rho2, 0, 1)) + 2.5 * np.clip(d / 3, 0, 1))   # шар, а не плато; у края — небольшой бортик
-    u = (xx - fx) / rx; v = np.sqrt(np.clip(1 - ((yy - fy) / ry) ** 2, .05, 1))
-    q = (np.arcsin(np.clip(u / v, -1, 1)) / math.pi + .5) * 6 % 1
-    seam = np.exp(-(np.minimum(q, 1 - q) / .06) ** 2) * (fruit > .6) * (np.abs(u) < .95) * (yy > fy - ry * .8)
-    fruit = fruit - seam * .7 * np.clip(fruit / 14, 0, 1) * np.clip((yy - fy + ry * .2) / (ry * .5), 0, 1)   # еле заметные рёбра, только внизу
-    rel = np.maximum(rel, fruit)
-    # корона: шейка и раскрытые наружу чашелистики
-    cal = poly([(fx + x, fy + y) for x, y in ((-11, -ry + 6), (-10.5, -ry - 9), (-24, -ry - 22), (-16, -ry - 19), (-11, -ry - 30), (-5.5, -ry - 20),
-                                             (0, -ry - 25), (5.5, -ry - 20), (11, -ry - 30), (16, -ry - 19), (24, -ry - 22), (10.5, -ry - 9), (11, -ry + 6))])
-    cal = (ndi.gaussian_filter(cal, S * .7) > .5).astype(float)
-    dc = ndi.distance_transform_edt(cal > .5) / S
-    crown = cal * (6.5 + 3.5 * np.sqrt(np.clip(dc / 5, 0, 1)))
-    lip = cal * np.exp(-((yy - (fy - ry - 10)) / 1.1) ** 2) * (np.abs(xx - fx) < 12)    # край чашечки — бороздка
-    rel = np.maximum(rel, crown - lip * .8)
-    # ветка: от короны вправо-вверх и дугой влево; круглое сечение
-    br = np.zeros((H, W))
-    pts = [(fx + 4 + 30 * math.sin(t * 1.7), fy - R - 26 - 34 * t + 4 * t * t) for t in np.linspace(0, 1, 40)]
-    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-        L_ = math.hypot(x1 - x0, y1 - y0) + 1e-6; nx, ny = -(y1 - y0) / L_, (x1 - x0) / L_
-        rr = 3.2
-        seg = poly([(x0 + nx * rr, y0 + ny * rr), (x1 + nx * rr, y1 + ny * rr), (x1 - nx * rr, y1 - ny * rr), (x0 - nx * rr, y0 - ny * rr)])
-        br = np.maximum(br, seg * 6)
-    rel = np.maximum(rel, ndi.gaussian_filter(br, S * 1.2))
-    # листья: поверхность с изгибом от центральной жилки, жилка — бороздка, боковые прожилки
-    def leaf_r(x, y, ang, L_, wd, k):
-        a = math.radians(ang); ca, sa = math.cos(a), math.sin(a)
-        X = (xx - x) * ca + (yy - y) * sa; Y = -(xx - x) * sa + (yy - y) * ca
-        t = np.clip(X / L_, 0, 1); half = wd * np.sin(math.pi * t ** .85)
-        inside = (X > 0) & (X < L_) & (np.abs(Y) < half)
-        prof = np.clip(1 - np.abs(Y) / np.maximum(half, .1), 0, 1)
-        z = inside * (k * (.55 + .45 * prof) * (1 - .35 * t) + k * .25 * (Y / np.maximum(half, .1)))
-        vein = inside * np.exp(-(Y / 1.1) ** 2) * (t < .92)
-        side = inside * np.exp(-((np.abs(Y) * .9 - (X % 9) * .9) / 1.0) ** 2) * (np.abs(Y) > 1.5) * .5
-        return ndi.gaussian_filter(np.clip(z - vein * 1.6 - side * .9, 0, None), S * .5)
-    for (i, ang, L_, wd) in ((10, 205, 42, 14), (22, -15, 42, 13), (39, -110, 32, 11)):
-        x, y = pts[i]
-        rel = np.maximum(rel, leaf_r(x, y, ang, L_, wd, 8.5))
-    # половинка: толстая кожура-бортик, внутри — бусины зёрен
-    hx, hy, hr = cx + 50, cy + 50, 30
-    r_ = np.hypot(xx - hx, yy - hy)
-    cut = (r_ < hr) * (8 + 2 * np.clip((r_ - hr + 6) / 6, 0, 1))
-    beads = np.zeros((H, W)); rng = np.random.default_rng(int(cx)); bp = []
-    for _ in range(3000):
-        rr, aa = (hr - 7.5) * math.sqrt(rng.random()), rng.random() * 2 * math.pi
-        x, y = hx + rr * math.cos(aa), hy + rr * math.sin(aa)
-        if all((x - a) ** 2 + (y - b) ** 2 > 5.6 ** 2 for a, b in bp): bp.append((x, y))
-    for x, y in bp: beads = np.maximum(beads, dome(x, y, 2.9, 2.2, .5))
-    cut = np.where(r_ < hr - 6, 5.0 + beads * 1.4, cut)
-    rel = np.where(r_ < hr, np.maximum(cut, rel * (r_ > hr)), rel)
-    rel = ndi.gaussian_filter(rel, S * .35)
-    # фон: выборка и насечка
-    stip = np.zeros((H, W)); rng = np.random.default_rng(5 + int(cx))
-    n = int(math.pi * R0 * R0 / 7)
-    ys_ = (cy + (rng.random(n) * 2 - 1) * R0) * S; xs_ = (cx + (rng.random(n) * 2 - 1) * R0) * S
-    ok = (ys_ >= 0) & (ys_ < H) & (xs_ >= 0) & (xs_ < W)
-    stip[ys_[ok].astype(int), xs_[ok].astype(int)] = 1
-    stip = np.clip(ndi.gaussian_filter(stip, S * .55) * 9, 0, 1)
-    raised = rel > .4
-    ground = disc * (1 - ndi.gaussian_filter(raised.astype(float), S * .6))
-    h += disc * (-2.2) + rel * disc - ground * stip * .45
-    # тон: в выборке и у основания рельефа морилка темнее, на верхушках — светлее
-    occ = np.clip(ndi.gaussian_filter(rel, S * 4) - rel, 0, 4) / 4
-    tone = disc * (.70 - .18 * stip * ground) + disc * (rel > .4) * (.30 + .12 * np.clip(rel / 14, 0, 1))
-    tone = np.where(disc > 0, tone * (1 - .45 * occ), 1)
-    alb = alb * (1 - disc[..., None]) + alb * disc[..., None] * tone[..., None]
-    return alb, h
-
-
 def sevan_center(alb, h, cx, light):
     """Севан маркетри: на полуострове — силуэт Севанаванка (два храма с коническими куполами) из тёмного ореха,
     над ним небо из светлого клёна, внизу — гребни волн, разделённые выжженными линиями."""
@@ -596,8 +503,6 @@ if __name__ == '__main__':
     if sys.argv[1:] == ['new']:
         to_generic('pomegranate', board_arevakhach(layers=True, center=pomegranate_center))
         to_generic('sevan', board_arevakhach(layers=True, center=sevan_center)); sys.exit()
-    if sys.argv[1:] == ['pomegranate']:
-        to_generic('pomegranate', board_arevakhach(layers=True, center=pomegranate_carved)); sys.exit()
     if sys.argv[1:] == ['generic']:
         to_generic('ararat', board_arevakhach(layers=True)); to_generic('lid', board_lid_layers()); sys.exit()
     if sys.argv[1:] == ['lid']:

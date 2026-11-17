@@ -37,6 +37,14 @@ svg{display:block;width:100%;height:auto}
   <div class="card"><h2>Партии по режимам — всего</h2><div class="rows" id="modes"></div></div>
   <div class="card"><h2>Устройства</h2><div class="rows" id="devs"></div></div>
 </div>
+<div class="two">
+  <div class="card"><h2>Новички: где отваливаются</h2><div class="sub" style="margin:0 0 8px">сколько устройств дошло до шага (каждое один раз); шаги считаются с 17 ноября 2026</div><div class="rows" id="funnel"></div></div>
+  <div class="card"><h2>Возвращаются ли</h2><div class="sub" style="margin:0 0 8px">из пришедших за последние 30 дней — открыли игру снова</div><div class="rows" id="ret"></div></div>
+</div>
+<div class="two">
+  <div class="card"><h2>Соседи: партии игроков</h2><div class="sub" style="margin:0 0 8px">победы игрока / поражения</div><div class="rows" id="opps"></div></div>
+  <div class="card"><h2>Действия — всего</h2><div class="rows" id="evs"></div></div>
+</div>
 </main>
 <script type="module">
 const CFG={apiKey:'AIzaSyCth8f_piW1AWTqA6cmXXRfFO6nN2nnUHk',authDomain:'nardy-c0996.firebaseapp.com',
@@ -72,11 +80,28 @@ try{
   $('chart').innerHTML=s+'</svg>';
   const rows=(el,pairs)=>{ const m=Math.max(1,...pairs.map(p=>p[1])); $(el).innerHTML=pairs.map(([t,n])=>`<div class="row"><span>${t}</span><div class="bar"><div style="width:${n/m*100}%"></div></div><em>${n}</em></div>`).join('')||'<span class="sub">пока пусто</span>'; };
   const M={ai:'С соперником',tour:'Турнир двора',pvp:'Вдвоём',net:'По сети'}, mc={};
-  Object.values(Gg).forEach(o=>Object.values(o).forEach(r=>{ mc[r.m]=(mc[r.m]||0)+1; }));
+  const ev={};
+  Object.values(Gg).forEach(o=>Object.values(o).forEach(r=>{ const m=String(r.m||''); if(m[0]==='!') ev[m.slice(1)]=(ev[m.slice(1)]||0)+1; else mc[m]=(mc[m]||0)+1; }));
   rows('modes',Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([k,n])=>{ const sh=k.endsWith('-s'), b=sh?k.slice(0,-2):k; return [(M[b]||b)+(sh?' · короткие':''),n]; }));
   const P={ios:'iPhone / iPad',android:'Android',pc:'Компьютер'}, pc={};
   users.forEach(u=>{ pc[u.p]=(pc[u.p]||0)+1; });
   rows('devs',Object.entries(pc).sort((a,b)=>b[1]-a[1]).map(([k,n])=>[P[k]||k,n]));
+  // воронка новичка, удержание, соседи, действия
+  const n=k=>ev[k]||0;
+  rows('funnel',[['Открыли игру',users.length],['Показано обучение',n('tut-offer')],['Начали обучение',n('tut-start')],['Прошли обучение',n('tut-done')],
+    ['Начали первую партию',n('g1-start')],['Доиграли первую партию',n('g1-done')]]);
+  const seen={}; for(const [k,o] of Object.entries(Dd)) for(const u of Object.keys(o)) (seen[u]=seen[u]||new Set()).add(k);
+  const ret=(dmin,dmax)=>{ let c=0,r=0; for(const [u,x] of Object.entries(U)){ if(!x.f||now-x.f>30*DAYMS||now-x.f<dmax*DAYMS) continue; c++;
+      const s_=seen[u]||new Set(); for(let i=dmin;i<=dmax;i++) if(s_.has(day(x.f+i*DAYMS))){ r++; break; } } return [r,c]; };
+  const [r1,c1]=ret(1,1),[r7,c7]=ret(2,7);
+  $('ret').innerHTML=[['на следующий день',r1,c1],['в течение недели (2–7 день)',r7,c7]].map(([t,a,b])=>`<div class="row"><span>${t}</span><div class="bar"><div style="width:${b?a/b*100:0}%"></div></div><em>${b?Math.round(a/b*100)+'%':'—'}</em></div>`).join('')
+    +`<div class="sub" style="margin:8px 0 0">выборка: ${c1} и ${c7} устройств</div>`;
+  const LV={easy:'Арам',joker:'Вазген',medium:'Дядя Ашот',hard:'Бабушка Сирануш',judge:'Судья Левон',expert:'Варпет Гурген'};
+  const om=Math.max(1,...Object.keys(LV).map(k=>n('w-'+k)+n('l-'+k)));
+  $('opps').innerHTML=Object.entries(LV).map(([k,t])=>{ const w=n('w-'+k), l=n('l-'+k);
+    return `<div class="row"><span>${t}</span><div class="bar" style="display:flex"><div style="width:${w/om*100}%;border-radius:5px 0 0 5px"></div><div style="width:${l/om*100}%;background:var(--b);border-radius:0 5px 5px 0"></div></div><em>${w} / ${l}</em></div>`; }).join('');
+  rows('evs',[['Ушли посреди партии',n('left')],['Решили задачу дня',n('puz-ok')],['Выполнили задание дня',n('q-one')],['Все задания за день',n('q-all')],
+    ['Поделились победой',n('share')],['Открыли разбор партии',n('review')],['Бросили обучение',n('tut-quit')],['Пропустили обучение',n('tut-skip')]]);
   $('sub').textContent='Обновлено '+new Date().toLocaleString('ru-RU')+' · считаются устройства с версии игры от 5 ноября 2026';
 }catch(e){ $('sub').innerHTML='<span class="err">Не удалось загрузить: '+(e.message||e)+'</span> — проверьте, что опубликованы новые правила базы.'; }
 </script>

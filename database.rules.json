@@ -41,6 +41,12 @@
         "v": {
           ".write": "auth != null && !data.exists()",
           ".validate": "newData.val() === 'short' || newData.val() === 'long'"
+        },
+        "emo": {
+          "$slot": {
+            ".write": "auth != null && newData.parent().parent().child('players').child($slot).val() === auth.uid",
+            ".validate": "newData.child('e').isNumber() && newData.child('e').val() >= 0 && newData.child('e').val() < 12 && newData.child('t').isNumber()"
+          }
         }
       }
     },
@@ -97,6 +103,18 @@
             ".write": "auth != null && !data.exists()",
             ".validate": "newData.child('m').isString() && newData.child('m').val().length <= 10"
           }
+        }
+      }
+    },
+    "weekly": {
+      "$week": {
+        ".read": "auth != null",
+        ".indexOn": [
+          "p"
+        ],
+        "$uid": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "$week.length <= 10 && newData.child('n').isString() && newData.child('n').val().length <= 24 && newData.child('p').isNumber() && newData.child('p').val() >= 0 && newData.child('p').val() <= 400 && newData.child('t').isNumber()"
         }
       }
     }

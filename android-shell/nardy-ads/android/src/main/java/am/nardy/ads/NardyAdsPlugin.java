@@ -25,7 +25,7 @@ import com.yandex.mobile.ads.rewarded.RewardedAdLoader;
 // ID блоков приходят из игры (configure); пока своих нет — тестовые блоки Яндекса demo-*.
 @CapacitorPlugin(name = "NardyAds")
 public class NardyAdsPlugin extends Plugin {
-    private String interId = "demo-interstitial-yandex", rewId = "demo-rewarded-yandex";
+    private String interId = "R-M-20356781-1", rewId = "R-M-20356781-2";   // блоки РСЯ; сайт всё равно передаёт свои через configure()
     private InterstitialAd inter; private RewardedAd rew;
     private boolean loadingI, loadingR;
     private final Handler main = new Handler(Looper.getMainLooper());

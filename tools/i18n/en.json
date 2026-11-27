@@ -857,5 +857,20 @@
 "Войдите в тройку лучших турнира недели": "Finish in the top three of a weekly tournament",
 "Звезда недели": "Star of the week",
 "Войти в тройку лучших турнира недели": "Finish in the top three of a weekly tournament",
-"Достижение: Звезда недели": "Achievement: Star of the week"
+"Достижение: Звезда недели": "Achievement: Star of the week",
+"Новичок": "Novice",
+"Любитель": "Amateur",
+"Знаток": "Expert",
+"Мастер": "Master",
+"Гроссмейстер": "Grandmaster",
+"Легенда двора": "Legend of the yard",
+"Новое звание": "New rank",
+"в рейтинге коротких нард": "in the short-game rating",
+"в рейтинге по сети": "in the online rating",
+"следующее звание": "next rank",
+"ещё #": "# to go",
+"высшее звание": "top rank",
+"Мастер по сети": "Online master",
+"Дойти до звания «Мастер» в рейтинге по сети (#)": "Reach the Master rank in the online rating (#)",
+"Достижение: Мастер по сети": "Achievement: Online master"
 }

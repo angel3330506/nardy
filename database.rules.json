@@ -58,7 +58,10 @@
       ],
       "$uid": {
         ".write": "auth != null && auth.uid === $uid",
-        ".validate": "newData.child('name').isString() && newData.child('name').val().length <= 24 && newData.child('r').isNumber() && newData.child('g').isNumber()"
+        ".validate": "newData.child('name').isString() && newData.child('name').val().length <= 24 && newData.child('r').isNumber() && newData.child('g').isNumber() && ((!data.child('r').exists() && newData.child('r').val() >= 1152 && newData.child('r').val() <= 1248 && newData.child('g').val() >= 0 && newData.child('g').val() <= 1) || (data.child('r').exists() && ((newData.child('r').val() === data.child('r').val() && newData.child('g').val() === data.child('g').val()) || (newData.child('g').val() === data.child('g').val() + 1 && newData.child('r').val() - data.child('r').val() <= 48 && data.child('r').val() - newData.child('r').val() <= 48))))",
+        "rs": {
+          ".validate": "newData.isNumber() && newData.parent().child('gs').isNumber() && ((!data.exists() && newData.val() >= 1152 && newData.val() <= 1248 && newData.parent().child('gs').val() >= 0 && newData.parent().child('gs').val() <= 1) || (data.exists() && ((newData.val() === data.val() && newData.parent().child('gs').val() === data.parent().child('gs').val()) || (newData.parent().child('gs').val() === data.parent().child('gs').val() + 1 && newData.val() - data.val() <= 48 && data.val() - newData.val() <= 48))))"
+        }
       }
     },
     "invites": {
